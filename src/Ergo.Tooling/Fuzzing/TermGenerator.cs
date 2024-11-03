@@ -1,0 +1,176 @@
+﻿using Ergo.Language.Ast;
+using Ergo.Language.Ast.WellKnown;
+using Ergo.Language.Lexer;
+using Ergo.Language.Lexer.WellKnown;
+using Ergo.Language.Parser;
+using Ergo.Shared.Extensions;
+using Ergo.Shared.Types;
+using System.Text;
+
+namespace Ergo.Tooling;
+
+public class TermGeneratorContext
+{
+    public readonly ParserContext Parser = new();
+}
+
+public class TermGenerator
+{
+    private readonly TermGeneratorContext _ctx = new();
+    private readonly Random _rng;
+    private readonly Operator[] _prefixOps;
+    private readonly Operator[] _postfixOps;
+    private readonly Operator[] _infixOps;
+    public TermGeneratorProfile Profile { get; set; } = TermGeneratorProfile.Default;
+
+    public TermGenerator(OperatorLookup? ops = null, Random? rng = null)
+    {
+        _rng = rng ?? new();
+        ops ??= new();
+        _prefixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Prefix).ToArray();
+        _postfixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Postfix).ToArray();
+        _infixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Infix).ToArray();
+    }
+
+
+    public Func<__string> __string => () => 
+        new(String(
+            shouldStartWithDiscard: 
+                Profile.IncludeQuotedStrings 
+                && Chance(1, Math.Log2(Profile.MaxIdentifierLength) / Profile.MaxIdentifierLength),
+            shouldStartWithUppercase: 
+                Profile.IncludeQuotedStrings 
+                && Chance(1, 5),
+            mayContainSpaces: 
+                Profile.IncludeQuotedStrings 
+                && Chance(1, 2),
+            minLength: 1,
+            maxLength: Profile.MaxIdentifierLength
+        ));
+    public Func<__double> __double => () =>
+        new(PositiveOrNegativeValue);
+    public Func<__bool> __bool => () =>
+        new(Chance(1, 2));
+    public Func<__string> Cut => () =>
+        Literals.Cut;
+    public Func<__string> EmptyList => () =>
+        Literals.EmptyList;
+    public Func<Atom> Atom => () =>
+         Choose<Atom>([
+             Cut,
+             EmptyList,
+             __string,
+             __double,
+             __bool,
+         ]);
+    public Func<Variable> Variable => () =>
+        _ctx.Parser.GetVariable(String(
+            shouldStartWithDiscard: Chance(1, 2),
+            shouldStartWithUppercase: true,
+            mayContainSpaces: false,
+            minLength: 1,
+            maxLength: Profile.MaxIdentifierLength
+        ));
+    public Func<Complex> Complex => () =>
+    {
+        var functor = Get(__string, Profile with { 
+            MaxIdentifierLength = Profile.MaxComplexFunctorLength });
+        var args = Get(() => Many(1, Profile.MaxComplexArity, Term), Profile with { 
+            MaxIdentifierLength = Profile.MaxComplexArgLength });
+        return new Complex(functor, args);
+    };
+    public Func<Term> Term => () =>
+        Choose<Term>([
+            Atom,
+            Variable,
+            Complex
+        ]);
+    public Func<PrefixExpression> PrefixExpression => () =>
+        new(Choose(_prefixOps), Term());
+    public Func<PostfixExpression> PostfixExpression => () =>
+        new(Choose(_postfixOps), Term());
+    public Func<UnaryExpression> UnaryExpression => () =>
+        Choose<UnaryExpression>([
+            PrefixExpression,
+            PostfixExpression
+        ]);
+    public Func<BinaryExpression> BinaryExpression => () =>
+    {
+        using var _ = Transact(Profile with { MaxExpressionDepth = Profile.MaxExpressionDepth - 1 });
+        if (Profile.MaxExpressionDepth <= 0)
+            return new(Choose(_infixOps), Term(), Term());
+        return new(Choose(_infixOps), ExpressionOrTerm(), ExpressionOrTerm());
+    };
+    public Func<ConsExpression> ConsExpression => () =>
+        new(Operators.Conjunction, Choose<Term>([ConsExpression, ExpressionOrTerm]), ExpressionOrTerm());
+    public Func<Expression> Expression => () =>
+        Choose<Expression>([
+            UnaryExpression,
+            BinaryExpression
+        ]);
+    public Func<Term> ExpressionOrTerm => () =>
+        Choose<Term>([
+            Expression,
+            Term
+        ]);
+    #region Helpers
+    public string String(
+        bool shouldStartWithUppercase = false,
+        bool shouldStartWithDiscard = false,
+        bool mayContainSpaces = false,
+        int minLength = 4,
+        int maxLength = 16
+    )
+    {
+        if (maxLength == 0)
+            return "";
+        var sb = new StringBuilder();
+        var length = _rng.Next(minLength, maxLength);
+        for (int i = 0; i < length; i++)
+        {
+            var addSpace = i > 0
+                && mayContainSpaces
+                && Chance(1, 10);
+            sb.Append(addSpace
+                ? ' '
+                : Choose(TermGeneratorProfile.IdentifierChars));
+        }
+        sb.Insert(0, Choose(TermGeneratorProfile.StartIdentifierChars));
+        if (shouldStartWithUppercase)
+        {
+            sb.Remove(0, 1);
+            sb.Insert(0, char.ToUpper(Choose(TermGeneratorProfile.StartIdentifierChars)));
+        }
+        if (shouldStartWithDiscard)
+        {
+            sb.Remove(0, 1);
+            sb.Insert(0, '_');
+        }
+        return sb.ToString();
+    }
+    public bool Chance(double numerator, double denominator) => 
+        _rng.NextDouble() > numerator / denominator;
+    public T Choose<T>(Func<object>[] choices) =>
+        (T)_rng.GetItems(choices, choices.Length)[0]();
+    public T Choose<T>(T[] choices) =>
+        _rng.GetItems(choices, choices.Length)[0];
+    public T[] Many<T>(int min , int max, Func<T> one) =>
+         Enumerable.Range(0, _rng.Next(min, max + 1))
+        .Select(_ => one())
+        .ToArray();
+    public Tx<TermGeneratorProfile> Transact(TermGeneratorProfile tmp)
+    {
+        var oldProfile = Profile;
+        Profile = tmp;
+        return new(oldProfile, state => Profile = state);
+    }
+    public T Get<T>(Func<T> get, TermGeneratorProfile tmp)
+    {
+        using var _ = Transact(tmp);
+        return get();
+    }
+    public double PositiveValue => Math.Round(_rng.NextDouble() * Profile.NumberMagnitude, 3);
+    public double NegativeValue => -PositiveValue;
+    public double PositiveOrNegativeValue => Math.Round((_rng.NextDouble() - 0.5) * 2 * Profile.NumberMagnitude, 3);
+    #endregion
+}

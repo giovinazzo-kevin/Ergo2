@@ -1,0 +1,1 @@
+﻿namespace Ergo.Shared.Interfaces;

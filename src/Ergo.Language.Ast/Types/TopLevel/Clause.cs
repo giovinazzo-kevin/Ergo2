@@ -1,0 +1,18 @@
+﻿
+using Ergo.Language.Ast.WellKnown;
+using System.Security.Claims;
+
+namespace Ergo.Language.Ast;
+
+public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinary, head, body), ITopLevelTerm
+{
+    public Term Head => head;
+    public readonly IEnumerable<Term> Goals = 
+        (body is BinaryExpression { IsCons: true } cons 
+            && cons.Operator.Equals(Operators.Conjunction))
+        ? new ConsExpression(cons.Operator, cons.Lhs, cons.Rhs).Contents
+        : [body];
+    public override string Expl => $"{Head} {Operator.CanonicalFunctor.Value}\n{
+        string.Join(",\n", Goals.Select(x => "    " + x.Expl))
+    }";
+}
