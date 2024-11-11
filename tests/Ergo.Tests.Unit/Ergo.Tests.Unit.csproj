@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);ENABLE_TESTGEN;DETERMINISTIC_TESTGEN</DefineConstants>
+    <DefineConstants>$(DefineConstants);_ENABLE_TESTGEN;DETERMINISTIC_TESTGEN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ergo.Tooling\Ergo.SDK.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

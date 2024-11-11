@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ergo.IO\Ergo.IO.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Ast\Ergo.Language.Ast.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Lexer\Ergo.Language.Lexer.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Parser\Ergo.Language.Parser.csproj" />
+    <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
+    <ProjectReference Include="..\Ergo.Tooling\Ergo.SDK.csproj" />
+  </ItemGroup>
+
+</Project>

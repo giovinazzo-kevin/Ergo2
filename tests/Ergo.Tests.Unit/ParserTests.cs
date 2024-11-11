@@ -5,19 +5,20 @@ using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Lexer;
 using Ergo.Language.Parser;
 using Ergo.Language.Parser.Extensions;
+using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Extensions;
+using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
-using Ergo.Tooling;
 using System.Collections;
 using System.Reflection;
 
 namespace Ergo.UnitTests;
 
 public class ParserTestGenerator<T> : IEnumerable<object[]>
-    where T : Term
+    where T : IExplainable
 {
 #if ENABLE_TESTGEN
-    const int NUM_SAMPLES = 50;
+    const int NUM_SAMPLES = 100;
 #else
     const int NUM_SAMPLES = 0;
 #endif
@@ -59,7 +60,13 @@ public class ParserTests
         new (400, Operator.Type.yfx, (__string)"/"),
         new(900, Operator.Type.fx, "@-"),
         new(900, Operator.Type.xf, "-@"),
-        new(900, Operator.Type.xfx, "@-@"),
+        new(800, Operator.Type.fy, "#-"),
+        new(800, Operator.Type.yf, "-#"),
+        new(900, Operator.Type.xfx, "@@"),
+        new(900, Operator.Type.xfy, "##"),
+        new(900, Operator.Type.yfx, "#@"),
+        new(800, Operator.Type.fy, "#-"),
+        new(800, Operator.Type.yf, "-#"),
     ];
 
     protected T Expect<T>(string input, Func<ErgoParser, Func<Maybe<T>>> parserFunc, bool parenthesized = false)
@@ -120,22 +127,31 @@ public class ParserTests
     public void Identifier(string input) => Expect(input, p => p.Identifier);
 
     [Theory]
+    [InlineData("'test string'")]
+    [InlineData("\"test string\"")]
+    [InlineData("true")]
+    [InlineData("false")]
+    [InlineData("0")]
+    [InlineData("-4592.123")]
+    [InlineData("235.73459")]
+    [InlineData("+2149593.01293")]
+    [InlineData("identifier")]
+    [InlineData("snake_case")]
+    [InlineData("camelCase")]
+    [InlineData("mixedCASE__")]
     [ClassData(typeof(ParserTestGenerator<Atom>))]
     public void Atom(string input) => Expect(input, p => p.Atom);
 
     [Theory]
+    [InlineData("_")]
+    [InlineData("X")]
+    [InlineData("MyVariable")]
+    [InlineData("My_Variable")]
     [ClassData(typeof(ParserTestGenerator<Variable>))]
     public void Variable(string input) => Expect(input, p => p.Variable);
     [Theory]
-    [InlineData("(0)")]
-    [InlineData("(0,1)")]
-    [InlineData("(0,1,2)")]
-    public void Args(string input)
-    {
-        var result = Expect(input, p => p.Args);
-        Assert.Equal(input, string.Join(",", result.Select(x => x.Expl)).Parenthesized(true));
-    }
-    [Theory]
+    [InlineData("my_complex(arg1)")]
+    [InlineData("my_complex(arg1,arg2,g(arg3,f(arg4,arg5)))")]
     [ClassData(typeof(ParserTestGenerator<Complex>))]
     public void Complex(string input)
     {
@@ -204,6 +220,7 @@ public class ParserTests
     [InlineData("a, b, c, d, e, f, g")]
     [InlineData("a, [b]")]
     [InlineData("a, [b, c]")]
+    [ClassData(typeof(ParserTestGenerator<ConsExpression>))]
     public void ConsExpression(string input)
     {
         var result = Expect(input, p => p.ConsExpression(Operators.Conjunction));
@@ -241,6 +258,7 @@ public class ParserTests
     [Theory]
     [InlineData(":- no_args")]
     [InlineData(":- module(my_module,[])")]
+    [ClassData(typeof(ParserTestGenerator<Directive>))]
     public void Directive(string input)
     {
         var result = Expect(input, p => p.Directive);
@@ -249,6 +267,7 @@ public class ParserTests
     [Theory]
     [InlineData("fact")]
     [InlineData("complex_fact(a,b,C)")]
+    [ClassData(typeof(ParserTestGenerator<Fact>))]
     public void Fact(string input)
     {
         var result = Expect(input, p => p.Fact);
@@ -258,6 +277,7 @@ public class ParserTests
     [InlineData(
 @"clause(A) :-
     other_clause(A)")]
+    [ClassData(typeof(ParserTestGenerator<Clause>))]
     public void Clause(string input)
     {
         var result = Expect(input, p => p.Clause);
@@ -279,6 +299,7 @@ clause(Y) :-
     fact,
     other_fact(6).
 ")]
+    [ClassData(typeof(ParserTestGenerator<Program>))]
     public void Program(string input)
     {
         var result = Expect(input, p => p.Program);
@@ -302,7 +323,7 @@ clause(Y) :-
     [InlineData("clause(X, X) :- fact(X), other_fact(X).")]
     public void SameClauseVariablesMustHaveReferenceEquality(string input)
     {
-        var result = Expect(input, p => p.FactOrClauseDefinitions);
+        var result = Expect(input, p => p.ClauseOrFactDefinitions);
         foreach (var clause in result)
         {
             var variables = clause.GetVariables();
@@ -320,8 +341,8 @@ clause(Y) :-
     [InlineData("fact(X).", "fact(X).")]
     public void OtherClauseVariablesMustNotHaveReferenceEquality(string input1, string input2)
     {
-        var result1 = Expect(input1, p => p.FactOrClauseDefinitions);
-        var result2 = Expect(input2, p => p.FactOrClauseDefinitions);
+        var result1 = Expect(input1, p => p.ClauseOrFactDefinitions);
+        var result2 = Expect(input2, p => p.ClauseOrFactDefinitions);
         foreach (var (clause1, clause2) in result1.Zip(result2))
         {
             var variables1 = clause1.GetVariables();

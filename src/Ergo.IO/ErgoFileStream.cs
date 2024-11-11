@@ -4,14 +4,14 @@ namespace Ergo.IO;
 
 public record ErgoFileStream(Stream Stream, string Name)
 {
+    private readonly BinaryReader _reader = new(Stream, Encoding.Unicode, true);
     public bool Eof => Stream.Position >= Stream.Length;
     public char ReadUTF8Char()
     {
         if (Stream.Position >= Stream.Length)
             throw new Exception("Error: Read beyond EOF");
-        using var reader = new BinaryReader(Stream, Encoding.Unicode, true);
         var numRead = Math.Min(4, (int)(Stream.Length - Stream.Position));
-        var bytes = reader.ReadBytes(numRead);
+        var bytes = _reader.ReadBytes(numRead);
         var chars = Encoding.UTF8.GetChars(bytes);
         if (chars.Length == 0)
             throw new Exception("Error: Invalid UTF8 char");

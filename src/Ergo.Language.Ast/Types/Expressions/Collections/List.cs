@@ -17,6 +17,16 @@ public class List : CollectionExpression
     {
         _tail = tail;
     }
+    
+    public static IEnumerable<Term> ExtractHead(BinaryExpression headTail)
+    {
+        if (headTail.Lhs is ConsExpression cons)
+            return cons.Contents;
+        if (headTail.Lhs is BinaryExpression { IsCons: true, Operator: var pOp } pseudoCons
+            && pOp.Equals(Operators.Conjunction))
+            return new ConsExpression(pseudoCons.Operator, pseudoCons.Lhs, pseudoCons.Rhs).Contents;
+        return [headTail.Lhs];
+    }
 
     static List Fold(Term a, Term b) => a is List l 
         ? new(l.Head.Prepend(b), l.Tail) 

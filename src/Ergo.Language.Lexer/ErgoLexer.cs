@@ -23,7 +23,7 @@ public class ErgoLexer : IDisposable
     }
     public void Seek(LexerState seekState)
     {
-        if (State.LP == seekState.LP && State.StreamPos == seekState.StreamPos)
+        if (State.StreamPos == seekState.StreamPos)
             return;
         if (State.StreamPos != seekState.StreamPos)
             File.Stream.Seek(seekState.StreamPos, SeekOrigin.Begin);

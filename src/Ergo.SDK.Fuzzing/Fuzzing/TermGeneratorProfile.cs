@@ -1,4 +1,4 @@
-﻿namespace Ergo.Tooling;
+﻿namespace Ergo.SDK.Fuzzing;
 
 public readonly record struct TermGeneratorProfile(
     string Name,
@@ -6,7 +6,12 @@ public readonly record struct TermGeneratorProfile(
     int MaxComplexFunctorLength,
     int MaxComplexArgLength,
     int MaxComplexArity,
+    int MaxComplexDepth,
     int MaxExpressionDepth,
+    int MinProgramDirectives,
+    int MaxProgramDirectives,
+    int MinProgramClauses,
+    int MaxProgramClauses,
     double NumberMagnitude,
     double NumberPrecision,
     bool IncludeQuotedStrings
@@ -27,7 +32,12 @@ public readonly record struct TermGeneratorProfile(
         MaxComplexArgLength = 3,
         MaxComplexFunctorLength = 5,
         MaxComplexArity = 2,
+        MaxComplexDepth = 2,
         MaxExpressionDepth = 2,
+        MinProgramDirectives = 1,
+        MaxProgramDirectives = 3,
+        MinProgramClauses = 1,
+        MaxProgramClauses = 3,
         NumberMagnitude = 1_000,
         NumberPrecision = 6,
         IncludeQuotedStrings = true
@@ -39,7 +49,12 @@ public readonly record struct TermGeneratorProfile(
         MaxComplexArgLength = 1,
         MaxComplexFunctorLength = 1,
         MaxComplexArity = 1,
+        MaxComplexDepth = 1,
         MaxExpressionDepth = 1,
+        MinProgramDirectives = 1,
+        MaxProgramDirectives = 1,
+        MinProgramClauses = 1,
+        MaxProgramClauses = 1,
         NumberMagnitude = 1,
         NumberPrecision = 0,
         IncludeQuotedStrings = false
@@ -51,31 +66,25 @@ public readonly record struct TermGeneratorProfile(
         MaxComplexArgLength = 3,
         MaxComplexFunctorLength = 2,
         MaxComplexArity = 3,
-        MaxExpressionDepth = 3,
+        MaxComplexDepth = 5,
+        MaxExpressionDepth = 5,
+        MinProgramDirectives = 10,
+        MaxProgramDirectives = 10,
+        MinProgramClauses = 10,
+        MaxProgramClauses = 10,
         NumberMagnitude = 10,
-        NumberPrecision = 0,
-        IncludeQuotedStrings = false
-    };
-    public static readonly TermGeneratorProfile MonsterObjects = Default with
-    {
-        Name = nameof(MonsterObjects),
-        MaxIdentifierLength = 1,
-        MaxComplexArgLength = 1,
-        MaxComplexFunctorLength = 1,
-        MaxComplexArity = 256,
-        MaxExpressionDepth = 256,
-        NumberMagnitude = 1,
         NumberPrecision = 0,
         IncludeQuotedStrings = false
     };
     public static readonly TermGeneratorProfile Debug = Default with
     {
         Name = nameof(Debug),
-        MaxIdentifierLength = 32,
+        MaxIdentifierLength = 1,
         MaxComplexArgLength = 1,
         MaxComplexFunctorLength = 1,
-        MaxComplexArity = 2,
-        MaxExpressionDepth = 256,
+        MaxComplexArity = 4,
+        MaxComplexDepth = 16,
+        MaxExpressionDepth = 8,
         IncludeQuotedStrings = false
     };
 }

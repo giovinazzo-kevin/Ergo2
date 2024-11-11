@@ -1,12 +1,11 @@
 ﻿
 using Ergo.Language.Ast.WellKnown;
-using System.Security.Claims;
 
 namespace Ergo.Language.Ast;
 
 public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinary, head, body), ITopLevelTerm
 {
-    public Term Head => head;
+    public Term Head => Lhs;
     public readonly IEnumerable<Term> Goals = 
         (body is BinaryExpression { IsCons: true } cons 
             && cons.Operator.Equals(Operators.Conjunction))

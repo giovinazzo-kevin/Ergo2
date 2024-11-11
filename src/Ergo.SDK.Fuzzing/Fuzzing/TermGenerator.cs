@@ -2,17 +2,11 @@
 using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Lexer;
 using Ergo.Language.Lexer.WellKnown;
-using Ergo.Language.Parser;
 using Ergo.Shared.Extensions;
 using Ergo.Shared.Types;
 using System.Text;
 
-namespace Ergo.Tooling;
-
-public class TermGeneratorContext
-{
-    public readonly ParserContext Parser = new();
-}
+namespace Ergo.SDK.Fuzzing;
 
 public class TermGenerator
 {
@@ -73,8 +67,11 @@ public class TermGenerator
         ));
     public Func<Complex> Complex => () =>
     {
+        using var _ = Transact(Profile with { MaxComplexDepth = Profile.MaxComplexDepth - 1 });
         var functor = Get(__string, Profile with { 
             MaxIdentifierLength = Profile.MaxComplexFunctorLength });
+        if (Profile.MaxComplexDepth <= 0)
+            return new Complex(functor, [Literals.False]);
         var args = Get(() => Many(1, Profile.MaxComplexArity, Term), Profile with { 
             MaxIdentifierLength = Profile.MaxComplexArgLength });
         return new Complex(functor, args);
@@ -99,10 +96,16 @@ public class TermGenerator
         using var _ = Transact(Profile with { MaxExpressionDepth = Profile.MaxExpressionDepth - 1 });
         if (Profile.MaxExpressionDepth <= 0)
             return new(Choose(_infixOps), Term(), Term());
-        return new(Choose(_infixOps), ExpressionOrTerm(), ExpressionOrTerm());
+        return Language.Ast.BinaryExpression.AddNecessaryParentheses(
+            new(Choose(_infixOps), ExpressionOrTerm(), ExpressionOrTerm()));
     };
     public Func<ConsExpression> ConsExpression => () =>
-        new(Operators.Conjunction, Choose<Term>([ConsExpression, ExpressionOrTerm]), ExpressionOrTerm());
+    {
+        var cons = new ConsExpression(Operators.Conjunction, Choose<Term>([ConsExpression, ExpressionOrTerm]), ExpressionOrTerm());
+        var exp = Language.Ast.BinaryExpression.AddNecessaryParentheses(cons);
+        cons = new ConsExpression(exp.Operator, exp.Lhs, exp.Rhs);
+        return cons;
+    };
     public Func<Expression> Expression => () =>
         Choose<Expression>([
             UnaryExpression,
@@ -113,6 +116,36 @@ public class TermGenerator
             Expression,
             Term
         ]);
+    public Func<Fact> Fact => () =>
+    {
+        var expr = UnaryExpression();
+        return new Fact(expr.Arg);
+    };
+    public Func<Clause> Clause => () =>
+    {
+        var expr = BinaryExpression();
+        return new Clause(expr.Lhs, expr.Rhs);
+    };
+    public Func<Clause> FactOrClause => () =>
+        Choose<Clause>([Clause, Fact]);
+    public Func<Directive> Directive => () =>
+    {
+        var expr = PrefixExpression();
+        return new Directive(expr.Arg);
+    };
+    public Func<Program> Program => () =>
+    {
+        var module = new Directive(new Complex("module", __string(), Literals.EmptyList));
+        var numDirectives = _rng.Next(Profile.MinProgramDirectives, Profile.MaxProgramDirectives + 1);
+        var numClauses = _rng.Next(Profile.MinProgramClauses, Profile.MaxProgramClauses + 1);
+        var directives = new Directive[numDirectives];
+        var clauses = new Clause[numClauses];
+        for (int i = 0; i < numDirectives; i++)
+            directives[i] = Directive();
+        for (int i = 0; i < numClauses; i++)
+            clauses[i] = Clause();
+        return new Program(directives.Prepend(module), clauses);
+    };
     #region Helpers
     public string String(
         bool shouldStartWithUppercase = false,

@@ -5,11 +5,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PublishAot>True</PublishAot>
+    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
+
   <ItemGroup>
-    <ProjectReference Include="..\Ergo.Tooling\Ergo.Tooling.csproj" />
-    <ProjectReference Include="..\Ergo2\Ergo2.csproj" />
+    <ProjectReference Include="..\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
   </ItemGroup>
 
 </Project>

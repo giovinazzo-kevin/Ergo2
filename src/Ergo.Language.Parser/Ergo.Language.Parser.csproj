@@ -7,6 +7,14 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DefineConstants>$(DefineConstants);_PARSER_TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>$(DefineConstants);PARSER_TRACE</DefineConstants>
+	</PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Ergo.Language.Lexer\Ergo.Language.Lexer.csproj" />
   </ItemGroup>

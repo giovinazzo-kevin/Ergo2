@@ -1,5 +1,6 @@
 ﻿namespace Ergo.Language.Ast;
 
+using Ergo.Language.Ast.Extensions;
 using Ergo.Language.Ast.WellKnown;
 using Ergo.Shared.Extensions;
 using static Operator.Associativity;
@@ -45,18 +46,7 @@ public class BinaryExpression(Operator op, Term lhs, Term rhs) : Expression(op, 
 
         BinaryExpression LhsCase(Operator op, BinaryExpression lhs, Term rhs)
         {
-            var cmp = op.Precedence.CompareTo(lhs.Operator.Precedence);
-            var ret = cmp switch
-            {
-                > 0 => B(op, lhs, rhs),
-                < 0 => B(op, lhs, rhs),
-                0 => (op.Associativity_, lhs.Operator.Associativity_) switch
-                {
-                    (Left, Left) or (Left, None) => B(op, Associate(B(lhs.Operator, lhs.Lhs, lhs.Rhs)), rhs),
-                    _ => B(op, lhs, rhs)
-                }
-            };
-            return ret;
+            return exp;
         }
 
         BinaryExpression RhsCase(Operator op, Term lhs, BinaryExpression rhs)
@@ -64,23 +54,39 @@ public class BinaryExpression(Operator op, Term lhs, Term rhs) : Expression(op, 
             var cmp = op.Precedence.CompareTo(rhs.Operator.Precedence);
             var ret = cmp switch
             {
-                > 0 => B(op, lhs, Associate(rhs)),
-                < 0 => B(rhs.Operator, Associate(B(op, lhs, rhs.Lhs)), rhs.Rhs),
-                0 => (op.Associativity_, rhs.Operator.Associativity_) switch
-                {
-                    (Left, Left) or (Left, None) => B(op, Associate(B(rhs.Operator, lhs, rhs.Lhs)), rhs.Rhs),
-                    _ => B(op, lhs, rhs)
+                > 0 => exp,
+                < 0 => AssociateRhsLeft(),
+                0 => (op.Associativity_, rhs.Operator.Associativity_) switch {
+                    (Left, Left) or (Left, None) => AssociateRhsLeft(),
+                    _ => exp
                 }
             };
             return ret;
+
+            BinaryExpression AssociateRhsLeft() => new(rhs.Operator, Associate(new(op, lhs, rhs.Lhs)), rhs.Rhs);
         }
 
-        static BinaryExpression MixedCase(Operator op, BinaryExpression lhs, BinaryExpression rhs)
+        BinaryExpression MixedCase(Operator op, BinaryExpression lhs, BinaryExpression rhs)
         {
-            return B(op, lhs, rhs);
+            return exp;
         }
+    }
 
-        static BinaryExpression B(Operator op, Term lhs, Term rhs) => new(op, lhs, rhs);
+    public static BinaryExpression AddNecessaryParentheses(BinaryExpression exp)
+    {
+        if (exp.Lhs is BinaryExpression lexp)
+        {
+            AddNecessaryParentheses(lexp);
+            if (lexp.Operator.Precedence > exp.Operator.Precedence)
+                exp = new(exp.Operator, lexp.Parenthesized(), exp.Rhs);
+        }
+        if (exp.Rhs is BinaryExpression rexp)
+        {
+            AddNecessaryParentheses(rexp);
+            if (rexp.Operator.Precedence > exp.Operator.Precedence)
+                exp = new(exp.Operator, exp.Lhs, rexp.Parenthesized());
+        }
+        return exp;
     }
 
     public override string Expl => (Operator.CanonicalFunctor.Value switch

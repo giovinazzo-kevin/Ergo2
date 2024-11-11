@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 namespace Ergo.Language.Ast.Extensions;
 public static class TermExtensions
 {
+    public static Term Parenthesized(this Term term, bool isParenthesized = true)
+    {
+        term.IsParenthesized = isParenthesized;
+        return term;
+    }
     public static IEnumerable<Variable> GetVariables(this Term term)
     {
         if (term is Atom)
