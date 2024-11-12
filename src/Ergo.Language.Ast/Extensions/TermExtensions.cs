@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Ergo.Language.Ast.Extensions;
+﻿namespace Ergo.Language.Ast.Extensions;
 public static class TermExtensions
 {
     public static Term Parenthesized(this Term term, bool isParenthesized = true)

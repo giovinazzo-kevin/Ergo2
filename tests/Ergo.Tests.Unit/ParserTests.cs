@@ -4,7 +4,6 @@ using Ergo.Language.Ast.Extensions;
 using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Lexer;
 using Ergo.Language.Parser;
-using Ergo.Language.Parser.Extensions;
 using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Extensions;
 using Ergo.Shared.Interfaces;

@@ -1,8 +1,6 @@
 ﻿using Ergo.Language.Ast;
 using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Lexer;
-using Ergo.Language.Lexer.WellKnown;
-using Ergo.Shared.Extensions;
 using Ergo.Shared.Types;
 using System.Text;
 

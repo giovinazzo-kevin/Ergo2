@@ -1,7 +1,4 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexer;
-using Ergo.Shared.Types;
+﻿using Ergo.Shared.Types;
 
 namespace Ergo.Language.Parser.Extensions;
 

@@ -1,5 +1,4 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Ast;
 using Ergo.Language.Lexer;
 using Ergo.Language.Parser;
 using Ergo.Shared.Interfaces;

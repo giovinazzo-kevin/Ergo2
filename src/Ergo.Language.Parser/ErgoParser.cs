@@ -1,13 +1,12 @@
 ﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Ast.Extensions;
+using Ergo.Language.Ast.WellKnown;
 using Ergo.Language.Lexer;
 using Ergo.Language.Lexer.WellKnown;
 using Ergo.Language.Parser.Extensions;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Ergo.Language.Parser;
@@ -160,48 +159,6 @@ public class ErgoParser : IDisposable
              ClauseOrFactDefinitions()
             .Select(clauses => new Program(dirs, clauses)))
     ]);
-    /*
-     
-    public Func<Maybe<Clause>> Clause => () =>
-         IsFailureMemoized() ? default :
-         Transact(out var tx)
-        .BinaryExpression()
-        .Where(x => x.Operator.Equals(Operators.HornBinary))
-        .Select(x => new Clause(x.Lhs, x.Rhs))
-        .Do(tx.Commit, tx.Rollback)
-        .Do(x => Trace(x), () => MemoizeFailure());
-    public Func<Maybe<Fact>> Fact => () =>
-         IsFailureMemoized() ? default :
-         Transact(out var tx)
-        .Term()
-        .Select(x => new Fact(x))
-        .Do(tx.Commit, tx.Rollback)
-        .Do(x => Trace(x), () => MemoizeFailure());
-    public Func<Maybe<Clause>> ClauseOrFact => () =>
-         IsFailureMemoized() ? default :
-         Maybe.Or(
-             Clause,
-             Fact.Cast<Fact, Clause>)
-        .Do(x => Trace(x), () => MemoizeFailure());
-
-    public Func<Maybe<Directive[]>> DirectiveDefinitions => () =>
-        ParseUntilFail(Definition(Directive));
-    public Func<Maybe<Clause[]>> FactOrClauseDefinitions => () =>
-        ParseUntilFail(Definition(ClauseOrFact));
-    public Func<Maybe<Program>> Program => () =>
-         IsFailureMemoized() ? default :
-         Transact(out var tx)
-        .DirectiveDefinitions()
-        .Where(x => x.Length > 0)
-        .Where(x => x[0].Functor is __string { Value: "module" })
-        .Map(dirs => 
-             FactOrClauseDefinitions()
-            .Select(clauses => new Program(dirs, clauses)))
-        .Do(tx.Commit, tx.Rollback)
-        .Do(x => Trace(x), () => MemoizeFailure());
-     
-     
-     */
 #endregion
 #region Helpers
     [Conditional("PARSER_TRACE")]
