@@ -18,5 +18,13 @@ public abstract class Atom : Term
     public static implicit operator Atom(string s) => new __string(s);
     public static implicit operator Atom(bool b) => new __bool(b);
     public static implicit operator Atom(double d) => new __double(d);
+    public static bool operator ==(Atom a, __string b) => a.Value == b.Value;
+    public static bool operator !=(Atom a, __string b) => a.Value != b.Value;
+    public static bool operator ==(Atom a, string b) => (string)a.Value == b;
+    public static bool operator !=(Atom a, string b) => (string)a.Value != b;
+    public static bool operator ==(Atom a, __int b) => a.Value == b.Value;
+    public static bool operator !=(Atom a, __int b) => a.Value != b.Value;
+    public static bool operator ==(Atom a, int b) => (int)a.Value == b;
+    public static bool operator !=(Atom a, int b) => (int)a.Value != b;
     public static bool IsAtomIdentifier(string s) => !Variable.IsVariableIdentifier(s);
 }

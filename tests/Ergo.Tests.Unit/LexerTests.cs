@@ -1,13 +1,14 @@
 using Ergo.IO;
-using Ergo.Language.Lexer;
+using Ergo.Language.Lexing;
 
 namespace Ergo.UnitTests;
+
 public class LexerTests
 {
     protected Token Expect(Token.Type type, string input)
     {
         var stream = ErgoFileStream.Create(input);
-        var lexer = new ErgoLexer(stream, new());
+        var lexer = new Lexer(stream, new());
         var result = lexer.ReadNext();
         var token = result.GetOrThrow();
         Assert.Equal(type, token.Type_);
@@ -33,15 +34,26 @@ public class LexerTests
         Assert.Equal(expected, token.Value);
     }
     [Theory]
-    [InlineData("0")]
-    [InlineData("-1")]
+    [InlineData(".0")]
+    [InlineData("-1.0")]
     [InlineData("3.168374235")]
     [InlineData("560342354.3534694")]
-    public void Number(string input)
+    public void Decimal(string input)
     {
-        var token = Expect(Token.Type.Number, input);
+        var token = Expect(Token.Type.Decimal, input);
         var expected = double.Parse(input);
         Assert.InRange(expected - (double)token.Value, -0.001, 0.001);
+    }
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("3")]
+    [InlineData("560342354")]
+    public void Integer(string input)
+    {
+        var token = Expect(Token.Type.Integer, input);
+        var expected = int.Parse(input);
+        Assert.Equal(expected, (int)token.Value);
     }
     [Theory]
     [InlineData("% this is a single line comment")]
@@ -95,9 +107,9 @@ public class LexerTests
 
     [Theory]
     [InlineData(":- 'a' , B , 3 .", 
-        Token.Type.Operator, Token.Type.String, Token.Type.Operator, Token.Type.Term, Token.Type.Operator, Token.Type.Number, Token.Type.Punctuation)]
+        Token.Type.Operator, Token.Type.String, Token.Type.Operator, Token.Type.Term, Token.Type.Operator, Token.Type.Integer, Token.Type.Punctuation)]
     [InlineData(":- 3.5 , a .",
-        Token.Type.Operator, Token.Type.Number, Token.Type.Operator, Token.Type.Term, Token.Type.Punctuation)]
+        Token.Type.Operator, Token.Type.Decimal, Token.Type.Operator, Token.Type.Term, Token.Type.Punctuation)]
     public void Chain(string input, params Token.Type[] types)
     {
         var inputs = input.Split(' ');

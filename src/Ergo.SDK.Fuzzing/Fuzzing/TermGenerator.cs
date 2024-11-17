@@ -1,6 +1,6 @@
 ﻿using Ergo.Language.Ast;
 using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexer;
+using Ergo.Language.Lexing;
 using Ergo.Shared.Types;
 using System.Text;
 
@@ -128,10 +128,9 @@ public class TermGenerator
         Choose<Clause>([Clause, Fact]);
     public Func<Directive> Directive => () =>
     {
-        var expr = PrefixExpression();
-        return new Directive(expr.Arg);
+        return new Directive(Complex());
     };
-    public Func<Program> Program => () =>
+    public Func<Module> Module => () =>
     {
         var module = new Directive(new Complex("module", __string(), Literals.EmptyList));
         var numDirectives = _rng.Next(Profile.MinProgramDirectives, Profile.MaxProgramDirectives + 1);
@@ -142,7 +141,7 @@ public class TermGenerator
             directives[i] = Directive();
         for (int i = 0; i < numClauses; i++)
             clauses[i] = Clause();
-        return new Program(directives.Prepend(module), clauses);
+        return new Module(directives.Prepend(module), clauses);
     };
     #region Helpers
     public string String(

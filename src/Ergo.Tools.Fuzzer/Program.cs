@@ -1,5 +1,5 @@
 ﻿using Ergo.Language.Ast;
-using Ergo.Language.Lexer;
+using Ergo.Language.Lexing;
 using Ergo.SDK.Fuzzing;
 var opLookup = new OperatorLookup([
     new (60, Operator.Type.xf, (__string)"$"),
@@ -14,8 +14,8 @@ var opLookup = new OperatorLookup([
 var fuzzer = new ErgoFuzzer(TermGeneratorProfile.StressTest, opLookup);
 fuzzer.BatchCompleted += Fuzzer_BatchCompleted;
 var query = fuzzer.FindInvalidInputs(
-    g => g.Program, 
-    p => p.Program,
+    g => g.Module, 
+    p => p.Module,
     maxEpochs: 0,
     workersPerEpoch: 16);
 await foreach (var input in query)

@@ -181,4 +181,6 @@ public readonly struct Maybe<T>
             return 1658;
         return Value!.GetHashCode();
     }
+
+    public override string ToString() => HasValue ? $"Some {{{Value}}}" : "None";
 }

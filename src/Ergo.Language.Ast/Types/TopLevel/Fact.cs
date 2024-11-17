@@ -2,7 +2,7 @@
 using Ergo.Language.Ast.WellKnown;
 
 namespace Ergo.Language.Ast;
-public class Fact(Term Head) : Clause(Head, Literals.True), ITopLevelTerm
+public class Fact(Term Head) : Clause(Head, Literals.True)
 {
-    public override string Expl => $"{Head}";
+    public override string Expl => $"{Functor}";
 }

@@ -2,8 +2,8 @@
 using Ergo.Language.Ast;
 using Ergo.Language.Ast.Extensions;
 using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexer;
-using Ergo.Language.Parser;
+using Ergo.Language.Lexing;
+using Ergo.Language.Parsing;
 using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Extensions;
 using Ergo.Shared.Interfaces;
@@ -53,10 +53,6 @@ public class ParserTests
 {
     public static readonly Operator[] TestOperators = [
         new (60, Operator.Type.xf, (__string)"$"),
-        new (500, Operator.Type.yfx, (__string)"+"),
-        new (500, Operator.Type.yfx, (__string)"-"),
-        new (400, Operator.Type.yfx, (__string)"*"),
-        new (400, Operator.Type.yfx, (__string)"/"),
         new(900, Operator.Type.fx, "@-"),
         new(900, Operator.Type.xf, "-@"),
         new(800, Operator.Type.fy, "#-"),
@@ -68,13 +64,13 @@ public class ParserTests
         new(800, Operator.Type.yf, "-#"),
     ];
 
-    protected T Expect<T>(string input, Func<ErgoParser, Func<Maybe<T>>> parserFunc, bool parenthesized = false)
+    protected T Expect<T>(string input, Func<Parser, Func<Maybe<T>>> parserFunc, bool parenthesized = false)
     {
         var stream = ErgoFileStream.Create(input);
         var opLookup = new OperatorLookup();
         opLookup.AddOperators(TestOperators);
-        var lexer = new ErgoLexer(stream, opLookup);
-        var parser = new ErgoParser(lexer);
+        var lexer = new Lexer(stream, opLookup);
+        var parser = new Parser(lexer);
         var result = parenthesized 
             ? parser.Parenthesized("(", ")", parserFunc(parser)) 
             : parserFunc(parser)();
@@ -108,7 +104,8 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("0")]
+    [InlineData(".0")]
+    [InlineData("0.1")]
     [InlineData("-4592.123")]
     [InlineData("235.73459")]
     [InlineData("+2149593.01293")]
@@ -116,6 +113,17 @@ public class ParserTests
     {
         var result = Expect(input, p => p.__double);
         Assert.InRange(double.Parse(input) - (double)result.Value, -0.001, 0.001);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-4592")]
+    [InlineData("235")]
+    [InlineData("+2149593")]
+    public void __int(string input)
+    {
+        var result = Expect(input, p => p.__int);
+        Assert.Equal(int.Parse(input), (int)result.Value);
     }
 
     [Theory]
@@ -298,10 +306,10 @@ clause(Y) :-
     fact,
     other_fact(6).
 ")]
-    [ClassData(typeof(ParserTestGenerator<Program>))]
-    public void Program(string input)
+    [ClassData(typeof(ParserTestGenerator<Language.Ast.Module>))]
+    public void Module(string input)
     {
-        var result = Expect(input, p => p.Program);
+        var result = Expect(input, p => p.Module);
         Assert.Equal(input.Replace("\r", ""), result.Expl);
     }
     [Theory]
@@ -359,7 +367,8 @@ clause(Y) :-
                 Assert.All(lookup1[name], x => Assert.False(ReferenceEquals(exemplar2, x)));
                 Assert.All(lookup2[name], x => Assert.True(ReferenceEquals(exemplar2, x)));
                 Assert.All(lookup2[name], x => Assert.False(ReferenceEquals(exemplar1, x)));
-                (exemplar1.Value, exemplar2.Value) = (1, 2);
+                exemplar1.Value = 1;
+                exemplar2.Value = 2;
                 Assert.All(lookup1[name], x => Assert.Equal(1, x.Value));
                 Assert.All(lookup2[name], x => Assert.Equal(2, x.Value));
             }

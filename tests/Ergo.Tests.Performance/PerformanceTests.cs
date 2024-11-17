@@ -1,8 +1,8 @@
 ﻿using Ergo.IO;
 using Ergo.Language.Ast;
 using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Lexer;
-using Ergo.Language.Parser;
+using Ergo.Language.Lexing;
+using Ergo.Language.Parsing;
 using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
@@ -85,11 +85,11 @@ public class PerformanceTests
     [InlineData(6.00, 10000, nameof(TermGeneratorProfile.Default))]
     [InlineData(40.0, 10000, nameof(TermGeneratorProfile.StressTest))]
     [InlineData(1000, 100, nameof(TermGeneratorProfile.Debug))]
-    public void Program(double TARGET_MS, int NUM_SAMPLES, string PROFILE) =>
-        TestCase(g => g.Program, p => p.Program, TARGET_MS, NUM_SAMPLES, PROFILE);
+    public void Module(double TARGET_MS, int NUM_SAMPLES, string PROFILE) =>
+        TestCase(g => g.Module, p => p.Module, TARGET_MS, NUM_SAMPLES, PROFILE);
     protected void TestCase<T>(
         Func<TermGenerator, Func<IExplainable>> generate,
-        Func<ErgoParser, Func<Maybe<T>>> parse,
+        Func<Parser, Func<Maybe<T>>> parse,
         double TARGET_MS, int NUM_SAMPLES, string PROFILE,
         Func<string, string>? transform = null,
         [CallerMemberName] string methodName = null!)
@@ -99,7 +99,7 @@ public class PerformanceTests
         var measure = Parse(file, parse, TARGET_MS, NUM_SAMPLES, ops);
     }
 
-    public Measure Parse<T>(ErgoFileStream file, Func<ErgoParser, Func<Maybe<T>>> p, double targetMsPerElement, int targetSamples, OperatorLookup ops)
+    public Measure Parse<T>(ErgoFileStream file, Func<Parser, Func<Maybe<T>>> p, double targetMsPerElement, int targetSamples, OperatorLookup ops)
     {
         var parser = BuildParser(ops, file);
         var measure = MeasureParser(parser, p(parser));
@@ -109,7 +109,7 @@ public class PerformanceTests
 #endif
         return measure;
     }
-    static Measure MeasureParser<T>(ErgoParser parser, Func<Maybe<T>> p)
+    static Measure MeasureParser<T>(Parser parser, Func<Maybe<T>> p)
     {
         var sw = new Stopwatch();
         int count = 0;
@@ -119,10 +119,10 @@ public class PerformanceTests
         sw.Stop();
         return new(count, sw.Elapsed);
     }
-    static ErgoParser BuildParser(OperatorLookup ops, ErgoFileStream file)
+    static Parser BuildParser(OperatorLookup ops, ErgoFileStream file)
     {
-        var lexer = new ErgoLexer(file, ops);
-        return new ErgoParser(lexer);
+        var lexer = new Lexer(file, ops);
+        return new Parser(lexer);
     }
     static void DeleteCachedTestCases()
     {

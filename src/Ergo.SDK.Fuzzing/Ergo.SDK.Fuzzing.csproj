@@ -8,11 +8,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ergo.IO\Ergo.IO.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Ast\Ergo.Language.Ast.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Lexer\Ergo.Language.Lexer.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Parser\Ergo.Language.Parser.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Ast\Ergo.Language.AST.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Lexing\Ergo.Language.Lexing.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Parsing\Ergo.Language.Parsing.csproj" />
     <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
-    <ProjectReference Include="..\Ergo.Tooling\Ergo.SDK.csproj" />
   </ItemGroup>
 
 </Project>

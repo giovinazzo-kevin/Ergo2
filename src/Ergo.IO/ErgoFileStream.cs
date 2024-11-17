@@ -4,7 +4,7 @@ namespace Ergo.IO;
 
 public record ErgoFileStream(Stream Stream, string Name)
 {
-    private readonly BinaryReader _reader = new(Stream, Encoding.Unicode, true);
+    private readonly BinaryReader _reader = new(Stream, Encoding.UTF8, true);
     public bool Eof => Stream.Position >= Stream.Length;
     public char ReadUTF8Char()
     {

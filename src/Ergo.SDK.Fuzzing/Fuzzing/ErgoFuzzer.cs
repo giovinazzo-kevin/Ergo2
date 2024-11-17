@@ -1,6 +1,6 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Lexer;
-using Ergo.Language.Parser;
+using Ergo.Language.Lexing;
+using Ergo.Language.Parsing;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Runtime.CompilerServices;
@@ -16,7 +16,7 @@ public class ErgoFuzzer(TermGeneratorProfile profile, OperatorLookup ops)
 
     public async IAsyncEnumerable<string> FindInvalidInputs<T>(
         Func<TermGenerator, Func<T>> g, 
-        Func<ErgoParser, Func<Maybe<T>>> p,
+        Func<Parser, Func<Maybe<T>>> p,
         int maxEpochs = 0,
         int workersPerEpoch = 4,
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -45,8 +45,8 @@ public class ErgoFuzzer(TermGeneratorProfile profile, OperatorLookup ops)
             var term = g(_gen)();
             var expl = term.Expl;
             var file = ErgoFileStream.Create(expl);
-            using var lexer = new ErgoLexer(file, ops);
-            using var parser = new ErgoParser(lexer);
+            using var lexer = new Lexer(file, ops);
+            using var parser = new Parser(lexer);
             var result = p(parser)();
             if (!result.HasValue)
                 return expl;

@@ -1,0 +1,11 @@
+:- module(_, []).
+
+:- op(1050, xfy, '->').
+:- op(900, fy, '\\+').
+
+If -> Then; _Else :- If, !, Then.
+_If -> _Then; Else :- !, Else.
+If -> Then :- If, !, Then.
+
+_A ; _B :- _A.
+_A ; _B :- _B.
