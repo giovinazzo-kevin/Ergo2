@@ -1,6 +1,6 @@
-﻿using Ergo.Language.Ast;
+﻿using Ergo.Lang.Ast;
 
-namespace Ergo.Language.Parsing;
+namespace Ergo.Lang.Parsing;
 
 public readonly record struct Block(Dictionary<string, Variable> Variables)
 {

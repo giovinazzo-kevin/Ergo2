@@ -1,6 +1,6 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexing;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.WellKnown;
+using Ergo.Lang.Lexing;
 using Ergo.Shared.Types;
 using System.Text;
 
@@ -94,13 +94,13 @@ public class TermGenerator
         using var _ = Transact(Profile with { MaxExpressionDepth = Profile.MaxExpressionDepth - 1 });
         if (Profile.MaxExpressionDepth <= 0)
             return new(Choose(_infixOps), Term(), Term());
-        return Language.Ast.BinaryExpression.AddNecessaryParentheses(
+        return Lang.Ast.BinaryExpression.AddNecessaryParentheses(
             new(Choose(_infixOps), ExpressionOrTerm(), ExpressionOrTerm()));
     };
     public Func<ConsExpression> ConsExpression => () =>
     {
         var cons = new ConsExpression(Operators.Conjunction, Choose<Term>([ConsExpression, ExpressionOrTerm]), ExpressionOrTerm());
-        var exp = Language.Ast.BinaryExpression.AddNecessaryParentheses(cons);
+        var exp = Lang.Ast.BinaryExpression.AddNecessaryParentheses(cons);
         cons = new ConsExpression(exp.Operator, exp.Lhs, exp.Rhs);
         return cons;
     };

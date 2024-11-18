@@ -9,9 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ergo.IO\Ergo.IO.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Ast\Ergo.Language.AST.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Lexing\Ergo.Language.Lexing.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Parsing\Ergo.Language.Parsing.csproj" />
+    <ProjectReference Include="..\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Lexing\Ergo.Lang.Lexing.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Parsing\Ergo.Lang.Parsing.csproj" />
     <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ergo.Language.Lexing;
+namespace Ergo.Lang.Lexing;
 
 internal static partial class LexerUtils
 {

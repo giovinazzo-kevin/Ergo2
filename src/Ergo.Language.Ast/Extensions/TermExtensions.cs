@@ -1,8 +1,8 @@
-﻿using Ergo.Language.Ast.WellKnown;
+﻿using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Types;
 using System.Reflection.Metadata.Ecma335;
 
-namespace Ergo.Language.Ast.Extensions;
+namespace Ergo.Lang.Ast.Extensions;
 public static class TermExtensions
 {
     public static Term Deref(this Term term)

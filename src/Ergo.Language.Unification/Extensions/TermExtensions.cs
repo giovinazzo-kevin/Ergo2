@@ -1,6 +1,6 @@
-﻿using Ergo.Language.Ast;
+﻿using Ergo.Lang.Ast;
 
-namespace Ergo.Language.Unification.Extensions;
+namespace Ergo.Lang.Unification.Extensions;
 
 public static class TermExtensions
 {

@@ -1,8 +1,8 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Ast;
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Lexing;
-using Ergo.Language.Parsing;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Lexing;
+using Ergo.Lang.Parsing;
 using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;

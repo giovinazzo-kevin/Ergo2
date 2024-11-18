@@ -1,8 +1,8 @@
 ﻿
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinary, head, body)
 {

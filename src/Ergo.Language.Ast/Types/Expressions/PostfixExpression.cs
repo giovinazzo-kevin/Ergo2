@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Extensions;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public class PostfixExpression(Operator op, Term arg) : UnaryExpression(op, arg)
 {

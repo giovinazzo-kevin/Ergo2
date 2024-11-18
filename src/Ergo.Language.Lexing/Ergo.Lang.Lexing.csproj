@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ergo.IO\Ergo.IO.csproj" />
-    <ProjectReference Include="..\Ergo.Language.Ast\Ergo.Language.AST.csproj" />
+    <ProjectReference Include="..\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
   </ItemGroup>
 
 </Project>

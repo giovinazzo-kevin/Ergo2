@@ -16,7 +16,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ergo.Language.Lexing\Ergo.Language.Lexing.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Lexing\Ergo.Lang.Lexing.csproj" />
   </ItemGroup>
 
 </Project>

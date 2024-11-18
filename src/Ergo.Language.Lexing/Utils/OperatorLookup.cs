@@ -1,9 +1,9 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.WellKnown;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Types;
 using System.Reflection;
 
-namespace Ergo.Language.Lexing;
+namespace Ergo.Lang.Lexing;
 
 public class OperatorLookup
 {

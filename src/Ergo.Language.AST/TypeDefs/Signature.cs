@@ -1,7 +1,7 @@
 ﻿using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public readonly record struct Signature(Maybe<__string> Module, Atom Functor, int Arity) : IExplainable
 {

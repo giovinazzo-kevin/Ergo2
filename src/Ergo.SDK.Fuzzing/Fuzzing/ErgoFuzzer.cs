@@ -1,6 +1,6 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Lexing;
-using Ergo.Language.Parsing;
+using Ergo.Lang.Lexing;
+using Ergo.Lang.Parsing;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Runtime.CompilerServices;

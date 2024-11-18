@@ -1,7 +1,7 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
 using static Operator.Associativity;
 using static Operator.Fixity;

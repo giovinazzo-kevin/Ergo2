@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Types;
 
-namespace Ergo.Language.Parsing.Extensions;
+namespace Ergo.Lang.Parsing.Extensions;
 
 public static class ParserExtensions
 {

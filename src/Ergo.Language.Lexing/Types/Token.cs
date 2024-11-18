@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Lexing;
+﻿namespace Ergo.Lang.Lexing;
 
 public readonly record struct Token(Token.Type Type_, object Value)
 {

@@ -1,7 +1,7 @@
 ﻿using Ergo.Shared.Interfaces;
 using System.Diagnostics;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 [DebuggerDisplay("{Expl}")]
 public abstract class Term : IExplainable

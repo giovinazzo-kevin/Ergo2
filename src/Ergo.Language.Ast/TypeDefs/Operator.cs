@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
 public readonly record struct Operator(int Precedence, Operator.Type Type_, params Atom[] Functors)
 {

@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
 public abstract class Expression(Operator op, params Term[] args) : Complex(op.CanonicalFunctor, args)
 {

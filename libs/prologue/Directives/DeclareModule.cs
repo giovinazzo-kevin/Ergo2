@@ -1,8 +1,8 @@
 ﻿using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
-using Ergo.Language.Ast;
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
 using System.ComponentModel;
 namespace Ergo.Libs.Prologue.Directives;
 

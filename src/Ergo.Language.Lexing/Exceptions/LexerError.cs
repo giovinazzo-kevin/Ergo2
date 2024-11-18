@@ -1,5 +1,5 @@
 ﻿
-namespace Ergo.Language.Lexing;
+namespace Ergo.Lang.Lexing;
 
 public enum LexerError
 {

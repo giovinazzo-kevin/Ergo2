@@ -1,10 +1,10 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Ast;
-using Ergo.Language.Lexing.WellKnown;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Lexing.WellKnown;
 using Ergo.Shared.Types;
 using System.Text;
 
-namespace Ergo.Language.Lexing;
+namespace Ergo.Lang.Lexing;
 
 public class Lexer : IDisposable
 {

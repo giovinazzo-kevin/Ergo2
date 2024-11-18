@@ -1,5 +1,5 @@
 using Ergo.IO;
-using Ergo.Language.Lexing;
+using Ergo.Lang.Lexing;
 
 namespace Ergo.UnitTests;
 

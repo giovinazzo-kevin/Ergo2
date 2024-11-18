@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Extensions;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 using static Operator.Type;
 
 public class PrefixExpression(Operator op, Term arg) : UnaryExpression(op, arg)

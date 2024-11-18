@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Lexing.WellKnown;
+﻿namespace Ergo.Lang.Lexing.WellKnown;
 
 public static class Symbols
 {

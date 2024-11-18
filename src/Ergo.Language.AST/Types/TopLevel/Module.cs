@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Interfaces;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public class Module(IEnumerable<Directive> directives, IEnumerable<Clause> clauses) : IExplainable
 {

@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Extensions;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public sealed class __double(double val) : Atom(typeof(__double), val)
 {

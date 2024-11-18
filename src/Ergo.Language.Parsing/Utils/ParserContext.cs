@@ -1,10 +1,10 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexing;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.WellKnown;
+using Ergo.Lang.Lexing;
 using Ergo.Shared.Types;
 using System.Runtime.CompilerServices;
 
-namespace Ergo.Language.Parsing;
+namespace Ergo.Lang.Parsing;
 
 
 public class ParserContext

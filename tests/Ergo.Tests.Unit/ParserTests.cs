@@ -1,9 +1,9 @@
 ﻿using Ergo.IO;
-using Ergo.Language.Ast;
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexing;
-using Ergo.Language.Parsing;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
+using Ergo.Lang.Lexing;
+using Ergo.Lang.Parsing;
 using Ergo.SDK.Fuzzing;
 using Ergo.Shared.Extensions;
 using Ergo.Shared.Interfaces;
@@ -306,7 +306,7 @@ clause(Y) :-
     fact,
     other_fact(6).
 ")]
-    [ClassData(typeof(ParserTestGenerator<Language.Ast.Module>))]
+    [ClassData(typeof(ParserTestGenerator<Lang.Ast.Module>))]
     public void Module(string input)
     {
         var result = Expect(input, p => p.Module);

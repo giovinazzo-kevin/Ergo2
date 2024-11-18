@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ergo.Language.AST\Ergo.Language.AST.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
   </ItemGroup>
 

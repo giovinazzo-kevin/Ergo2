@@ -1,3 +1,3 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
 public interface IAbstractTerm;

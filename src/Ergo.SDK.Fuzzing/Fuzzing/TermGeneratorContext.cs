@@ -1,4 +1,4 @@
-﻿using Ergo.Language.Parsing;
+﻿using Ergo.Lang.Parsing;
 
 namespace Ergo.SDK.Fuzzing;
 

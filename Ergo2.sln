@@ -7,13 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Pipelines", "src\Ergo.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Shared", "src\Ergo.Shared\Ergo.Shared.csproj", "{1CE7A182-3501-4B8F-8396-B25157E79CBE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Language.Unification", "src\Ergo.Language.Unification\Ergo.Language.Unification.csproj", "{0E053DE8-28BB-4F53-B2FC-48D0F289165B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Lang.Unification", "src\Ergo.Language.Unification\Ergo.Lang.Unification.csproj", "{0E053DE8-28BB-4F53-B2FC-48D0F289165B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Language.AST", "src\Ergo.Language.AST\Ergo.Language.AST.csproj", "{2A930744-E0C3-4AC8-9090-45EB4A72B986}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Lang.AST", "src\Ergo.Language.AST\Ergo.Lang.AST.csproj", "{2A930744-E0C3-4AC8-9090-45EB4A72B986}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Language.Parsing", "src\Ergo.Language.Parsing\Ergo.Language.Parsing.csproj", "{B8ADE4FD-7F1E-4B44-99B5-B09259C11B8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Lang.Parsing", "src\Ergo.Language.Parsing\Ergo.Lang.Parsing.csproj", "{B8ADE4FD-7F1E-4B44-99B5-B09259C11B8D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Language.Lexing", "src\Ergo.Language.Lexing\Ergo.Language.Lexing.csproj", "{83F8CFC0-26A1-42FF-A234-2D5769F6011D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Lang.Lexing", "src\Ergo.Language.Lexing\Ergo.Lang.Lexing.csproj", "{83F8CFC0-26A1-42FF-A234-2D5769F6011D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.IO", "src\Ergo.IO\Ergo.IO.csproj", "{2B990E89-A184-4734-9681-060223863FDB}"
 EndProject
@@ -52,7 +52,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Libs", "src\Ergo.Libs\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Libs.Math", "libs\math\Ergo.Libs.Math.csproj", "{4C6AE9AA-BE99-4E01-98DB-3B55B674D9F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ergo.Compiler.Emission", "src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj", "{FEF72C9F-1F2F-49BE-8AEE-FCFFBCE7EAF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ergo.Compiler.Emission", "src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj", "{FEF72C9F-1F2F-49BE-8AEE-FCFFBCE7EAF0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".files", ".files", "{134BE93D-2FCC-4C81-B77C-8D21AF78519C}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +135,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{24F3F7F0-DDDF-4B58-BAE8-D4F13ACBD83E} = {7D4289CE-936B-4BCE-BFB5-82E991454498}
+		{1CE7A182-3501-4B8F-8396-B25157E79CBE} = {7D4289CE-936B-4BCE-BFB5-82E991454498}
 		{0E053DE8-28BB-4F53-B2FC-48D0F289165B} = {73FB3758-0A67-48AF-85E9-E8F678821B42}
 		{2A930744-E0C3-4AC8-9090-45EB4A72B986} = {73FB3758-0A67-48AF-85E9-E8F678821B42}
 		{B8ADE4FD-7F1E-4B44-99B5-B09259C11B8D} = {73FB3758-0A67-48AF-85E9-E8F678821B42}

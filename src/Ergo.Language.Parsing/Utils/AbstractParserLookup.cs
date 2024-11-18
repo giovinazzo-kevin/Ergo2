@@ -1,6 +1,6 @@
-﻿using Ergo.Language.Ast;
+﻿using Ergo.Lang.Ast;
 
-namespace Ergo.Language.Parsing;
+namespace Ergo.Lang.Parsing;
 
 public record class AbstractParserLookup(Dictionary<Type, List<Operator>> Table)
 {

@@ -1,6 +1,6 @@
 ﻿using Ergo.Shared.Extensions;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public abstract class Atom : Term
 {

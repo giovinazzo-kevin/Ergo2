@@ -1,7 +1,7 @@
 ﻿
-using Ergo.Language.Ast.WellKnown;
+using Ergo.Lang.Ast.WellKnown;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public class Directive(Term arg) : PrefixExpression(Operators.HornUnary, arg)
 {

@@ -1,4 +1,4 @@
-﻿using Ergo.Language.Ast;
+﻿using Ergo.Lang.Ast;
 
 namespace Ergo.Compiler.Analysis;
 

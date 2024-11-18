@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Lexing;
+﻿namespace Ergo.Lang.Lexing;
 
 public readonly record struct LexerState(int Line, int Column, long StreamPos, string Context)
 {

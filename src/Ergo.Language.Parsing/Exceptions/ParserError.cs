@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Parsing;
+﻿namespace Ergo.Lang.Parsing;
 
 public enum ParserError
 {

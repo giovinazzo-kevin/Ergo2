@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Ast.WellKnown;
+﻿namespace Ergo.Lang.Ast.WellKnown;
 
 public static class Functors
 {

@@ -1,6 +1,6 @@
 ﻿using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
-using Ergo.Language.Ast;
+using Ergo.Lang.Ast;
 namespace Ergo.Libs.Prologue.Directives;
 
 public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directive(parent, new("op", 3), 10)

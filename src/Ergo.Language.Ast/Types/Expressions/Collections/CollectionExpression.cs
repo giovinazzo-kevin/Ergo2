@@ -1,6 +1,6 @@
-﻿using Ergo.Language.Ast.WellKnown;
+﻿using Ergo.Lang.Ast.WellKnown;
 
-namespace Ergo.Language.Ast;
+namespace Ergo.Lang.Ast;
 
 public abstract class CollectionExpression(Func<Term, Term, CollectionExpression> fold, Collection col, Operator op, params IEnumerable<Term> items) 
     : ConsExpression(fold, op, items)

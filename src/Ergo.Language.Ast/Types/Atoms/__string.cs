@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
 public sealed class __string(string Value) : Atom(typeof(__string), Value) 
 { 

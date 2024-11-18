@@ -1,15 +1,15 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexing;
-using Ergo.Language.Lexing.WellKnown;
-using Ergo.Language.Parsing.Extensions;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
+using Ergo.Lang.Lexing;
+using Ergo.Lang.Lexing.WellKnown;
+using Ergo.Lang.Parsing.Extensions;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Ergo.Language.Parsing;
+namespace Ergo.Lang.Parsing;
 using static Operator.Fixity;
 
 public class Parser : IDisposable

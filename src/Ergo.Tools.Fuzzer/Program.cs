@@ -1,5 +1,5 @@
-﻿using Ergo.Language.Ast;
-using Ergo.Language.Lexing;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Lexing;
 using Ergo.SDK.Fuzzing;
 var opLookup = new OperatorLookup([
     new (60, Operator.Type.xf, (__string)"$"),

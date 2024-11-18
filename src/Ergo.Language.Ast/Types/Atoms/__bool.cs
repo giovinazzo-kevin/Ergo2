@@ -1,4 +1,4 @@
-﻿namespace Ergo.Language.Ast;
+﻿namespace Ergo.Lang.Ast;
 
 public sealed class __bool(bool value) : Atom(typeof(__bool), value) 
 { 

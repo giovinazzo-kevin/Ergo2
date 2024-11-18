@@ -1,4 +1,4 @@
-﻿using Ergo.Language.Parsing;
+﻿using Ergo.Lang.Parsing;
 using System.ComponentModel;
 
 namespace Ergo.Compiler.Analysis.Exceptions;

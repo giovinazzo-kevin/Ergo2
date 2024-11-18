@@ -1,10 +1,10 @@
 ﻿using Ergo.IO;
 using Ergo.Compiler.Analysis.Exceptions;
-using Ergo.Language.Ast;
-using Ergo.Language.Ast.Extensions;
-using Ergo.Language.Ast.WellKnown;
-using Ergo.Language.Lexing;
-using Ergo.Language.Parsing;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
+using Ergo.Lang.Lexing;
+using Ergo.Lang.Parsing;
 using Ergo.Shared.Types;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ public class Analyzer
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, moduleName);
         if (DefaultImport != null)
             module.Imports.Add(DefaultImport);
-        var resolvedDirectives = new List<(Language.Ast.Directive Ast, Directive Node)>();
+        var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives)
         {
             var signature = dir.Arg.GetSignature().GetOrThrow().Unqualified;
