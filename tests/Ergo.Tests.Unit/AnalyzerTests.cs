@@ -18,7 +18,7 @@ public class AnalyzerTests
         var operatorLookup = new OperatorLookup();
         var analyzer = new Analyzer(moduleLocator, libraryLocator, operatorLookup);
         var moduleName = typeof(T).ToLibraryName();
-        var graph = analyzer.Load(moduleName);
+        var graph = analyzer.LoadModule(moduleName);
         Assert.NotNull(graph);
         graph.Modules.TryGetValue(moduleName, out var module);
         Assert.NotNull(module);

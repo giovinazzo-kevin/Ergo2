@@ -2,8 +2,7 @@
 
 namespace Ergo.Compiler.Analysis;
 
-public class StaticGoal(Clause parent, Predicate callee, params Term[] args) : Goal(parent)
+public class StaticGoal(Clause parent, Predicate callee, params Term[] args) : Goal(parent, args)
 {
     public readonly Predicate Callee = callee;
-    public readonly Term[] Args = args;
 }

@@ -13,7 +13,7 @@ namespace Ergo.PerformanceTests;
 
 public class PerformanceTests
 {
-    static readonly string TEST_CASES_DIR = Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\profiles");
+    static readonly string TEST_CASES_DIR = Path.Combine(Directory.GetCurrentDirectory(), @".\profiles");
     [Theory]
     [InlineData(0.05, 10000, nameof(TermGeneratorProfile.Minimal))]
     [InlineData(0.05, 10000, nameof(TermGeneratorProfile.Default))]

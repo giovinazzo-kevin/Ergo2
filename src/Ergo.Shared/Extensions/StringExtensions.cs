@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Ergo.Shared.Extensions;
 
@@ -29,5 +31,45 @@ public static class StringExtensions
             (true, true) => SQ + ESCAPE_SQ.Replace(str, SQ.ToString()) + SQ
         };
         return escaped;
+    }
+    public static string ToCSharpCase(this string s)
+    {
+        // Assume ergo_case
+        var sb = new StringBuilder();
+        bool nextCharIsUpper = true;
+        for (var i = 0; i < s.Length; ++i)
+        {
+            if (s[i] == '_')
+            {
+                nextCharIsUpper = true; // Next character should be in upper case.
+            }
+            else
+            {
+                sb.Append(nextCharIsUpper ? char.ToUpper(s[i]) : s[i]);
+                nextCharIsUpper = false;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    public static string ToErgoCase(this string s)
+    {
+        // Assume PascalCase
+        var wasUpper = true;
+        var sb = new StringBuilder();
+        for (var i = 0; i < s.Length; ++i)
+        {
+            var isUpper = char.IsUpper(s[i]);
+            if (i > 0 && !wasUpper && isUpper && s[i - 1] != '_')
+            {
+                sb.Append('_');
+            }
+
+            sb.Append(char.ToLower(s[i]));
+            wasUpper = isUpper;
+        }
+
+        return sb.ToString();
     }
 }

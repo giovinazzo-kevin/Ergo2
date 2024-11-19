@@ -21,7 +21,7 @@ public class Analyzer
         LibraryLocator = libraryLocator;
         Operators = opLookup;
         if (!string.IsNullOrEmpty(defaultImport))
-            DefaultImport = Load(defaultImport).Modules[defaultImport];
+            DefaultImport = LoadModule(defaultImport).Modules[defaultImport];
         else
             DefaultImport = null!;
     }
@@ -144,7 +144,7 @@ public class Analyzer
             .ToList();
     }
     
-    public Module Load(CallGraph graph, __string moduleName)
+    public Module LoadModule(CallGraph graph, __string moduleName)
     {
         ModuleLocator.Index.Update();
         var operators = new OperatorLookup();
@@ -159,43 +159,10 @@ public class Analyzer
         return module;
     }
 
-    public CallGraph Load(__string moduleName)
+    public CallGraph LoadModule(__string moduleName)
     {
         var graph = new CallGraph(this, moduleName);
-        Load(graph, moduleName);
+        LoadModule(graph, moduleName);
         return graph;
-    }
-
-    public static Clause Parse(__string query, OperatorLookup ops)
-    {
-        const string __toplevel = nameof(__toplevel);
-        var analyzer = new Analyzer(null!, null!, ops, null!);
-        var graph = new CallGraph(analyzer, __toplevel);
-        var stream = ErgoFileStream.Create(query, __toplevel);
-        var lexer = new Lexer(stream, ops);
-        using var parser = new Parser(lexer);
-        var parsed = parser.BinaryExpressionRhs().GetOrThrow();
-        var queryVars = parsed.GetVariables().ToArray();
-        if (!graph.Modules.TryGetValue(__toplevel, out var module))
-            module = graph.Modules[__toplevel] = new(graph, __toplevel);
-        module.Set(nameof(query), query);
-        var signature = new Signature(__toplevel, queryVars.Length);
-        if (!module.Predicates.TryGetValue(signature, out var predicate))
-            predicate = module.Predicates[signature] = new Predicate(module, signature);
-        var clause = new Clause(predicate, queryVars);
-        predicate.Clauses.Add(clause);
-        var goals = new List<Goal>();
-        switch (parsed)
-        {
-            case ConsExpression { Operator: var op, Contents: var contents } cons when op.Equals(Lang.Ast.WellKnown.Operators.Conjunction):
-                foreach (var item in contents)
-                    goals.AddRange(ResolveGoals(graph, module, clause, item));
-                break;
-            default:
-                goals.AddRange(ResolveGoals(graph, module, clause, parsed));
-                break;
-        }
-        clause = clause.WithGoals(goals);
-        return clause;
     }
 }

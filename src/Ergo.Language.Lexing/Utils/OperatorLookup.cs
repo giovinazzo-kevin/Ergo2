@@ -30,7 +30,8 @@ public class OperatorLookup
             foreach (__string fun in op.Functors)
             {
                 var funStr = (string)fun.Value;
-                functors.Add(funStr);
+                if (!functors.Contains(funStr))
+                    functors.Add(funStr);
                 if (!table.TryGetValue(funStr, out var list))
                     list = table[funStr] = [];
                 list.Add(op);

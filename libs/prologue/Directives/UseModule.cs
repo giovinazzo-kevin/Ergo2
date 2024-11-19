@@ -20,7 +20,7 @@ public sealed class UseModule(Library parent) : Compiler.Analysis.Directive(pare
             if (module.Parent.Modules.TryGetValue(s, out var importedModule))
                 module.Imports.Add(importedModule);
             else
-                module.Imports.Add(module.Parent.Analyzer.Load(module.Parent, s));
+                module.Imports.Add(module.Parent.Analyzer.LoadModule(module.Parent, s));
         }
     }
 }

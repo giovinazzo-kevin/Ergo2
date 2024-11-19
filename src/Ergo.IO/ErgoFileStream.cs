@@ -2,7 +2,7 @@
 
 namespace Ergo.IO;
 
-public record ErgoFileStream(Stream Stream, string Name)
+public record ErgoFileStream(Stream Stream, string Name) : IDisposable
 {
     private readonly BinaryReader _utf8reader = new(Stream, Encoding.UTF8, true);
     public bool Eof => Stream.Position >= Stream.Length;
@@ -51,5 +51,7 @@ public record ErgoFileStream(Stream Stream, string Name)
         }
         return new(ms, fileName);
     }
+
+    public void Dispose() => ((IDisposable)Stream).Dispose();
 }
 

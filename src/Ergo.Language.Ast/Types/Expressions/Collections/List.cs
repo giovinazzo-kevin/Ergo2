@@ -53,7 +53,7 @@ public class List : CollectionExpression
 
     protected readonly string COMMA = (string)Functors.Comma.Value;
     public override string Expl => 
-        (Tail is Variable { Bound: false }
+        (Tail is Variable { IsBound: false }
          ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}|{Tail.Expl}{Collection.ClosingDelim}"
         : Complete
          ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}{Collection.ClosingDelim}"

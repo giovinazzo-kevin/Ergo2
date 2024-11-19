@@ -7,7 +7,7 @@ namespace Ergo.Lang.Ast;
 public abstract class Term : IExplainable
 { 
     public bool IsParenthesized { get; set; }
-    public abstract bool Ground { get; }
+    public abstract bool IsGround { get; }
     public abstract string Expl { get; }
     public override string ToString() => Expl;
     public static implicit operator Term(string s) => Variable.IsVariableIdentifier(s) ? new Variable(s) : new __string(s);

@@ -2,8 +2,7 @@
 
 namespace Ergo.Compiler.Analysis;
 
-public class DynamicGoal(Clause parent, Atom callee, params Term[] args) : Goal(parent)
+public class DynamicGoal(Clause parent, Atom callee, params Term[] args) : Goal(parent, args)
 {
     public readonly Atom Callee = callee;
-    public readonly Term[] Args = args;
 }

@@ -11,7 +11,7 @@ public class CallGraph(Analyzer analyzer, __string rootModule)
 
     public readonly Analyzer Analyzer = analyzer;
     public readonly Dictionary<__string, Module> Modules = [];
-    public readonly __string RootModule = rootModule;
+    public readonly __string Root = rootModule;
 
     public IEnumerable<Directive> ResolveDirectives(Signature signature, Module context)
     {

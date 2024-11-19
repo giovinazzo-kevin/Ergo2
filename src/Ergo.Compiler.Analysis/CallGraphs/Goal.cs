@@ -1,6 +1,9 @@
-﻿namespace Ergo.Compiler.Analysis;
+﻿using Ergo.Lang.Ast;
 
-public class Goal(Clause parent) : CallGraph.Node<Clause>
+namespace Ergo.Compiler.Analysis;
+
+public class Goal(Clause parent, Term[] args) : CallGraph.Node<Clause>
 {
     public override Clause Parent => parent;
+    public readonly Term[] Args = args;
 }

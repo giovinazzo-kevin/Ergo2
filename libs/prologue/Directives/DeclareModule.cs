@@ -12,7 +12,7 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
         {
             __string s when s != module.Name => throw new AnalyzerException(AnalyzerError.Module0MustBeNamed1, s, module.Name),
             __string s => s,
-            Variable { Bound: false } v => (__string)(v.Value = module.Name),
+            Variable { IsBound: false } v => (__string)(v.Value = module.Name),
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(__string), Signature, args[0])
         };
         var exports = args[1] switch

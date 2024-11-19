@@ -6,7 +6,7 @@ public abstract class Atom : Term
 {
     public readonly Type Type;
     public readonly object Value;
-    public override bool Ground => true;
+    public override bool IsGround => true;
     public Atom(Type type, object value)
     {
         Type = type;

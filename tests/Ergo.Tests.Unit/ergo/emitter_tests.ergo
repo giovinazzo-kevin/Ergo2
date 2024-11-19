@@ -1,7 +1,7 @@
-:- module(_, [parent/2, ancestor/2]).
+:- module(_, [fact/0, another_fact/0, complex_fact/3, parent/2, ancestor/2]).
 
 fact.
-another_fact.
+another_fact :- fact.
 
 complex_fact(0, 1, 2).
 
