@@ -1,73 +1,75 @@
 ﻿using Ergo.Compiler.Analysis;
+using System;
 using System.Diagnostics;
 
 namespace Ergo.Compiler.Emission;
 using static Op;
 
-public class Emitter(CallGraph graph) : IDisposable
+public static class Emitter
 {
-    public int PC { get; private set; } = 0;
-    public readonly CallGraph Graph = graph;
-    protected readonly Dictionary<string, int> Labels = [];
-
-    #region Helpers
-    public int GetLabel(Predicate pred) => Labels[PredicateLabel(pred)];
-    protected static string PredicateLabel(Predicate predicate)
-        => predicate.Signature.Expl;
-    public int GetLabel(Clause pred) => Labels[ClauseLabel(pred)];
-    protected static string ClauseLabel(Clause clause)
-        => clause.Parent.Signature.Expl + "_" + (clause.Parent.Clauses.IndexOf(clause) + 1);
-    #endregion
-    public ReadOnlySpan<Op> Compile()
+    public static KnowledgeBase KnowledgeBase(CallGraph graph)
     {
-        return Inner().ToArray().AsSpan();
-        IEnumerable<Op> Inner()
-        {
-            // Compile predicates
-            foreach (var module in Graph.Modules.Values)
-            {
-                foreach (var op in module.Predicates.Values.SelectMany(Emit))
-                    yield return op;
-            }
-        }
-    }
-    public ReadOnlySpan<byte> Emit(ReadOnlySpan<Op> ops, out int sz)
-    {
-        sz = 0;
+        var kb = new KnowledgeBase(graph.RootModule);
+        kb.Operators.AddRange(graph.Analyzer.Operators.Values);
+        var ops = 
+            graph.Modules.Values
+            .SelectMany(module => module
+                .Predicates.Values
+                    .SelectMany(pred => Emit(pred, kb)))
+            .ToArray();
+        var sz = 0;
         for (int i = 0; i < ops.Length; i++)
             sz += ops[i].Size;
-        var bytes = new byte[sz];
-        var span = bytes.AsSpan();
+        var mem = new byte[sz];
+        kb.Memory = mem;
+        var span = mem.AsSpan();
         foreach (var op in ops)
-            Debug.Assert(op.Size == op.Emit(ref span));
+            if (op.Size != op.Emit(ref span))
+                Debug.Assert(false);
         Debug.Assert(span.Length == 0);
-        return bytes;
+        return kb;
     }
-    public ReadOnlySpan<byte> Emit(out int sz)
+    public static Query Query(KnowledgeBase kb, Clause toplevel)
     {
-        var ops = Compile().ToArray().AsSpan();
-        return Emit(ops, out sz);
+        var query = new Query();
+        var locals = new Dictionary<Lang.Ast.Variable, byte>();
+        var ops = toplevel.Goals
+            .SelectMany(g => Emit(g, kb, locals))
+            .ToArray();
+        var sz = 0;
+        for (int i = 0; i < ops.Length; i++)
+            sz += ops[i].Size;
+        var mem = new byte[sz + 1];
+        mem[^1] = (byte)halt.Type_;
+        query.Program = mem;
+        var span = mem.AsSpan();
+        foreach (var op in ops)
+            if (op.Size != op.Emit(ref span))
+                Debug.Assert(false);
+        Debug.Assert(span.Length == 1);
+        return query;
     }
-    protected IEnumerable<Op> Emit(Predicate predicate)
+    static IEnumerable<Op> Emit(Predicate predicate, KnowledgeBase kb)
     {
-        Labels[PredicateLabel(predicate)] = PC;
-        foreach (var op in predicate.Clauses.SelectMany(Emit))
+        kb.SetLabel(predicate);
+        foreach (var op in predicate.Clauses.SelectMany(c => Emit(c, kb)))
             yield return op;
     }
-    protected IEnumerable<Op> Emit(Clause clause)
+    static IEnumerable<Op> Emit(Clause clause, KnowledgeBase kb)
     {
-        Labels[ClauseLabel(clause)] = PC;
+        var locals = new Dictionary<Lang.Ast.Variable, byte>();
+        kb.SetLabel(clause);
+        if (clause.IsRecursive)
+            yield return op(allocate, kb);
         for (byte i = 0; i < clause.Args.Length; i++)
-            yield return clause.Args[i] switch {
-                Lang.Ast.Atom c => op(get_constant(c, i)),
-                _ => op(noop),
-            };
-
-        foreach (var op in clause.Goals.SelectMany(Emit))
+            yield return get(clause.Args[i], i, kb);
+        foreach (var op in clause.Goals.SelectMany(g => Emit(g, kb, locals)))
             yield return op;
-        yield return op(proceed);
+        if (clause.IsRecursive)
+            yield return op(deallocate, kb);
+        yield return op(proceed, kb);
     }
-    protected IEnumerable<Op> Emit(Goal goal)
+    static IEnumerable<Op> Emit(Goal goal, KnowledgeBase kb, Dictionary<Lang.Ast.Variable, byte> locals)
     {
         return goal switch {
             StaticGoal sg => StaticGoal(sg),
@@ -76,25 +78,46 @@ public class Emitter(CallGraph graph) : IDisposable
 
         IEnumerable<Op> StaticGoal(StaticGoal goal)
         {
+            if (goal.Args.Length > byte.MaxValue)
+                throw new InvalidOperationException();
             if (goal.Callee.Signature.Arity > byte.MaxValue)
                 throw new InvalidOperationException();
+
+            var L = goal.Args.Length;
+            var V = 0;
+            for (byte Ai = 0; Ai < L; ++Ai)
+            {
+                yield return goal.Args[Ai] switch
+                {
+                    Lang.Ast.Variable v when goal.Parent.TryGetVariable(v, out var Xn)
+                        => op(put_value(Xn, Ai), kb),
+                    Lang.Ast.Variable v when locals.TryGetValue(v, out var Xn)
+                        => op(put_value(Xn, Ai), kb),
+                    Lang.Ast.Variable v when (locals[v] = (byte)(L + V++)) <= byte.MaxValue
+                        => op(put_variable(locals[v], Ai), kb),
+                    Lang.Ast.Atom a
+                        => op(put_constant(a, Ai), kb),
+                    _ => op(put_value(Ai, Ai), kb)
+                };
+            }
+
             var P = goal.Callee.Signature.Functor.Expl;
             var N = (byte)goal.Callee.Signature.Arity;
-            yield return op(call(P, N));
+            yield return op(call(P, N), kb);
         }
     }
-    protected Op op(Op op)
+    static Op op(Op op, KnowledgeBase kb)
     {
-        PC += op.Size;
+        kb.PC += op.Size;
         return op;
     }
-    protected IEnumerable<Op> ops(params IEnumerable<Op> ops)
+    static Op get(Lang.Ast.Term term, byte i, KnowledgeBase kb)
     {
-        foreach (var x in ops)
-            yield return op(x);
-    }
-    public void Dispose()
-    {
-
+        return term switch
+        {
+            Lang.Ast.Atom c => op(get_constant(c, i), kb),
+            Lang.Ast.Variable v => op(get_variable(i, i), kb),
+            _ => throw new NotSupportedException(),
+        };
     }
 }

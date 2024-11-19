@@ -44,7 +44,7 @@ public class ErgoFuzzer(TermGeneratorProfile profile, OperatorLookup ops)
         {
             var term = g(_gen)();
             var expl = term.Expl;
-            var file = ErgoFileStream.Create(expl);
+            var file = ErgoFileStream.Create(expl, ".fuzzer.ergo");
             using var lexer = new Lexer(file, ops);
             using var parser = new Parser(lexer);
             var result = p(parser)();

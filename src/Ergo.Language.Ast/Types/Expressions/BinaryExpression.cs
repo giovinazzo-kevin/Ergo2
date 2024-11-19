@@ -29,6 +29,18 @@ public class BinaryExpression(Operator op, Term lhs, Term rhs) : Expression(op, 
             last = exp;
             exp = AssociateOnce(exp);
         }
+
+        if (exp.Operator == Operators.Division
+            && exp.Lhs is Atom functor
+            && exp.Rhs is __int arity)
+            return new SignatureExpression(functor, arity);
+
+        if (exp is not ConsExpression
+            && exp.IsCons
+            && exp.Rhs is BinaryExpression rExp
+            && rExp.Operator == exp.Operator)
+            return new ConsExpression(exp.Operator, exp.Lhs, exp.Rhs);
+
         return exp;
     }
 

@@ -9,6 +9,7 @@ using Ergo.Shared.Types;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
+using System.IO;
 
 namespace Ergo.Compiler.Analysis;
 
@@ -16,15 +17,18 @@ public class Analyzer
 {
     public readonly ModuleLocator ModuleLocator;
     public readonly LibraryLocator LibraryLocator;
-    public readonly OperatorLookup OperatorLookup;
+    public readonly OperatorLookup Operators;
     public readonly Module DefaultImport;
 
     public Analyzer(ModuleLocator moduleLocator, LibraryLocator libraryLocator, OperatorLookup opLookup, string defaultImport = "prologue")
     {
         ModuleLocator = moduleLocator;
         LibraryLocator = libraryLocator;
-        OperatorLookup = opLookup;
-        DefaultImport = Load(defaultImport).Modules[defaultImport];
+        Operators = opLookup;
+        if (!string.IsNullOrEmpty(defaultImport))
+            DefaultImport = Load(defaultImport).Modules[defaultImport];
+        else
+            DefaultImport = null!;
     }
 
 
@@ -50,7 +54,7 @@ public class Analyzer
         var file = ModuleLocator.Index.Find(moduleName)
             .Single() /* TODO: Throw ModuleClash exception */;
         var stream = ErgoFileStream.Open(file);
-        var lexer = new Lexer(stream, OperatorLookup);
+        var lexer = new Lexer(stream, Operators);
         module._parser = new Parser(lexer);
         var directives = module._parser.DirectiveDefinitions()
             .GetOr([]);
@@ -80,7 +84,7 @@ public class Analyzer
         return Module.Stage.Preloaded;
     }
 
-    protected Module.Stage LoadStage_Load(CallGraph graph, Module module)
+    protected static Module.Stage LoadStage_Load(CallGraph graph, Module module)
     {
         var clauseDefs = module._parser!.ClauseOrFactDefinitions()
             .GetOr([]);
@@ -105,7 +109,7 @@ public class Analyzer
         return Module.Stage.Loaded;
     }
 
-    protected List<Goal> ResolveQualifiedGoals(CallGraph graph, Module module, Clause clause, Signature signature, __string qualification, Term[] args)
+    protected static List<Goal> ResolveQualifiedGoals(CallGraph graph, Module module, Clause clause, Signature signature, __string qualification, Term[] args)
     {
         if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
             return [];
@@ -123,7 +127,7 @@ public class Analyzer
         return list;
     }
 
-    protected List<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
+    protected static List<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
         var args = goalDef.GetArguments();
         if (!goalDef.GetSignature().TryGetValue(out var signature))
@@ -144,7 +148,7 @@ public class Analyzer
             .SelectMany(m => ResolveQualifiedGoals(graph, module, clause, signature, m, args))
             .ToList();
     }
-
+    
     public Module Load(CallGraph graph, __string moduleName)
     {
         ModuleLocator.Index.Update();
@@ -162,8 +166,41 @@ public class Analyzer
 
     public CallGraph Load(__string moduleName)
     {
-        var graph = new CallGraph(this);
+        var graph = new CallGraph(this, moduleName);
         Load(graph, moduleName);
         return graph;
+    }
+
+    public static Clause Parse(__string query, OperatorLookup ops)
+    {
+        const string __toplevel = nameof(__toplevel);
+        var analyzer = new Analyzer(null!, null!, ops, null!);
+        var graph = new CallGraph(analyzer, __toplevel);
+        var stream = ErgoFileStream.Create(query, __toplevel);
+        var lexer = new Lexer(stream, ops);
+        using var parser = new Parser(lexer);
+        var parsed = parser.BinaryExpressionRhs().GetOrThrow();
+        var queryVars = parsed.GetVariables().ToArray();
+        if (!graph.Modules.TryGetValue(__toplevel, out var module))
+            module = graph.Modules[__toplevel] = new(graph, __toplevel);
+        module.Set(nameof(query), query);
+        var signature = new Signature(__toplevel, queryVars.Length);
+        if (!module.Predicates.TryGetValue(signature, out var predicate))
+            predicate = module.Predicates[signature] = new Predicate(module, signature);
+        var clause = new Clause(predicate, queryVars);
+        predicate.Clauses.Add(clause);
+        var goals = new List<Goal>();
+        switch (parsed)
+        {
+            case ConsExpression { Operator: var op, Contents: var contents } cons when op.Equals(Lang.Ast.WellKnown.Operators.Conjunction):
+                foreach (var item in contents)
+                    goals.AddRange(ResolveGoals(graph, module, clause, item));
+                break;
+            default:
+                goals.AddRange(ResolveGoals(graph, module, clause, parsed));
+                break;
+        }
+        clause = clause.WithGoals(goals);
+        return clause;
     }
 }

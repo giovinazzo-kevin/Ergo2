@@ -20,7 +20,7 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
         var exports = args[1] switch
         {
             Atom a when a == Literals.EmptyList => [],
-            List l => l.Contents,
+            List l => l.Head,
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(List), Signature, args[1])
         };
         foreach (var exp in exports)

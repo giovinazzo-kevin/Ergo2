@@ -1,13 +1,14 @@
 using Ergo.IO;
 using Ergo.Lang.Lexing;
+using System.Runtime.CompilerServices;
 
 namespace Ergo.UnitTests;
 
 public class LexerTests
 {
-    protected Token Expect(Token.Type type, string input)
+    protected Token Expect(Token.Type type, string input, [CallerMemberName] string caller = null!)
     {
-        var stream = ErgoFileStream.Create(input);
+        var stream = ErgoFileStream.Create(input, caller + ".test.ergo");
         var lexer = new Lexer(stream, new());
         var result = lexer.ReadNext();
         var token = result.GetOrThrow();

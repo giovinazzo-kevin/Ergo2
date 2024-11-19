@@ -155,7 +155,7 @@ public class PerformanceTests
     {
         transform ??= s => s;
         ops = new();
-        ops.AddOperators([
+        ops.AddRange([
             new(900, Operator.Type.fx, "@-"),
             new(900, Operator.Type.xf, "-@"),
             new(900, Operator.Type.xfx, "@-@"),

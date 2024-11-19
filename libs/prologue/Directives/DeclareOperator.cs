@@ -17,7 +17,7 @@ public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directiv
         };
         foreach (var syn in synonyms.Where(x => x is not Atom))
             throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(Atom), Signature, syn);
-        var lookup = module.Parent.Analyzer.OperatorLookup;
-        lookup.AddOperators(new Operator(precedence, type, [.. synonyms.Cast<Atom>()]));
+        var lookup = module.Parent.Analyzer.Operators;
+        lookup.AddRange(new Operator(precedence, type, [.. synonyms.Cast<Atom>()]));
     }
 }

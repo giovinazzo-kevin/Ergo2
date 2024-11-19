@@ -9,6 +9,7 @@ public abstract record Op(Op.Type Type_, int Size)
 {
     public enum Type : byte
     {
+        halt,
         noop,
 
         get_variable,
@@ -52,18 +53,29 @@ public abstract record Op(Op.Type Type_, int Size)
 
         cut,
         fail,
-        halt
+
+        OP_COUNT = fail + 1
     }
     #region Declarations
     public static readonly Op noop = new NoOp();
     public static readonly Op proceed = new Proceed();
+    public static readonly Op halt = new Halt();
+    public static readonly Op allocate = new Allocate();
+    public static readonly Op deallocate = new Deallocate();
     public static readonly Func<string, byte, Op> call = (P, N) => new Call(P, N);
     public static readonly Func<Atom, byte, Op> get_constant = (c, Ai) => new GetConstant(c, Ai);
     public static readonly Func<byte, byte, Op> get_variable = (Xn, Ai) => new GetVariable(Xn, Ai);
+    public static readonly Func<Atom, byte, Op> put_constant = (c, Ai) => new PutConstant(c, Ai);
+    public static readonly Func<byte, byte, Op> put_variable = (Xn, Ai) => new PutVariable(Xn, Ai);
+    public static readonly Func<byte, byte, Op> put_value = (Xn, Ai) => new PutValue(Xn, Ai);
     #endregion
-    protected int EmitType(ref Span<byte> bytes)
+    protected int EmitOpType(ref Span<byte> bytes)
     {
         return Emit(ref bytes, (byte)Type_);
+    }
+    protected int EmitRuntimeType(ref Span<byte> bytes, RuntimeType type)
+    {
+        return Emit(ref bytes, (byte)type.Type_);
     }
     protected int Emit(ref Span<byte> bytes, params ReadOnlySpan<byte> b)
     {
@@ -99,14 +111,15 @@ public abstract record Op(Op.Type Type_, int Size)
     };
     public virtual int Emit(ref Span<byte> bytes) => 0;
     protected sealed record NoOp() : Op(Type.noop, 0);
-    protected sealed record Proceed() : Op(Type.proceed, 1)
-    {
-        public override int Emit(ref Span<byte> bytes) => EmitType(ref bytes);
-    }
-    protected sealed record GetConstant(Atom c, byte Ai) : Op(Type.get_constant, SizeOf(c) + 2)
+    protected sealed record Proceed() : Op(Type.proceed, 1) { public override int Emit(ref Span<byte> bytes) => EmitOpType(ref bytes); }
+    protected sealed record Allocate() : Op(Type.allocate, 1) { public override int Emit(ref Span<byte> bytes) => EmitOpType(ref bytes); }
+    protected sealed record Deallocate() : Op(Type.deallocate, 1) { public override int Emit(ref Span<byte> bytes) => EmitOpType(ref bytes); }
+    protected sealed record Halt() : Op(Type.halt, 1) { public override int Emit(ref Span<byte> bytes) => EmitOpType(ref bytes); }
+    protected sealed record GetConstant(Atom c, byte Ai) : Op(Type.get_constant, SizeOf(c) + 3)
     {
         public override int Emit(ref Span<byte> bytes) =>
-              EmitType(ref bytes)
+              EmitOpType(ref bytes)
+            + EmitRuntimeType(ref bytes, RuntimeType.FromTerm(c))
             + EmitConstant(ref bytes, c)
             + Emit(ref bytes, Ai)
             ;
@@ -114,14 +127,37 @@ public abstract record Op(Op.Type Type_, int Size)
     protected sealed record GetVariable(byte Xn, byte Ai) : Op(Type.get_variable, 3)
     {
         public override int Emit(ref Span<byte> bytes) =>
-              EmitType(ref bytes)
+              EmitOpType(ref bytes)
             + Emit(ref bytes, Xn, Ai)
             ;
     }
-    protected sealed record Call(string P, byte N) : Op(Type.call, Encoding.UTF8.GetByteCount(P) + 3)
+    protected sealed record PutVariable(byte Xn, byte Ai) : Op(Type.put_variable, 3)
     {
         public override int Emit(ref Span<byte> bytes) =>
-              EmitType(ref bytes)
+              EmitOpType(ref bytes)
+            + Emit(ref bytes, Xn, Ai)
+            ;
+    }
+    protected sealed record PutConstant(Atom c, byte Ai) : Op(Type.get_constant, SizeOf(c) + 3)
+    {
+        public override int Emit(ref Span<byte> bytes) =>
+              EmitOpType(ref bytes)
+            + EmitRuntimeType(ref bytes, RuntimeType.FromTerm(c))
+            + EmitConstant(ref bytes, c)
+            + Emit(ref bytes, Ai)
+            ;
+    }
+    protected sealed record PutValue(byte Xn, byte Ai) : Op(Type.put_value, 3)
+    {
+        public override int Emit(ref Span<byte> bytes) =>
+              EmitOpType(ref bytes)
+            + Emit(ref bytes, Xn, Ai)
+            ;
+    }
+    protected sealed record Call(string P, byte N) : Op(Type.call, SizeOf(P) + 2)
+    {
+        public override int Emit(ref Span<byte> bytes) =>
+              EmitOpType(ref bytes)
             + EmitUTF8(ref bytes, P)
             + Emit(ref bytes, N)
             ;
