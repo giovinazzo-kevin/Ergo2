@@ -5,9 +5,8 @@ using System.Text;
 
 namespace Ergo.Runtime.WAM;
 
-using static Op.Type;
-using static RuntimeType.Type;
 using static ErgoVM.State;
+using static Op.Type;
 
 public class ErgoVM
 {
@@ -137,10 +136,17 @@ public class ErgoVM
     {
 
     }
+<<<<<<< HEAD
     public unsafe void Query(Query query)
     {
     next_op:
         var span = query.Program.Span;
+=======
+    public unsafe void Run(KnowledgeBase kb, Query query)
+    {
+    next_op:
+        var span = query.Memory.Span;
+>>>>>>> e815e388bd85b6597a5fcb0cfa240c268b1249ee
         var op = __byte(this, ref span);
         OP_TABLE[op](this, ref span);
         switch (S)

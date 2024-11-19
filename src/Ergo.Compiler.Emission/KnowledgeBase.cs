@@ -1,8 +1,6 @@
 ﻿using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
-using System;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace Ergo.Compiler.Emission;

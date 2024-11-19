@@ -1,6 +1,4 @@
-﻿using Ergo.IO;
-
-namespace Ergo.Compiler.Emission;
+﻿namespace Ergo.Compiler.Emission;
 
 public class KnowledgeBaseLocator
 {

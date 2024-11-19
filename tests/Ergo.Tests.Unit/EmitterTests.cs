@@ -3,9 +3,6 @@ using Ergo.Compiler.Emission;
 using Ergo.IO;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
-using Ergo.Libs.Prologue;
-using Ergo.Shared.Extensions;
-using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace Ergo.UnitTests;

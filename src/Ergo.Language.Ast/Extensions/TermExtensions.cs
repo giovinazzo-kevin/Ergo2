@@ -1,6 +1,5 @@
 ﻿using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Types;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Ergo.Lang.Ast.Extensions;
 public static class TermExtensions

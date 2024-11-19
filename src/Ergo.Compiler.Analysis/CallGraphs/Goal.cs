@@ -1,6 +1,4 @@
-﻿using Ergo.Lang.Ast;
-
-namespace Ergo.Compiler.Analysis;
+﻿namespace Ergo.Compiler.Analysis;
 
 public class Goal(Clause parent) : CallGraph.Node<Clause>
 {

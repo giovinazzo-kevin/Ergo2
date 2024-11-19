@@ -1,15 +1,10 @@
-﻿using Ergo.IO;
-using Ergo.Compiler.Analysis.Exceptions;
+﻿using Ergo.Compiler.Analysis.Exceptions;
+using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
-using Ergo.Shared.Types;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.IO;
 
 namespace Ergo.Compiler.Analysis;
 

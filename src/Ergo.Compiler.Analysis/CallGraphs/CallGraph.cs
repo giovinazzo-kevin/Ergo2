@@ -1,6 +1,4 @@
 ﻿using Ergo.Lang.Ast;
-using Ergo.Lang.Lexing;
-using Ergo.Shared.Types;
 
 namespace Ergo.Compiler.Analysis;
 

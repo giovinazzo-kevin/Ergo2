@@ -1,5 +1,4 @@
 ﻿using Ergo.Compiler.Analysis;
-using System;
 using System.Diagnostics;
 
 namespace Ergo.Compiler.Emission;
@@ -41,7 +40,11 @@ public static class Emitter
             sz += ops[i].Size;
         var mem = new byte[sz + 1];
         mem[^1] = (byte)halt.Type_;
+<<<<<<< HEAD
         query.Program = mem;
+=======
+        query.Memory = mem;
+>>>>>>> e815e388bd85b6597a5fcb0cfa240c268b1249ee
         var span = mem.AsSpan();
         foreach (var op in ops)
             if (op.Size != op.Emit(ref span))

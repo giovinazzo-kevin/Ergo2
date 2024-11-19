@@ -1,5 +1,4 @@
-﻿using Ergo.Lang.Parsing;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace Ergo.Compiler.Analysis.Exceptions;
 

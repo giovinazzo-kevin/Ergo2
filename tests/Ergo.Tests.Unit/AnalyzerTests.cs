@@ -1,5 +1,5 @@
-﻿using Ergo.IO;
-using Ergo.Compiler.Analysis;
+﻿using Ergo.Compiler.Analysis;
+using Ergo.IO;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
 using Ergo.Libs.Math;
