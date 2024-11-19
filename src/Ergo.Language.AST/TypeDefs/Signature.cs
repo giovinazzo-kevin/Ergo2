@@ -7,7 +7,7 @@ public readonly record struct Signature(Maybe<__string> Module, Atom Functor, in
 {
     public Signature(Atom functor, int arity) : this(default, functor, arity) { }
 
-    public string Expl => Module.HasValue
+    public string Expl => !Module.HasValue
         ? $"{Functor}/{Arity}"
         : $"{Module}:{Functor}/{Arity}";
     public override string ToString() => Expl;

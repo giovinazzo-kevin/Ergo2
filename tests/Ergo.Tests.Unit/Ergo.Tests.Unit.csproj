@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Libs\Ergo.Libs.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
     <ProjectReference Include="..\..\src\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
   </ItemGroup>
 

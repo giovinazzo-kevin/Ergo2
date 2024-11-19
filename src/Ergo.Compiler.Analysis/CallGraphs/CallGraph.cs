@@ -4,7 +4,7 @@ using Ergo.Shared.Types;
 
 namespace Ergo.Compiler.Analysis;
 
-public class CallGraph(Analyzer analyzer)
+public class CallGraph(Analyzer analyzer, __string rootModule)
 {
     public abstract class Node<TParent>
     {
@@ -13,6 +13,7 @@ public class CallGraph(Analyzer analyzer)
 
     public readonly Analyzer Analyzer = analyzer;
     public readonly Dictionary<__string, Module> Modules = [];
+    public readonly __string RootModule = rootModule;
 
     public IEnumerable<Directive> ResolveDirectives(Signature signature, Module context)
     {

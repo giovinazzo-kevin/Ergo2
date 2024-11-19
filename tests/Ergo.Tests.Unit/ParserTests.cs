@@ -10,6 +10,7 @@ using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Collections;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Ergo.UnitTests;
 
@@ -64,11 +65,11 @@ public class ParserTests
         new(800, Operator.Type.yf, "-#"),
     ];
 
-    protected T Expect<T>(string input, Func<Parser, Func<Maybe<T>>> parserFunc, bool parenthesized = false)
+    protected T Expect<T>(string input, Func<Parser, Func<Maybe<T>>> parserFunc, bool parenthesized = false, [CallerMemberName] string caller = null!)
     {
-        var stream = ErgoFileStream.Create(input);
+        var stream = ErgoFileStream.Create(input, caller + ".test.ergo");
         var opLookup = new OperatorLookup();
-        opLookup.AddOperators(TestOperators);
+        opLookup.AddRange(TestOperators);
         var lexer = new Lexer(stream, opLookup);
         var parser = new Parser(lexer);
         var result = parenthesized 

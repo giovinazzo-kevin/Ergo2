@@ -2,9 +2,9 @@
 
 public readonly record struct Operator(int Precedence, Operator.Type Type_, params Atom[] Functors)
 {
-    public enum Type { fx, fy, xf, yf, xfx, xfy, yfx }
-    public enum Fixity { Prefix, Infix, Postfix }
-    public enum Associativity { None, Left, Right }
+    public enum Type : byte { fx, fy, xf, yf, xfx, xfy, yfx }
+    public enum Fixity : byte { Prefix, Infix, Postfix }
+    public enum Associativity : byte { None, Left, Right }
 
     static readonly (
             Dictionary<(Fixity Fixity, Associativity Associativity), Type> To,

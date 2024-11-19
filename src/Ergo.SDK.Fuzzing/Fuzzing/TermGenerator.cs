@@ -19,9 +19,9 @@ public class TermGenerator
     {
         _rng = rng ?? new();
         ops ??= new();
-        _prefixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Prefix).ToArray();
-        _postfixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Postfix).ToArray();
-        _infixOps = ops.Operators.Where(x => x.Fixity_ == Operator.Fixity.Infix).ToArray();
+        _prefixOps = ops.Values.Where(x => x.Fixity_ == Operator.Fixity.Prefix).ToArray();
+        _postfixOps = ops.Values.Where(x => x.Fixity_ == Operator.Fixity.Postfix).ToArray();
+        _infixOps = ops.Values.Where(x => x.Fixity_ == Operator.Fixity.Infix).ToArray();
     }
 
 

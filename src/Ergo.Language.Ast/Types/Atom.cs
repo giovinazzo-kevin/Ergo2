@@ -13,7 +13,9 @@ public abstract class Atom : Term
         Value = value;
     }
     public override string Expl => Value.ToString()!.Parenthesized(IsParenthesized).AddQuotesIfNecessary();
-    public override bool Equals(object? obj) => obj is Atom { Type: var type, Value: var value } && Equals(type, Type) && Equals(value, Value);
+    public override bool Equals(object? obj) 
+        => obj is Atom { Type: var type, Value: var value } && Equals(type, Type) && Equals(value, Value)
+        || obj is Variable { Value: Atom other } && Equals(other);
     public override int GetHashCode() => Value.GetHashCode();
     public static implicit operator Atom(string s) => new __string(s);
     public static implicit operator Atom(bool b) => new __bool(b);

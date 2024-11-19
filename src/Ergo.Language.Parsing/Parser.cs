@@ -71,7 +71,6 @@ public class Parser : IDisposable
         Atom.Cast<Atom, Term>
     ]);
     public Func<Maybe<Expression>> Expression => Transact([
-        SignatureExpression.Cast<SignatureExpression, Expression>,
         BinaryExpression.Cast<BinaryExpression, Expression>,
         PrefixExpression.Cast<PrefixExpression, Expression>,
         PostfixExpression.Cast<PostfixExpression, Expression>
@@ -170,8 +169,8 @@ public class Parser : IDisposable
              ClauseOrFactDefinitions()
             .Select(clauses => new Module(dirs, clauses)))
     ]);
-#endregion
-#region Helpers
+    #endregion
+    #region Helpers
     [Conditional("PARSER_TRACE")]
     public static void Trace(IExplainable some, string method ) => 
          System.Diagnostics.Trace.WriteLine(some.Expl, method);

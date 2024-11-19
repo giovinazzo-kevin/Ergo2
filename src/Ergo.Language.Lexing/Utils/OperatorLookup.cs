@@ -11,16 +11,16 @@ public class OperatorLookup
     protected readonly Dictionary<string, List<Operator>> table = [];
     protected readonly HashSet<Operator> operators = [];
     public IReadOnlyList<string> Functors => functors;
-    public IEnumerable<Operator> Operators => operators;
+    public IReadOnlyCollection<Operator> Values => operators;
 
     public OperatorLookup(IEnumerable<Operator> addOperators = null!)
     {
-        AddOperators(BuiltInOperators);
+        AddRange(BuiltInOperators);
         if (addOperators != null)
-            AddOperators(addOperators);
+            AddRange(addOperators);
     }
 
-    public void AddOperators(params IEnumerable<Operator> ops)
+    public void AddRange(params IEnumerable<Operator> ops)
     {
         foreach (var op in ops)
         {

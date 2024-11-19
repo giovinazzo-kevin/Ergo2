@@ -1,4 +1,4 @@
-:- module(_, []).
+:- module(_, [parent/2, ancestor/2]).
 
 fact.
 another_fact.
@@ -8,5 +8,9 @@ complex_fact(0, 1, 2).
 parent(john, mary).
 parent(mary, susan).
 
-ancestor(X, Y) :- parent(X, Y).
-ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+ancestor(X, Y) :-
+  parent(X, Y).
+
+ancestor(X, Y) :-
+  parent(X, Z), 
+  ancestor(Z, Y).
