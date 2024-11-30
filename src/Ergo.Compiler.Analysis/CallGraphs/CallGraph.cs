@@ -2,7 +2,7 @@
 
 namespace Ergo.Compiler.Analysis;
 
-public class CallGraph(Analyzer analyzer, __string rootModule)
+public class CallGraph(Analyzer analyzer, string rootModule)
 {
     public abstract class Node<TParent>
     {

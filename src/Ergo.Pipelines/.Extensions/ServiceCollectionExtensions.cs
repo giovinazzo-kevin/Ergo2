@@ -4,7 +4,7 @@ namespace Ergo.Pipelines.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPipeline<TPipeline>(this IServiceCollection services, Func<IServiceProvider, PipelineBuilder, TPipeline> build)
+    public static IServiceCollection AddPipeline<TPipeline>(this IServiceCollection services, Func<IServiceProvider, Pipeline, TPipeline> build)
         where TPipeline : class, IPipeline
     {
         //var envType = typeof(TPipeline)
@@ -20,3 +20,4 @@ public static class ServiceCollectionExtensions
         return services.AddSingleton(sp => build(sp, new()));
     }
 }
+

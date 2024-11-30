@@ -37,18 +37,16 @@ public record ErgoFileStream(Stream Stream, string Name) : IDisposable
     }
     public static ErgoFileStream Open(FileStream stream)
     {
+        stream.Position = 0;
         return new(stream, stream.Name);
     }
-    public static ErgoFileStream Create(string? contents, string fileName)
+    public static ErgoFileStream Create(string contents, string fileName)
     {
         var ms = new MemoryStream();
-        if (!string.IsNullOrEmpty(contents))
-        {
-            var sw = new StreamWriter(ms, leaveOpen: true);
-            sw.Write(contents);
-            sw.Dispose();
-            ms.Seek(0, SeekOrigin.Begin);
-        }
+        var sw = new StreamWriter(ms, leaveOpen: true);
+        sw.Write(contents);
+        sw.Dispose();
+        ms.Seek(0, SeekOrigin.Begin);
         return new(ms, fileName);
     }
 

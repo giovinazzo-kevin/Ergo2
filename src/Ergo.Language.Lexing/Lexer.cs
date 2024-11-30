@@ -8,8 +8,8 @@ namespace Ergo.Lang.Lexing;
 
 public class Lexer : IDisposable
 {
-    protected readonly ErgoFileStream File;
-    protected readonly OperatorLookup Lookup;
+    public readonly ErgoFileStream File;
+    public readonly OperatorLookup Lookup;
     protected bool Eof => File.Eof;
     private LexerState _state = LexerState.Start;
     public LexerState State => _state = _state with { 
@@ -29,7 +29,7 @@ public class Lexer : IDisposable
             File.Stream.Seek(seekState.StreamPos, SeekOrigin.Begin);
         _state = seekState;
     }
-    public Tx<LexerState> Transact() =>
+    public Transaction<LexerState> Transact() =>
          new(State, Seek);
     public Maybe<Token> PeekNext()
     {

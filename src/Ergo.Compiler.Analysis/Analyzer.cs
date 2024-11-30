@@ -5,6 +5,8 @@ using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
+using Ergo.Shared.Types;
+using System.Xml.Linq;
 
 namespace Ergo.Compiler.Analysis;
 
@@ -13,17 +15,19 @@ public class Analyzer
     public readonly ModuleLocator ModuleLocator;
     public readonly LibraryLocator LibraryLocator;
     public readonly OperatorLookup Operators;
-    public readonly Module DefaultImport;
+    public readonly Module? DefaultImport;
 
-    public Analyzer(ModuleLocator moduleLocator, LibraryLocator libraryLocator, OperatorLookup opLookup, string defaultImport = "prologue")
+    public Analyzer(ModuleLocator? moduleLocator, LibraryLocator libraryLocator, OperatorLookup opLookup, string defaultImport = "prologue")
     {
-        ModuleLocator = moduleLocator;
+        ModuleLocator = moduleLocator ?? ModuleLocator.Default;
         LibraryLocator = libraryLocator;
         Operators = opLookup;
-        if (!string.IsNullOrEmpty(defaultImport))
-            DefaultImport = LoadModule(defaultImport).Modules[defaultImport];
-        else
-            DefaultImport = null!;
+        if(!string.IsNullOrEmpty(defaultImport))
+        {
+            var stream = ModuleLocator.Index.Find(defaultImport).Single();
+            var ergoStream = ErgoFileStream.Open(stream);
+            DefaultImport = LoadModule(ergoStream).Modules[defaultImport];
+        }
     }
 
 
@@ -44,20 +48,22 @@ public class Analyzer
         return Module.Stage.Linked;
     }
 
-    protected Module.Stage LoadStage_Preload(CallGraph graph, Module module, __string moduleName)
+    protected Module.Stage LoadStage_Open(CallGraph graph, Module module, ErgoFileStream stream)
     {
-        var file = ModuleLocator.Index.Find(moduleName)
-            .Single() /* TODO: Throw ModuleClash exception */;
-        var stream = ErgoFileStream.Open(file);
         var lexer = new Lexer(stream, Operators);
         module._parser = new Parser(lexer);
-        var directives = module._parser.DirectiveDefinitions()
+        return Module.Stage.Opened;
+    }
+
+    protected Module.Stage LoadStage_Preload(CallGraph graph, Module module)
+    {
+        var directives = module._parser!.DirectiveDefinitions()
             .GetOr([]);
         if (directives.Length == 0)
-            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, moduleName);
+            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         var declaration = directives[0];
         if (declaration.Functor != "module" || declaration.Arity != 2)
-            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, moduleName);
+            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         if (DefaultImport != null)
             module.Imports.Add(DefaultImport);
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
@@ -144,25 +150,41 @@ public class Analyzer
             .ToList();
     }
     
-    public Module LoadModule(CallGraph graph, __string moduleName)
+    public Module LoadModule(CallGraph graph, Either<string, ErgoFileStream> either)
     {
-        ModuleLocator.Index.Update();
-        var operators = new OperatorLookup();
-        if (!graph.Modules.TryGetValue(moduleName, out var module))
-            module = graph.Modules[moduleName] = new(graph, moduleName);
+        ErgoFileStream fs;
+        if (either is Case<string> { Value: var moduleName })
+        {
+            ModuleLocator.Index.Update();
+            var fileInfo = ModuleLocator.Index.Find(moduleName).First();
+            fs = ErgoFileStream.Open(fileInfo);
+        }
+        else fs = either;
+        if (!graph.Modules.TryGetValue(graph.Root, out var module))
+            module = graph.Modules[graph.Root] = new(graph, graph.Root);
         if (module.LoadStage < Module.Stage.Linked)
             module.LoadStage = LoadStage_Link(module);
+        if (module.LoadStage < Module.Stage.Opened)
+            module.LoadStage = LoadStage_Open(graph, module, fs);
         if (module.LoadStage < Module.Stage.Preloaded)
-            module.LoadStage = LoadStage_Preload(graph, module, moduleName);
+            module.LoadStage = LoadStage_Preload(graph, module);
         if (module.LoadStage < Module.Stage.Loaded)
             module.LoadStage = LoadStage_Load(graph, module);
         return module;
     }
 
-    public CallGraph LoadModule(__string moduleName)
+    public CallGraph LoadModule(ErgoFileStream fs)
     {
+        var moduleName = Path.GetFileNameWithoutExtension(fs.Name);
         var graph = new CallGraph(this, moduleName);
-        LoadModule(graph, moduleName);
+        LoadModule(graph, fs);
+        return graph;
+    }
+
+    public CallGraph LoadModule(string name)
+    {
+        var graph = new CallGraph(this, name);
+        LoadModule(graph, name);
         return graph;
     }
 }

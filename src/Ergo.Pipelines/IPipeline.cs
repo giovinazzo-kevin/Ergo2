@@ -14,5 +14,5 @@ public interface IPipeline<TInput, TOutput, in TEnv> : IPipeline
     Type IPipeline.InterType => typeof(TInput);
     Type IPipeline.OutputType => typeof(TOutput);
     Type IPipeline.EnvType => typeof(TEnv);
-    Either<TOutput, PipelineError> Run(TInput input, TEnv environment);
+    Result<TOutput, PipelineError> Run(TInput input, TEnv environment);
 }

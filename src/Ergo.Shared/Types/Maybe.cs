@@ -141,20 +141,6 @@ public readonly struct Maybe<T>
             return Value;
         throw ex();
     }
-    public Maybe<Either<T, U>> Either<U>(Func<Maybe<U>> other)
-    {
-        if (HasValue)
-            return Maybe.Some<Either<T, U>>(Value);
-        if (other().TryGetValue(out var v))
-            return Maybe.Some<Either<T, U>>(v);
-        return default;
-    }
-    public Either<T, U> GetEither<U>(U other)
-    {
-        if (HasValue)
-            return Value;
-        return other;
-    }
 
     public Maybe<T> Do(Action<T>? some = null, Action? none = null) => Map<T>(v => { some?.Invoke(v); return v; }, () => { none?.Invoke(); return default; });
     public Maybe<T> Do(Action? some = null, Action? none = null) => Map<T>(v => { some?.Invoke(); return v; }, () => { none?.Invoke(); return default; });

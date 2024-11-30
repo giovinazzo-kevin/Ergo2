@@ -53,6 +53,23 @@ public sealed partial class KnowledgeBase
 
     }
 
+    public void SaveTo(FileInfo file)
+    {
+        if (!file.Directory!.Exists)
+            file.Directory.Create();
+        using var fs = file.OpenWrite();
+        var bytes = new byte[sizeof(__WORD)].AsSpan();
+        for (int i = 0; i < Data.Length; i += 4)
+        {
+            bytes[0] = (byte)(Data[i] >> 0);
+            bytes[1] = (byte)(Data[i] >> 8);
+            bytes[2] = (byte)(Data[i] >> 16);
+            bytes[3] = (byte)(Data[i] >> 24);
+            fs.Write(bytes);
+        }
+        fs.Flush();
+    }
+
     private static __WORD[] ReadFile(ErgoFileStream file)
     {
         return [];

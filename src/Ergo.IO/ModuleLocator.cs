@@ -7,6 +7,8 @@ public class ModuleLocator
     public readonly List<string> SearchPaths;
     public readonly ModuleLocatorIndex Index;
 
+    public static readonly ModuleLocator Default = new([@".\ergo"]);
+
     public ModuleLocator(params List<string> paths)
     {
         SearchPaths = paths;

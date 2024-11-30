@@ -11,8 +11,9 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
     {
         Unloaded = 0,
         Linked = 1,
-        Preloaded = 2,
-        Loaded = 3
+        Opened = 2,
+        Preloaded = 3,
+        Loaded = 4
     }
 
     private __string _name = name;

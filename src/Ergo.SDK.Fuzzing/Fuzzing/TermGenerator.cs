@@ -188,7 +188,7 @@ public class TermGenerator
          Enumerable.Range(0, _rng.Next(min, max + 1))
         .Select(_ => one())
         .ToArray();
-    public Tx<TermGeneratorProfile> Transact(TermGeneratorProfile tmp)
+    public Transaction<TermGeneratorProfile> Transact(TermGeneratorProfile tmp)
     {
         var oldProfile = Profile;
         Profile = tmp;

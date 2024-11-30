@@ -1,6 +1,6 @@
 ﻿namespace Ergo.Shared.Types;
 
-public class Tx<TState>(TState state, Action<TState>? rollback = null, Action? commit = null, Action? always = null) : IDisposable
+public class Transaction<TState>(TState state, Action<TState>? rollback = null, Action? commit = null, Action? always = null) : IDisposable
 {
     private bool _disposed = false;
     private bool _commit = false;

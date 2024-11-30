@@ -6,6 +6,7 @@ namespace Ergo.Compiler.Analysis;
 public class LibraryLocator
 {
     private readonly ILookup<string, Type> _types;
+
     public LibraryLocator(params Assembly[] lookInAssemblies)
     {
         _types = lookInAssemblies

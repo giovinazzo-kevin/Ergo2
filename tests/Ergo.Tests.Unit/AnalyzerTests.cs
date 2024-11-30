@@ -13,7 +13,7 @@ public class AnalyzerTests
     protected Module Load<T>()
         where T : Library
     {
-        var moduleLocator = new ModuleLocator("./ergo/");
+        var moduleLocator = ModuleLocator.Default;
         var libraryLocator = new LibraryLocator(Libraries.Standard);
         var operatorLookup = new OperatorLookup();
         var analyzer = new Analyzer(moduleLocator, libraryLocator, operatorLookup);
