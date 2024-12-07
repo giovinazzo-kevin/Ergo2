@@ -12,7 +12,9 @@ public sealed class EmitterContext
     private readonly OperatorLookup _operators;
 
     public int PC { get; private set; }
-    internal EmitterContext(OperatorLookup operators) => _operators = operators;
+    public int NumVars { get; set; } = 0;
+
+    internal EmitterContext(OperatorLookup? operators = null) => _operators = operators ?? new ();
     public EmitterContext Scope() => new(_operators)
     {
         _constants = _constants,
@@ -72,7 +74,7 @@ public sealed class EmitterContext
         }
         return j;
     }
-    public __WORD[] ToArray()
+    public KnowledgeBaseBytecode ToKnowledgeBase()
     {
         var operatorsLength = _operators.Values.Sum(x => x.Functors.Length + 3);
         var instructionsLength = _instructions.Sum(x => x.Size);
@@ -95,6 +97,20 @@ public sealed class EmitterContext
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
-        return data;
+        return new(data);
+    }
+    public QueryBytecode ToQuery()
+    {
+        var instructionsLength = _instructions.Sum(x => x.Size);
+        var data = new __WORD[instructionsLength];
+        var span = data.AsSpan();
+        for (int i = 0; i < _instructions.Count; i++)
+            _instructions[i].Emit(ref span);
+        Array.Resize(ref data, data.Length + _constants.Count + 1);
+        Array.Copy(data, 0, data, _constants.Count + 1, instructionsLength);
+        span = data.AsSpan();
+        span[0] = _constantLookup.Count;
+        _constants.CopyTo(span[1..]);
+        return new(data);
     }
 }

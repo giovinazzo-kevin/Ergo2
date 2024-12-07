@@ -1,0 +1,520 @@
+{
+  "Name": "Ergo2",
+  "Subdirectories": [
+    {
+      "Name": "libs",
+      "Subdirectories": [
+        {
+          "Name": "math",
+          "Subdirectories": [
+            {
+              "Name": "ergo",
+              "Subdirectories": [],
+              "Files": [
+                "math.ergo"
+              ]
+            }
+          ],
+          "Files": [
+            "LibMath.cs"
+          ]
+        },
+        {
+          "Name": "prologue",
+          "Subdirectories": [
+            {
+              "Name": "Directives",
+              "Subdirectories": [],
+              "Files": [
+                "DeclareModule.cs",
+                "DeclareOperator.cs",
+                "UseModule.cs"
+              ]
+            },
+            {
+              "Name": "ergo",
+              "Subdirectories": [],
+              "Files": [
+                "prologue.ergo"
+              ]
+            }
+          ],
+          "Files": [
+            "LibPrologue.cs"
+          ]
+        }
+      ],
+      "Files": []
+    },
+    {
+      "Name": "src",
+      "Subdirectories": [
+        {
+          "Name": "Ergo.Compiler.Analysis",
+          "Subdirectories": [
+            {
+              "Name": "CallGraphs",
+              "Subdirectories": [],
+              "Files": [
+                "BuiltIn.cs",
+                "CallGraph.cs",
+                "Clause.cs",
+                "Cut.cs",
+                "Directive.cs",
+                "DynamicGoal.cs",
+                "Goal.cs",
+                "LateBoundGoal.cs",
+                "Library.cs",
+                "Module.cs",
+                "Predicate.cs",
+                "StaticGoal.cs"
+              ]
+            },
+            {
+              "Name": "Exceptions",
+              "Subdirectories": [],
+              "Files": [
+                "AnalyzerError.cs",
+                "AnalyzerException.cs"
+              ]
+            }
+          ],
+          "Files": [
+            "Analyzer.cs",
+            "LibraryLocator.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Compiler.Emission",
+          "Subdirectories": [
+            {
+              "Name": "Bytecode",
+              "Subdirectories": [],
+              "Files": [
+                "Bytecode.cs",
+                "KnowledgeBaseBytecode.cs",
+                "QueryBytecode.cs"
+              ]
+            },
+            {
+              "Name": "Emitter",
+              "Subdirectories": [],
+              "Files": [
+                "Emitter.cs",
+                "EmitterContext.cs"
+              ]
+            },
+            {
+              "Name": "KnowledgeBase",
+              "Subdirectories": [],
+              "Files": [
+                "KnowledgeBase.cs",
+                "KnowledgeBaseLocator.cs",
+                "KnowledgeBaseLocatorIndex.cs"
+              ]
+            },
+            {
+              "Name": "Ops",
+              "Subdirectories": [],
+              "Files": [
+                "Op.cs",
+                "OpCode.cs",
+                "Ops.cs"
+              ]
+            },
+            {
+              "Name": "Words",
+              "Subdirectories": [],
+              "Files": [
+                "Signature.cs",
+                "Term.cs",
+                "WordExtensions.cs"
+              ]
+            }
+          ],
+          "Files": [
+            "Query.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.IO",
+          "Subdirectories": [],
+          "Files": [
+            "ErgoFileStream.cs",
+            "ModuleLocator.cs",
+            "ModuleLocatorIndex.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Language.AST",
+          "Subdirectories": [
+            {
+              "Name": "Extensions",
+              "Subdirectories": [],
+              "Files": [
+                "TermExtensions.cs"
+              ]
+            },
+            {
+              "Name": "TypeDefs",
+              "Subdirectories": [],
+              "Files": [
+                "Collection.cs",
+                "Operator.cs",
+                "Signature.cs",
+                "TerminatedCollection.cs"
+              ]
+            },
+            {
+              "Name": "Types",
+              "Subdirectories": [
+                {
+                  "Name": "Abstract",
+                  "Subdirectories": [],
+                  "Files": [
+                    "IAbstractTerm.cs"
+                  ]
+                },
+                {
+                  "Name": "Atoms",
+                  "Subdirectories": [],
+                  "Files": [
+                    "__bool.cs",
+                    "__double.cs",
+                    "__int.cs",
+                    "__string.cs"
+                  ]
+                },
+                {
+                  "Name": "Expressions",
+                  "Subdirectories": [
+                    {
+                      "Name": "Collections",
+                      "Subdirectories": [],
+                      "Files": [
+                        "CollectionExpression.cs",
+                        "List.cs",
+                        "Set.cs"
+                      ]
+                    },
+                    {
+                      "Name": "Specialized",
+                      "Subdirectories": [],
+                      "Files": [
+                        "ConsExpression.cs",
+                        "SignatureExpression.cs"
+                      ]
+                    }
+                  ],
+                  "Files": [
+                    "BinaryExpression.cs",
+                    "Expression.cs",
+                    "PostfixExpression.cs",
+                    "PrefixExpression.cs",
+                    "UnaryExpression.cs"
+                  ]
+                },
+                {
+                  "Name": "TopLevel",
+                  "Subdirectories": [],
+                  "Files": [
+                    "Clause.cs",
+                    "Directive.cs",
+                    "Fact.cs",
+                    "Module.cs"
+                  ]
+                }
+              ],
+              "Files": [
+                "Atom.cs",
+                "Complex.cs",
+                "Term.cs",
+                "Variable.cs"
+              ]
+            },
+            {
+              "Name": "WellKnown",
+              "Subdirectories": [],
+              "Files": [
+                "Collections.cs",
+                "Functors.cs",
+                "Literals.cs",
+                "Operators.cs"
+              ]
+            }
+          ],
+          "Files": []
+        },
+        {
+          "Name": "Ergo.Language.Lexing",
+          "Subdirectories": [
+            {
+              "Name": "Exceptions",
+              "Subdirectories": [],
+              "Files": [
+                "LexerError.cs",
+                "LexerException.cs"
+              ]
+            },
+            {
+              "Name": "Types",
+              "Subdirectories": [],
+              "Files": [
+                "LexerState.cs",
+                "Token.cs"
+              ]
+            },
+            {
+              "Name": "Utils",
+              "Subdirectories": [],
+              "Files": [
+                "LexerUtils.cs",
+                "OperatorLookup.cs"
+              ]
+            },
+            {
+              "Name": "WellKnown",
+              "Subdirectories": [],
+              "Files": [
+                "Symbols.cs"
+              ]
+            }
+          ],
+          "Files": [
+            "Lexer.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Language.Parsing",
+          "Subdirectories": [
+            {
+              "Name": "Exceptions",
+              "Subdirectories": [],
+              "Files": [
+                "ParserError.cs",
+                "ParserException.cs"
+              ]
+            },
+            {
+              "Name": "Extensions",
+              "Subdirectories": [],
+              "Files": [
+                "ParserExtensions.cs"
+              ]
+            },
+            {
+              "Name": "Types",
+              "Subdirectories": [],
+              "Files": [
+                "Block.cs"
+              ]
+            },
+            {
+              "Name": "Utils",
+              "Subdirectories": [],
+              "Files": [
+                "AbstractParserLookup.cs",
+                "ParserContext.cs"
+              ]
+            }
+          ],
+          "Files": [
+            "Parser.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Language.Unification",
+          "Subdirectories": [
+            {
+              "Name": "Extensions",
+              "Subdirectories": [],
+              "Files": [
+                "TermExtensions.cs"
+              ]
+            }
+          ],
+          "Files": []
+        },
+        {
+          "Name": "Ergo.Libs",
+          "Subdirectories": [],
+          "Files": [
+            "Libraries.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Pipelines",
+          "Subdirectories": [
+            {
+              "Name": ".Extensions",
+              "Subdirectories": [],
+              "Files": [
+                "ServiceCollectionExtensions.cs"
+              ]
+            },
+            {
+              "Name": "Analysis",
+              "Subdirectories": [],
+              "Files": [
+                "Analyze.cs"
+              ]
+            },
+            {
+              "Name": "Compiler",
+              "Subdirectories": [],
+              "Files": [
+                "Compile.cs"
+              ]
+            },
+            {
+              "Name": "IO",
+              "Subdirectories": [],
+              "Files": [
+                "LoadSource.cs"
+              ]
+            }
+          ],
+          "Files": [
+            "IPipeline.cs",
+            "Pipeline.cs",
+            "PipelineError.cs",
+            "Steps.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Runtime.WAM",
+          "Subdirectories": [],
+          "Files": [
+            "ErgoVM.Api.cs",
+            "ErgoVM.Constants.cs",
+            "ErgoVM.Helpers.cs",
+            "ErgoVM.Memory.cs",
+            "ErgoVM.Ops.Choice.cs",
+            "ErgoVM.Ops.Control.cs",
+            "ErgoVM.Ops.Cut.cs",
+            "ErgoVM.Ops.Get.cs",
+            "ErgoVM.Ops.Indexing.cs",
+            "ErgoVM.Ops.Put.cs",
+            "ErgoVM.Ops.Set.cs",
+            "ErgoVM.Ops.Unify.cs",
+            "ErgoVM.OpTable.cs",
+            "ErgoVM.Readers.cs",
+            "ErgoVM.Types.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.SDK.Fuzzing",
+          "Subdirectories": [
+            {
+              "Name": "Fuzzing",
+              "Subdirectories": [],
+              "Files": [
+                "ErgoFuzzer.cs",
+                "FuzzerState.cs",
+                "TermGenerator.cs",
+                "TermGeneratorContext.cs",
+                "TermGeneratorProfile.cs"
+              ]
+            }
+          ],
+          "Files": []
+        },
+        {
+          "Name": "Ergo.Shared",
+          "Subdirectories": [
+            {
+              "Name": "Exceptions",
+              "Subdirectories": [],
+              "Files": [
+                "ErgoException.cs"
+              ]
+            },
+            {
+              "Name": "Extensions",
+              "Subdirectories": [],
+              "Files": [
+                "EnumExtensions.cs",
+                "StringExtensions.cs",
+                "TypeExtensions.cs"
+              ]
+            },
+            {
+              "Name": "Interfaces",
+              "Subdirectories": [],
+              "Files": [
+                "IError.cs",
+                "IExplainable.cs",
+                "IUnifiable.cs"
+              ]
+            },
+            {
+              "Name": "Types",
+              "Subdirectories": [],
+              "Files": [
+                "Either.cs",
+                "Maybe.cs",
+                "Result.cs",
+                "Transaction.cs",
+                "Trie.cs",
+                "Unit.cs"
+              ]
+            }
+          ],
+          "Files": []
+        },
+        {
+          "Name": "Ergo.Tools.Fuzzer",
+          "Subdirectories": [],
+          "Files": [
+            "Program.cs"
+          ]
+        }
+      ],
+      "Files": []
+    },
+    {
+      "Name": "tests",
+      "Subdirectories": [
+        {
+          "Name": "Ergo.Tests.Performance",
+          "Subdirectories": [],
+          "Files": [
+            "Measure.cs",
+            "PerformanceTests.cs"
+          ]
+        },
+        {
+          "Name": "Ergo.Tests.Unit",
+          "Subdirectories": [
+            {
+              "Name": ".suppressions",
+              "Subdirectories": [],
+              "Files": [
+                "GlobalSuppressions.cs"
+              ]
+            },
+            {
+              "Name": "ergo",
+              "Subdirectories": [],
+              "Files": [
+                "emitter_tests.ergo"
+              ]
+            }
+          ],
+          "Files": [
+            "AnalyzerTests.cs",
+            "EmitterTests.cs",
+            "LexerTests.cs",
+            "ParserTests.cs",
+            "PipelineTests.cs",
+            "VMTests.cs"
+          ]
+        }
+      ],
+      "Files": []
+    }
+  ],
+  "Files": [
+    "Ergo2.sln"
+  ]
+}

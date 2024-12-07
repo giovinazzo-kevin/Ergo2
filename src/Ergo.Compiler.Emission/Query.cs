@@ -2,6 +2,4 @@
 
 namespace Ergo.Compiler.Emission;
 
-public record Query(ReadOnlyMemory<__WORD> Code, int Start)
-{
-}
+public record Query(QueryBytecode Bytecode);

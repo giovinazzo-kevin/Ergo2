@@ -26,9 +26,7 @@ public class VMTests
         var analyzer = new Analyzer(moduleLocator, libraryLocator, operatorLookup);
         var graph = analyzer.LoadModule(moduleName);
         var emitter = new Emitter();
-        var kb = emitter.Compile(graph);
-        //var fs = KnowledgeBase.Serialize(kb);
-        //fs.Save(Path.Combine(BIN_PATH, kb.Name) + KnowledgeBaseLocator.EXT);
+        var kb = emitter.KnowledgeBase(graph);
         return kb;
     }
 
@@ -38,12 +36,21 @@ public class VMTests
     [InlineData(REF, 3)]
     [InlineData(STR, int.MaxValue)]
     [InlineData(STR, -348534)]
-    public void WordsArePackedCorrectly(__TAG tag, int value) 
+    public void WordsArePackedCorrectly(__TAG tag, int value)
     {
         Term fromValue = (tag, value);
         Term fromRawValue = fromValue.RawValue;
         Assert.Equal(fromValue.RawValue, fromRawValue.RawValue);
         Assert.Equal(fromValue.Value, fromRawValue.Value);
         Assert.Equal(fromValue.Tag, fromRawValue.Tag);
+    }
+
+    [Fact]
+    public void FactSucceeds()
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var query = kb.Query("fact");
+        var vm = new ErgoVM();
+        vm.Run(kb, query);
     }
 }

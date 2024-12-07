@@ -23,9 +23,9 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
     public Result<KnowledgeBase, PipelineError> Run(CallGraph input, Env env)
     {
         var emitter = new Emitter();
-        var kb = emitter.Compile(input);
+        var kb = emitter.KnowledgeBase(input);
         if (env.SaveToPath is not null)
-            kb.SaveTo(new(Path.Combine(env.SaveToPath, input.Root + ".kb")));
+            kb.Bytecode.SaveTo(new(Path.Combine(env.SaveToPath, input.Root + ".kb")));
         return kb;
     }
 }

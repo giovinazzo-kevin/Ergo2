@@ -8,6 +8,8 @@ public class Clause(Predicate parent, Term[] args) : CallGraph.Node<Predicate>
     public readonly Term[] Args = args;
     public readonly List<Goal> Goals = [];
 
+    public bool NeedsStackFrame => Args.Any(x => !x.IsGround) || Goals.Count > 0;
+
     public bool IsRecursive => Goals.Any(x
         => x is StaticGoal { Callee: var callee } && callee == parent
     );

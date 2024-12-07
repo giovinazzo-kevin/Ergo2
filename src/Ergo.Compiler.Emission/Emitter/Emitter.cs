@@ -1,4 +1,6 @@
 ﻿using Ergo.Compiler.Analysis;
+using Ergo.Lang.Ast;
+using Ergo.Shared.Extensions;
 using System;
 using static Ergo.Compiler.Emission.Ops;
 
@@ -7,7 +9,7 @@ namespace Ergo.Compiler.Emission;
 
 public class Emitter
 {
-    public virtual KnowledgeBase Compile(CallGraph graph)
+    public virtual KnowledgeBase KnowledgeBase(CallGraph graph)
     {
         var ctx = new EmitterContext(graph.Analyzer.Operators);
         foreach (var module in graph.Modules.Values)
@@ -15,7 +17,16 @@ public class Emitter
             foreach (var pred in module.Predicates.Values)
                 Predicate(ctx, pred);
         }
-        return new KnowledgeBase((string)graph.Root.Value, ctx.ToArray());
+        var code = ctx.ToKnowledgeBase();
+        return new KnowledgeBase((string)graph.Root.Value, code);
+    }
+
+    public virtual Query Query(Lang.Ast.Term query)
+    {
+        var ctx = new EmitterContext(new());
+        Write(ctx, [query], 0);
+        var code = ctx.ToQuery();
+        return new Query(code);
     }
 
     protected virtual void Predicate(EmitterContext ctx, Predicate predicate)
@@ -24,28 +35,34 @@ public class Emitter
         var n = predicate.Signature.Arity;
         ctx.Label((p, n), ctx.PC);
         var clauseCtxs = new EmitterContext[predicate.Clauses.Count];
-        for (var i = 0; i < predicate.Clauses.Count; i++)
+        foreach (var (clause, i) in predicate.Clauses.Iterate())
         {
             clauseCtxs[i] = ctx.Scope();
-            clauseCtxs[i].Emit(allocate);
-            for (int j = 0; j < predicate.Clauses[i].Args.Length; j++)
-                Read(ctx, predicate.Clauses[i].Args[j], j);
-            foreach (var goal in predicate.Clauses[i].Goals)
+            if (clause.NeedsStackFrame)
+                clauseCtxs[i].Emit(allocate);
+            for (int j = 0; j < clause.Args.Length; j++)
+                Read(clauseCtxs[i], clause.Args, j);
+            foreach (var goal in clause.Goals)
             {
                 for (int k = 0; k < goal.Args.Length; k++)
-                    Write(ctx, goal.Args[k], k);
-                Goal(ctx, goal);
+                    Write(clauseCtxs[i], goal.Args, k);
+                Goal(clauseCtxs[i], goal);
             }
-            clauseCtxs[i].Emit(deallocate);
+            if (clause.NeedsStackFrame)
+                clauseCtxs[i].Emit(deallocate);
+            clauseCtxs[i].Emit(proceed);
         }
         for (var i = 0; i < predicate.Clauses.Count; i++)
         {
-            if (i == predicate.Clauses.Count - 1)
-                ctx.Emit(trust_me);
-            else if (i > 0)
-                ctx.Emit(retry_me_else(ctx.PC + clauseCtxs[..i].Sum(x => x.PC + 2)));
-            else
-                ctx.Emit(try_me_else(ctx.PC + clauseCtxs[0].PC + 2));
+            if (predicate.Clauses.Count > 1)
+            {
+                if (i == predicate.Clauses.Count - 1)
+                    ctx.Emit(trust_me);
+                else if (i > 0)
+                    ctx.Emit(retry_me_else(ctx.PC + clauseCtxs[..i].Sum(x => x.PC + 2)));
+                else
+                    ctx.Emit(try_me_else(ctx.PC + clauseCtxs[0].PC + 2));
+            }
             ctx.EmitMany(clauseCtxs[i]);
         }
     }
@@ -72,19 +89,23 @@ public class Emitter
         }
     }
 
-    protected virtual void Read(EmitterContext ctx, Lang.Ast.Term t, int Ai)
+    protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {
-        switch (t)
+        switch (args[Ai])
         {
-            case Lang.Ast.Complex @struct:
+            case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
                 ctx.Emit(get_structure(fn, Ai));
                 break;
-            case Lang.Ast.Variable @var:
-                ctx.Emit(get_value(0, Ai));
+            case Variable @var when var.Value is __int @i:
+                ctx.Emit(get_value((__WORD)@i, Ai));
                 break;
-            case Lang.Ast.Atom @const:
+            case Variable @var:
+                var.Value = (__int)ctx.NumVars;
+                ctx.Emit(get_variable(ctx.NumVars++, Ai));
+                break;
+            case Atom @const:
                 var c = ctx.Constant(@const.Value);
                 ctx.Emit(get_constant(c, Ai));
                 break;
@@ -92,19 +113,23 @@ public class Emitter
         }
     }
 
-    protected virtual void Write(EmitterContext ctx, Lang.Ast.Term t, int Ai)
+    protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {
-        switch (t)
+        switch (args[Ai])
         {
-            case Lang.Ast.Complex @struct:
+            case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
                 ctx.Emit(put_structure(fn, Ai));
                 break;
-            case Lang.Ast.Variable @var:
-                ctx.Emit(put_value(0, Ai));
+            case Variable @var when var.Value is __int @i:
+                ctx.Emit(put_value((__WORD)@i, Ai));
                 break;
-            case Lang.Ast.Atom @const:
+            case Variable @var:
+                var.Value = (__int)ctx.NumVars;
+                ctx.Emit(put_variable(ctx.NumVars++, Ai));
+                break;
+            case Atom @const:
                 var c = ctx.Constant(@const.Value);
                 ctx.Emit(put_constant(c, Ai));
                 break;

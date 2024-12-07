@@ -1,18 +1,21 @@
 ﻿using Ergo.Compiler.Emission;
+using Microsoft.VisualBasic;
+using static Ergo.Compiler.Analysis.CallGraph;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
-    public void Init(Query query)
+    protected virtual void Initialize()
     {
-        _ROM = query.Code;
-        P = query.Start;
-        _labels.Clear();
+
     }
 
-    public void Run()
+    public void Run(KnowledgeBase kb, Query query)
     {
-        while(P < Code.Length)
+        Initialize();
+        (P, _BYTECODE) = (0, query.Bytecode);
+        while (P < Code.Length)
             OP_TABLE[__word()](this);
+        (P, _BYTECODE) = (0, kb.Bytecode);
     }
 }

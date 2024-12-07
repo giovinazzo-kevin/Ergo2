@@ -3,7 +3,7 @@
 public enum OpCode : byte
 {
     put_variable_heap,
-    put_variable_stack,
+    put_variable,
     put_value,
     put_unsafe_value,
     put_structure,

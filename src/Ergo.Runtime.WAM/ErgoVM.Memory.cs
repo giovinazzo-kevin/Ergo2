@@ -5,15 +5,18 @@ namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
-    #region Physical Memory Layout
-    private ReadOnlyMemory<__WORD> _ROM;
-    private __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
+    #region External Memory
+    #endregion
 
+    #region Physical Memory Layout
+    private __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
+    private Bytecode _BYTECODE = null!;
     private readonly Dictionary<__WORD, __ADDR> _labels = [];
     #endregion
 
     #region Logical Memory Areas
-    public ReadOnlySpan<__WORD> Code => _ROM.Span;
+    public ReadOnlySpan<__WORD> Code => _BYTECODE.Code;
+    public ReadOnlySpan<Lang.Ast.Atom> Constants => _BYTECODE.Constants;
     public Span<__WORD> Store => _RAM.AsSpan();
     public Span<__WORD> Heap => _RAM.AsSpan(0, HEAP_SIZE);
     public Span<__WORD> Stack => _RAM.AsSpan(HEAP_SIZE, STACK_SIZE);
