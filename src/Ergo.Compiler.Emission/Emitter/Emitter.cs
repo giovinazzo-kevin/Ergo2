@@ -45,7 +45,7 @@ public class Emitter
                 return ctx;
             }
             var sign = term.GetSignature()
-                .GetOrThrow(); // TODO: Insufficient data for a meaningful answer
+                .GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
             needsStackFrame = term.GetVariables().Any();
             var args = term.GetArguments();
             for (int i = 0; i < args.Length; ++i)

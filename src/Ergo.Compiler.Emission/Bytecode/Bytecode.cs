@@ -1,5 +1,6 @@
 ﻿using Ergo.IO;
 using Ergo.Lang.Ast;
+using Ergo.Shared.Extensions;
 using System;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -18,13 +19,14 @@ public abstract class Bytecode
     protected Atom[] _consts;
     public ReadOnlySpan<__WORD> Code => _bytes.AsSpan(_codeStart);
     public ReadOnlySpan<Atom> Constants => _consts;
-    public readonly Dictionary<object, int> ConstantsLookup = [];
+    public readonly Dictionary<object, int> ConstantsLookup;
     public readonly Dictionary<__WORD, __WORD> Labels = [];
 
     protected Bytecode(__WORD[] bytes, Atom[] constants)
     {
         ReadOnlySpan<__WORD> span = _bytes = bytes;
         _consts = constants;
+        ConstantsLookup = _consts.Iterate().ToDictionary(x => x.Item.Value, x => x.Index);
         LoadData(ref span);
         _codeStart = _bytes.Length - span.Length;
     }

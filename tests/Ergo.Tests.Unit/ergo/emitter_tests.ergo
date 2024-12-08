@@ -3,6 +3,9 @@
 fact.
 another_fact :- fact.
 
+multiple_fact :- fact.
+multiple_fact :- another_fact.
+
 complex_fact(0, 1, 2).
 
 parent(john, mary).

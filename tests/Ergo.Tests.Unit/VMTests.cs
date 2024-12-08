@@ -45,12 +45,25 @@ public class VMTests
         Assert.Equal(fromValue.Tag, fromRawValue.Tag);
     }
 
-    [Fact]
-    public void FactSucceeds()
+    [Theory]
+    [InlineData("fact", 1)]
+    [InlineData("another_fact", 1)]
+    [InlineData("multiple_fact", 2)]
+    public void FactSucceeds(string fact, int numSolutions)
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
-        var query = kb.Query("fact");
+        var query = kb.Query(fact);
         var vm = new ErgoVM();
+        var actualSolutions = 0;
+        vm.Solution += _ => actualSolutions++;
         vm.Run(query);
+        Assert.Equal(numSolutions, actualSolutions);
+    }
+
+    [Fact]
+    public void UndefinedPredicateThrows()
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        Assert.Throws<InvalidOperationException>(() => kb.Query("undefined_predicate"));
     }
 }

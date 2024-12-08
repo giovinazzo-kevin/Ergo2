@@ -64,47 +64,63 @@ public class EmitterTests
     {
         var module = nameof(emitter_tests);
         Emit(module, out var graph, out var kb);
-        var span = kb.Bytecode.Code;
+        var query = kb.Query("fact").Bytecode;
+        var span = query.Code;
         // fact/0
         AssertOp(OpCode.proceed, ref span);
         // another_fact/0
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.call, ref span);
-        AssertSignature("fact", 0, ref span, kb.Bytecode);
+        AssertSignature("fact", 0, ref span, query);
+        AssertOp(OpCode.deallocate, ref span);
+        AssertOp(OpCode.proceed, ref span);
+        // multiple_fact/0 (1)
+        AssertOp(OpCode.try_me_else, ref span);
+        AssertInt32(7, ref span);
+        AssertOp(OpCode.allocate, ref span);
+        AssertOp(OpCode.call, ref span);
+        AssertSignature("fact", 0, ref span, query);
+        AssertOp(OpCode.deallocate, ref span);
+        AssertOp(OpCode.proceed, ref span);
+        // multiple_fact/0 (2)
+        AssertOp(OpCode.trust_me, ref span);
+        AssertOp(OpCode.allocate, ref span);
+        AssertOp(OpCode.call, ref span);
+        AssertSignature("another_fact", 0, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
         // complex_fact/3
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst(0, ref span, kb.Bytecode);
+        AssertConst(0, ref span, query);
         AssertInt32(0, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst(1, ref span, kb.Bytecode);
+        AssertConst(1, ref span, query);
         AssertInt32(1, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst(2, ref span, kb.Bytecode);
+        AssertConst(2, ref span, query);
         AssertInt32(2, ref span);
         AssertOp(OpCode.proceed, ref span);
         // parent/2
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(9, ref span);
+        AssertInt32(12, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst("john", ref span, kb.Bytecode);
+        AssertConst("john", ref span, query);
         AssertInt32(0, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst("mary", ref span, kb.Bytecode);
+        AssertConst("mary", ref span, query);
         AssertInt32(1, ref span);
         AssertOp(OpCode.proceed, ref span);
         AssertOp(OpCode.trust_me, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst("mary", ref span, kb.Bytecode);
+        AssertConst("mary", ref span, query);
         AssertInt32(0, ref span);
         AssertOp(OpCode.get_constant, ref span);
-        AssertConst("susan", ref span, kb.Bytecode);
+        AssertConst("susan", ref span, query);
         AssertInt32(1, ref span);
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Y).
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(22, ref span);
+        AssertInt32(25, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(0, ref span);
@@ -119,7 +135,7 @@ public class EmitterTests
         AssertInt32(1, ref span);
         AssertInt32(1, ref span);
         AssertOp(OpCode.call, ref span);
-        AssertSignature("parent", 2, ref span, kb.Bytecode);
+        AssertSignature("parent", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Z), ancestor(Z,Y).
@@ -138,7 +154,7 @@ public class EmitterTests
         AssertInt32(2, ref span); // Z
         AssertInt32(1, ref span); // A1
         AssertOp(OpCode.call, ref span); 
-        AssertSignature("parent", 2, ref span, kb.Bytecode);
+        AssertSignature("parent", 2, ref span, query);
         AssertOp(OpCode.put_value, ref span);
         AssertInt32(2, ref span); // Z
         AssertInt32(0, ref span); // A0
@@ -146,9 +162,11 @@ public class EmitterTests
         AssertInt32(1, ref span); // Y
         AssertInt32(1, ref span); // A1
         AssertOp(OpCode.call, ref span); 
-        AssertSignature("ancestor", 2, ref span, kb.Bytecode);
+        AssertSignature("ancestor", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
+        // ?- fact.
+        AssertOp(OpCode.call, ref span);
+        AssertSignature("fact", 0, ref span, query);
     }
-
 }

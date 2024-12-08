@@ -8,6 +8,10 @@
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);WAM_TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
     <ProjectReference Include="..\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj" />

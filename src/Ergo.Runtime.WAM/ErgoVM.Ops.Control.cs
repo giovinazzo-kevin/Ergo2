@@ -1,4 +1,6 @@
-﻿namespace Ergo.Runtime.WAM;
+﻿using System.Diagnostics;
+
+namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     #region Control Instructions
@@ -10,6 +12,9 @@ public partial class ErgoVM
     /// </summary>
     protected void Allocate()
     {
+#if WAM_TRACE
+        Trace.WriteLine($":ALLOC");
+#endif
         var newE = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
             : B + Stack[B] + 8;
@@ -26,6 +31,9 @@ public partial class ErgoVM
     /// </summary>
     protected void Deallocate()
     {
+#if WAM_TRACE
+        Trace.WriteLine($":DELOC");
+#endif
         CP = Stack[E + 1];
         E = Stack[E];
     }
@@ -41,13 +49,22 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+#if WAM_TRACE
+            Trace.WriteLine($"CALL: {Constants[p.F]}/{p.N}");
+#endif
             CP = P;
             N = p.N;
             B0 = B;
             P = a;
         }
         else
+        {
+#if DEBUG
+            throw new Exception($"Undefined predicate: {Constants[p.F]}/{p.N}");
+#else
             backtrack();
+#endif
+        }
     }
     /// <summary>
     /// If P is defined, then save the current Choice Point's
@@ -60,12 +77,21 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+#if WAM_TRACE
+            Trace.WriteLine($"EXEC: {Constants[p.F]}/{p.N}");
+#endif
             N = p.N;
             B0 = B;
             P = a;
         }
         else
+        {
+#if DEBUG
+            throw new Exception($"Undefined predicate: {Constants[p.F]}/{p.N}");
+#else
             backtrack();
+#endif
+        }
     }
     /// <summary>
     /// Continue execution at instruction whose address is
@@ -73,7 +99,11 @@ public partial class ErgoVM
     /// </summary>
     protected void Proceed()
     {
+#if WAM_TRACE
+        Trace.WriteLine($":PROC");
+#endif
+        Solution.Invoke(this);
         P = CP;
     }
-    #endregion
+#endregion
 }

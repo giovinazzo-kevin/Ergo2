@@ -1,4 +1,5 @@
 ﻿using Ergo.Lang.Lexing;
+using Microsoft.VisualBasic;
 using System.Text;
 
 namespace Ergo.Compiler.Emission;
@@ -29,7 +30,7 @@ public sealed class EmitterContext
     public void Concat(EmitterContext other)
     {
         _instructions.AddRange(other._instructions);
-        other._instructions.Clear();
+        PC += other.PC;
     }
     public void Label(Signature sig, __WORD address)
     {
@@ -123,7 +124,7 @@ public sealed class EmitterContext
         for (int i = 0; i < _instructions.Count; i++)
             _instructions[i].Emit(ref span);
         Array.Resize(ref data, data.Length + _constants.Count + 1);
-        Array.Copy(data, 0, data, _constants.Count + 1, instructionsLength);
+        Array.Copy(data, 0, data, _constants.Count + 1, data.Length - _constants.Count - 1);
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
