@@ -1,5 +1,7 @@
 ﻿using Ergo.Compiler.Analysis;
 using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
 using System;
 using static Ergo.Compiler.Emission.Ops;
@@ -21,12 +23,38 @@ public class Emitter
         return new KnowledgeBase((string)graph.Root.Value, code);
     }
 
-    public virtual Query Query(Lang.Ast.Term query)
+    public virtual Query Query(Lang.Ast.Term query, KnowledgeBaseBytecode kb)
     {
         var ctx = new EmitterContext(new());
-        Write(ctx, [query], 0);
-        var code = ctx.ToQuery();
+        var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame);
+        if (needsStackFrame)
+            ctx.Emit(allocate);
+        ctx.Concat(scope);
+        if (needsStackFrame)
+            ctx.Emit(deallocate);
+        var code = ctx.ToQuery(kb);
         return new Query(code);
+
+        EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame)
+        {
+            if (term is BinaryExpression { IsCons: true } cons && cons.Operator == Operators.Conjunction)
+            {
+                JITGoal(ctx, cons.Lhs, out var lhsNeedsStackFrame);
+                JITGoal(ctx, cons.Rhs, out var rhsNeedsStackFrame);
+                needsStackFrame = lhsNeedsStackFrame || rhsNeedsStackFrame;
+                return ctx;
+            }
+            var sign = term.GetSignature()
+                .GetOrThrow(); // TODO: Insufficient data for a meaningful answer
+            needsStackFrame = term.GetVariables().Any();
+            var args = term.GetArguments();
+            for (int i = 0; i < args.Length; ++i)
+                Write(ctx, args, i);
+            if (!kb.TryResolve(sign, out var label))
+                throw new InvalidOperationException();
+            ctx.Emit(call(label));
+            return ctx;
+        }
     }
 
     protected virtual void Predicate(EmitterContext ctx, Predicate predicate)
@@ -63,7 +91,7 @@ public class Emitter
                 else
                     ctx.Emit(try_me_else(ctx.PC + clauseCtxs[0].PC + 2));
             }
-            ctx.EmitMany(clauseCtxs[i]);
+            ctx.Concat(clauseCtxs[i]);
         }
     }
 

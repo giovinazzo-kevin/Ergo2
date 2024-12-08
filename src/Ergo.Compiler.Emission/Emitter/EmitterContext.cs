@@ -26,7 +26,7 @@ public sealed class EmitterContext
         _instructions.Add(op);
         PC += op.Size;
     }
-    public void EmitMany(EmitterContext other)
+    public void Concat(EmitterContext other)
     {
         _instructions.AddRange(other._instructions);
         other._instructions.Clear();
@@ -76,10 +76,17 @@ public sealed class EmitterContext
     }
     public KnowledgeBaseBytecode ToKnowledgeBase()
     {
+        var labelsLength = _labels.Values.Count * 2 ;
         var operatorsLength = _operators.Values.Sum(x => x.Functors.Length + 3);
         var instructionsLength = _instructions.Sum(x => x.Size);
-        var data = new __WORD[instructionsLength + operatorsLength + 1];
+        var data = new __WORD[instructionsLength + operatorsLength + labelsLength + 2];
         var span = data.AsSpan();
+        span[0] = _labels.Values.Count; span = span[1..];
+        foreach (var label in _labels)
+        {
+            (span[0], span[1]) = (label.Key, label.Value);
+            span = span[2..];
+        }
         span[0] = _operators.Values.Count; span = span[1..];
         foreach (var op in _operators.Values)
         {
@@ -93,17 +100,26 @@ public sealed class EmitterContext
         for (int i = 0; i < _instructions.Count; i++)
             _instructions[i].Emit(ref span);
         Array.Resize(ref data, data.Length + _constants.Count + 1);
-        Array.Copy(data, 0, data, _constants.Count + 1, instructionsLength + operatorsLength + 1);
+        Array.Copy(data, 0, data, _constants.Count + 1, data.Length - _constants.Count - 1);
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
         return new(data);
     }
-    public QueryBytecode ToQuery()
+    public QueryBytecode ToQuery(KnowledgeBaseBytecode kb)
     {
         var instructionsLength = _instructions.Sum(x => x.Size);
-        var data = new __WORD[instructionsLength];
+        var data = new __WORD[kb.Labels.Count * 2 + 1 + kb.Code.Length + instructionsLength];
         var span = data.AsSpan();
+        span[0] = kb.Labels.Count; span = span[1..];
+        foreach(var label in kb.Labels)
+        {
+            span[0] = label.Key;
+            span[1] = label.Value;
+            span = span[2..];
+        }
+        kb.Code.CopyTo(span); 
+        span = span[kb.Code.Length..];
         for (int i = 0; i < _instructions.Count; i++)
             _instructions[i].Emit(ref span);
         Array.Resize(ref data, data.Length + _constants.Count + 1);
@@ -111,6 +127,6 @@ public sealed class EmitterContext
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
-        return new(data);
+        return new(data, kb.Constants.ToArray(), kb.Code.Length);
     }
 }

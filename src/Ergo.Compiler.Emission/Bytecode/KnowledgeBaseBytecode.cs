@@ -3,9 +3,18 @@ using Ergo.Lang.Lexing;
 
 namespace Ergo.Compiler.Emission;
 
-public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data)
+public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
 {
     public readonly OperatorLookup Operators = new();
+
+    public bool TryResolve(Lang.Ast.Signature signature, out Signature reference)
+    {
+        reference = default;
+        if (!ConstantsLookup.TryGetValue(signature.Functor.Value, out var c))
+            return false;
+        reference = (Signature)(c, signature.Arity);
+        return true;
+    }
 
     protected override void LoadData(ref ReadOnlySpan<int> span)
     {
@@ -30,7 +39,7 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data)
         span = span[3..];
         var functors = new Atom[numOfFunctors];
         for (int i = 0; i < numOfFunctors; i++)
-            functors[i] = Consts[span[i]];
+            functors[i] = _consts[span[i]];
         span = span[numOfFunctors..];
         return new Operator(precedence, type, functors);
     }

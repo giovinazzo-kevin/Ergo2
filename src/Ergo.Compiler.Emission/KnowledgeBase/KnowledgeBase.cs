@@ -39,6 +39,6 @@ public sealed partial class KnowledgeBase
         if (!parser.BinaryExpressionRhs().TryGetValue(out var ast))
             throw new InvalidOperationException();
         var emitter = new Emitter();
-        return emitter.Query(ast);
+        return emitter.Query(ast, Bytecode);
     }
 }

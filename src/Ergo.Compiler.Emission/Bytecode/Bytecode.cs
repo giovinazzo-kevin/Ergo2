@@ -13,17 +13,18 @@ public abstract class Bytecode
     private static readonly int HASH_DOUBLE = typeof(double).GetHashCode();
     private static readonly int HASH_STRING = typeof(string).GetHashCode();
 
-    private readonly __WORD[] _bytes;
-    private readonly int _codeStart;
-
-    protected Atom[] Consts { get; private set; } = [];
-
+    protected readonly __WORD[] _bytes;
+    protected readonly int _codeStart;
+    protected Atom[] _consts;
     public ReadOnlySpan<__WORD> Code => _bytes.AsSpan(_codeStart);
-    public ReadOnlySpan<Atom> Constants => Consts;
+    public ReadOnlySpan<Atom> Constants => _consts;
+    public readonly Dictionary<object, int> ConstantsLookup = [];
+    public readonly Dictionary<__WORD, __WORD> Labels = [];
 
-    protected Bytecode(__WORD[] bytes)
+    protected Bytecode(__WORD[] bytes, Atom[] constants)
     {
         ReadOnlySpan<__WORD> span = _bytes = bytes;
+        _consts = constants;
         LoadData(ref span);
         _codeStart = _bytes.Length - span.Length;
     }
@@ -48,14 +49,30 @@ public abstract class Bytecode
     protected virtual void LoadConstants(ref ReadOnlySpan<__WORD> span)
     {
         var numOfConstants = span[0]; span = span[1..];
-        Consts = new Atom[numOfConstants];
-        for (int i = 0; i < numOfConstants; i++)
-            Consts[i] = DeserializeConstant(ref span);
+        var i = _consts.Length;
+        Array.Resize(ref _consts, _consts.Length + numOfConstants);
+        for (; i < _consts.Length; i++)
+        {
+            _consts[i] = DeserializeConstant(ref span);
+            ConstantsLookup[_consts[i].Value] = i;
+        }
     }
 
     protected virtual void LoadData(ref ReadOnlySpan<__WORD> span)
     {
         LoadConstants(ref span);
+        LoadLabels(ref span);
+    }
+
+    protected virtual void LoadLabels(ref ReadOnlySpan<int> span)
+    {
+        var numOfLabels = span[0]; span = span[1..];
+        var ops = new List<Operator>();
+        for (int i = 0; i < numOfLabels; i++)
+        {
+            Labels[span[0]] = span[1];
+            span = span[2..];
+        }
     }
 
     protected static Atom DeserializeConstant(ref ReadOnlySpan<__WORD> span)

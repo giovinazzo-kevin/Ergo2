@@ -10,13 +10,12 @@ public partial class ErgoVM
 
     #region Physical Memory Layout
     private __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
-    private Bytecode _BYTECODE = null!;
-    private readonly Dictionary<__WORD, __ADDR> _labels = [];
+    private QueryBytecode _QUERY = null!;
     #endregion
 
     #region Logical Memory Areas
-    public ReadOnlySpan<__WORD> Code => _BYTECODE.Code;
-    public ReadOnlySpan<Lang.Ast.Atom> Constants => _BYTECODE.Constants;
+    public ReadOnlySpan<__WORD> Code => _QUERY.Code;
+    public ReadOnlySpan<Lang.Ast.Atom> Constants => _QUERY.Constants;
     public Span<__WORD> Store => _RAM.AsSpan();
     public Span<__WORD> Heap => _RAM.AsSpan(0, HEAP_SIZE);
     public Span<__WORD> Stack => _RAM.AsSpan(HEAP_SIZE, STACK_SIZE);
@@ -42,7 +41,7 @@ public partial class ErgoVM
 
     #region Memory Access Helpers
     protected bool defined(Signature sig, out __ADDR address)
-        => _labels.TryGetValue(sig, out address);
+        => _QUERY.Labels.TryGetValue(sig, out address);
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)
     {
         for (__WORD i = 0; i < n; i++)

@@ -51,6 +51,6 @@ public class VMTests
         var kb = Consult(nameof(EmitterTests.emitter_tests));
         var query = kb.Query("fact");
         var vm = new ErgoVM();
-        vm.Run(kb, query);
+        vm.Run(query);
     }
 }
