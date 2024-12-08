@@ -20,7 +20,7 @@ public partial class ErgoVM
     /// environment to 'unbound' and let Ai point to it.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutVariableStack()
+    protected void PutVariable()
     {
         var Yn = __word();
         var Ai = __word();

@@ -13,7 +13,7 @@ public partial class ErgoVM
     protected void Allocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine($":ALLOC");
+        Trace.WriteLine($":ALLC");
 #endif
         var newE = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -32,7 +32,7 @@ public partial class ErgoVM
     protected void Deallocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine($":DELOC");
+        Trace.WriteLine($":DLLC");
 #endif
         CP = Stack[E + 1];
         E = Stack[E];
@@ -102,7 +102,6 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($":PROC");
 #endif
-        Solution.Invoke(this);
         P = CP;
     }
 #endregion

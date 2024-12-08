@@ -5,6 +5,8 @@ namespace Ergo.Runtime.WAM;
 using Ergo.Compiler.Emission;
 using static ErgoVM.GetMode;
 using static Compiler.Emission.Term.__TAG;
+using System.Diagnostics;
+
 public partial class ErgoVM
 {
     #region Get Instructions
@@ -16,6 +18,9 @@ public partial class ErgoVM
     {
         var Vn = __word();
         var Ai = __word();
+#if WAM_TRACE
+        Trace.WriteLine($"GVAR: {Vn} {Ai}");
+#endif
         V[Vn] = A[Ai];
     }
     /// <summary>
@@ -27,6 +32,9 @@ public partial class ErgoVM
     {
         var Vn = __word();
         var Ai = __word();
+#if WAM_TRACE
+        Trace.WriteLine($"GVAL: {Vn} {Ai}");
+#endif
         unify(Vn, Ai);
         if (fail) 
             backtrack();
@@ -51,6 +59,9 @@ public partial class ErgoVM
         var Ai = __addr();
         var addr = deref(A[Ai]);
         Term cell = Store[addr];
+#if WAM_TRACE
+        Trace.WriteLine($"GSTR: {cell.Value} {Ai}");
+#endif
         if (cell is (REF, _))
         {
             Heap[H] = (Term)(STR, H + 1);
@@ -86,6 +97,9 @@ public partial class ErgoVM
         var Ai = __word();
         var addr = deref(A[Ai]);
         var cell = (Term)Store[addr];
+#if WAM_TRACE
+        Trace.WriteLine($"GLIS: {cell.Value} {Ai}");
+#endif
         if (cell is (REF, _))
         {
             Heap[H] = (Term)(LIS, H + 1);
@@ -112,16 +126,20 @@ public partial class ErgoVM
     /// </summary>
     protected void GetConstant()
     {
-        var c = __word();
+        var c = (Term)__word();
         var Ai = __word();
         var addr = deref(A[Ai]);
         var cell = (Term)Store[addr];
+#if WAM_TRACE
+        Trace.WriteLine($"GCON: {Constants[c.Value]} {Ai}");
+#endif
         if (cell is (REF, _))
         {
-            Heap[H] = (Term)(CON, c);
+            Heap[H] = c;
             trail(addr);
         }
-        else fail = cell is not (CON, var c1) || c != c1;
+        else 
+            fail = cell is not (CON, var c1) || !Constants[c.Value].Equals(Constants[c1]);
         if (fail)
             backtrack();
     }

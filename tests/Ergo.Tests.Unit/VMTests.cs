@@ -60,6 +60,19 @@ public class VMTests
         Assert.Equal(numSolutions, actualSolutions);
     }
 
+    [Theory]
+    [InlineData("complex_fact(A, B, C)", 1)]
+    public void BindingSucceeds(string fact, int numSolutions)
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var query = kb.Query(fact);
+        var vm = new ErgoVM();
+        var actualSolutions = 0;
+        vm.Solution += _ => actualSolutions++;
+        vm.Run(query);
+        Assert.Equal(numSolutions, actualSolutions);
+    }
+
     [Fact]
     public void UndefinedPredicateThrows()
     {
