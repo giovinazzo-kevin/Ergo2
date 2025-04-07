@@ -1,4 +1,6 @@
-﻿namespace Ergo.Runtime.WAM;
+﻿using System.Diagnostics;
+
+namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     #region Choice Instructions
@@ -8,8 +10,11 @@ public partial class ErgoVM
     /// to the current context, and set B to point to it.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void TryMeElse()
+    public void TryMeElse()
     {
+#if WAM_TRACE
+        Trace.WriteLine(nameof(TryMeElse));
+#endif
         var l = __addr();
         var newB = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -33,8 +38,9 @@ public partial class ErgoVM
     /// update its next clause field to L.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void RetryMeElse()
+    public void RetryMeElse()
     {
+        Trace.WriteLine(nameof(RetryMeElse));
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -53,8 +59,9 @@ public partial class ErgoVM
     /// then discard it by resetting B to its predecessor.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void TrustMe()
+    public void TrustMe()
     {
+        Trace.WriteLine(nameof(TrustMe));
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -75,8 +82,9 @@ public partial class ErgoVM
     /// the current context, and set B to point to it.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void Try()
+    public void Try()
     {
+        Trace.WriteLine(nameof(Try));
         var l = __addr();
         var newB = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -102,8 +110,9 @@ public partial class ErgoVM
     /// instruction.
     /// Continue execution with instruction labeled L.
     /// </summary>
-    protected void Retry()
+    public void Retry()
     {
+        Trace.WriteLine(nameof(Retry));
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -123,8 +132,9 @@ public partial class ErgoVM
     /// then discard it by resetting B to its predecessor.
     /// Continue execution with instruction labeled L.
     /// </summary>
-    protected void Trust()
+    public void Trust()
     {
+        Trace.WriteLine(nameof(Trust));
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)

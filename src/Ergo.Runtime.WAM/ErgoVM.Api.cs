@@ -13,10 +13,17 @@ public partial class ErgoVM
         {
             var op = __word();
             OP_TABLE[op](this);
+
             if (fail)
                 backtrack();
-            else if ((OpCode)op == OpCode.proceed)
-                Solution.Invoke(this);
+
+            if (P >= Code.Length && !fail)
+            {
+                EmitSolution();
+                if (B > BOTTOM_OF_STACK)
+                    break;
+            }
         }
+
     }
 }

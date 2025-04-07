@@ -13,7 +13,7 @@ public partial class ErgoVM
     protected void Allocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine($":ALLC");
+        Trace.WriteLine(nameof(Allocate));
 #endif
         var newE = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -32,7 +32,7 @@ public partial class ErgoVM
     protected void Deallocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine($":DLLC");
+        Trace.WriteLine(nameof(Deallocate));
 #endif
         CP = Stack[E + 1];
         E = Stack[E];
@@ -100,9 +100,19 @@ public partial class ErgoVM
     protected void Proceed()
     {
 #if WAM_TRACE
-        Trace.WriteLine($":PROC");
+        Trace.WriteLine(nameof(Proceed));
 #endif
+
         P = CP;
     }
-#endregion
+    protected void EmitSolution()
+    {
+        // De-reference all arguments from A[0..N] and
+        // produce a substitution (Term[]) or Var->Val mapping.
+        // For now, maybe just:
+        Solution(this);
+        fail = true;
+    }
+    #endregion
+
 }

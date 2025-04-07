@@ -76,7 +76,7 @@ public class EmitterTests
         AssertOp(OpCode.proceed, ref span);
         // multiple_fact/0 (1)
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(7, ref span);
+        AssertInt32(13, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.call, ref span);
         AssertSignature("fact", 0, ref span, query);
@@ -102,7 +102,7 @@ public class EmitterTests
         AssertOp(OpCode.proceed, ref span);
         // parent/2
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(12, ref span);
+        AssertInt32(38, ref span);
         AssertOp(OpCode.get_constant, ref span);
         AssertConst("john", ref span, query);
         AssertInt32(0, ref span);
@@ -120,7 +120,7 @@ public class EmitterTests
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Y).
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(25, ref span);
+        AssertInt32(65, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(0, ref span);
@@ -169,4 +169,63 @@ public class EmitterTests
         AssertOp(OpCode.call, ref span);
         AssertSignature("fact", 0, ref span, query);
     }
+
+    [Fact]
+    public void TryMeElse_Should_Allocate_ChoicePoint()
+    {
+        var vm = new ErgoVM();
+        vm._QUERY = QueryBytecode.EMPTY;
+        vm.N = 2;
+        vm.A[0] = 111;
+        vm.A[1] = 222;
+        vm.TryMeElse(); // fake __addr() in test
+
+        var b = vm.B;
+        Assert.Equal(2, vm.Stack[b]);         // N
+        Assert.Equal(111, vm.Stack[b + 1]);   // A[0]
+        Assert.Equal(222, vm.Stack[b + 2]);   // A[1]
+        Assert.Equal(vm.E, vm.Stack[b + 3]);  // E
+    }
+
+    [Fact]
+    public void RetryMeElse_Should_Reset_ChoicePoint_And_Advance_Label()
+    {
+        var vm = new ErgoVM();
+        vm._QUERY = QueryBytecode.Preloaded([999]);
+        vm.N = 2;
+        vm.A[0] = 111;
+        vm.A[1] = 222;
+        vm.E = 0;
+        vm.B = 10;
+        vm.Stack[vm.B] = 2; // N
+        vm.CP = 1234;
+        vm.TR = 44;
+        vm.H = 77;
+        vm.HB = 77;
+        vm.B0 = 0;
+
+        // TryMeElse sets up the choice point
+        vm.TryMeElse();
+
+        var b = vm.B;
+        vm.TR = 55;  // Move TR forward to simulate trail growth
+        vm.H = 88;   // Same for H
+
+        // Provide a dummy address
+        vm.P = 0;
+
+        vm.RetryMeElse();
+
+        Assert.Equal(0, vm.E);
+        Assert.Equal(20, vm.B);
+        Assert.Equal(2, vm.Stack[b]);       // N
+        Assert.Equal(111, vm.Stack[b + 1]); // A[0]
+        Assert.Equal(222, vm.Stack[b + 2]); // A[1]
+        Assert.Equal(1234, vm.CP);
+        Assert.Equal(44, vm.TR); // Rolled back
+        Assert.Equal(77, vm.H);  // Rolled back
+        Assert.Equal(77, vm.HB); // Reset
+        Assert.Equal(1, vm.P);
+    }
+
 }

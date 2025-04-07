@@ -9,8 +9,8 @@ public partial class ErgoVM
     #endregion
 
     #region Physical Memory Layout
-    private __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
-    private QueryBytecode _QUERY = null!;
+    public __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
+    public QueryBytecode _QUERY = null!;
     #endregion
 
     #region Logical Memory Areas
@@ -25,18 +25,18 @@ public partial class ErgoVM
     #endregion
 
     #region State Registers
-    public __ADDR P { get; protected set; }
-    public __ADDR CP { get; protected set; }
-    public __ADDR S { get; protected set; }
-    public __ADDR HB { get; protected set; }
-    public __ADDR H { get; protected set; }
-    public __ADDR B0 { get; protected set; }
-    public __ADDR B { get; protected set; }
-    public __ADDR E { get; protected set; }
-    public __ADDR TR { get; protected set; }
-    public __WORD N { get; protected set; }
-    public bool fail { get; protected set; }
-    public GetMode mode { get; protected set; }
+    public __ADDR P { get; set; }
+    public __ADDR CP { get; set; }
+    public __ADDR S { get; set; }
+    public __ADDR HB { get; set; }
+    public __ADDR H { get; set; }
+    public __ADDR B0 { get; set; }
+    public __ADDR B { get; set; }
+    public __ADDR E { get; set; }
+    public __ADDR TR { get; set; }
+    public __WORD N { get; set; }
+    public bool fail { get; set; }
+    public GetMode mode { get; set; }
     #endregion
 
     #region Memory Access Helpers

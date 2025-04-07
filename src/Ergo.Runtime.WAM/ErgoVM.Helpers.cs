@@ -1,6 +1,7 @@
 ﻿namespace Ergo.Runtime.WAM;
 
 using Ergo.Compiler.Emission;
+using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term.__TAG;
 
 public partial class ErgoVM
@@ -8,6 +9,10 @@ public partial class ErgoVM
     #region Ancillary Operations
     protected void backtrack()
     {
+        fail = false;
+#if WAM_TRACE
+        Trace.WriteLine(nameof(backtrack));
+#endif
         if (B == BOTTOM_OF_STACK)
         {
             fail_and_exit_program();
@@ -18,7 +23,8 @@ public partial class ErgoVM
     }
     protected void fail_and_exit_program()
     {
-        throw new NotImplementedException();
+        fail = true;
+        P = Code.Length;
     }
     protected __ADDR deref(__ADDR a)
     {

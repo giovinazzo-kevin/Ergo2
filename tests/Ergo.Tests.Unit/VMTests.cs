@@ -45,6 +45,16 @@ public class VMTests
         Assert.Equal(fromValue.Tag, fromRawValue.Tag);
     }
 
+
+    [Fact]
+    public void Signature_Should_Pack_And_Unpack_Correctly()
+    {
+        var packed = (Signature)(f: 42, n: 3);
+        Assert.Equal(42, packed.F);
+        Assert.Equal(3, packed.N);
+    }
+
+
     [Theory]
     [InlineData("fact", 1)]
     [InlineData("another_fact", 1)]
