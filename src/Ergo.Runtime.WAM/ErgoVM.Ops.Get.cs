@@ -14,7 +14,7 @@ public partial class ErgoVM
     /// Place the contents of register Ai into variable Vn.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void GetVariable()
+    public void GetVariable()
     {
         var Vn = __word();
         var Ai = __word();
@@ -28,7 +28,7 @@ public partial class ErgoVM
     /// Backtrack on failure, otherwise continue 
     /// execution with the following instruction.
     /// </summary>
-    protected void GetValue()
+    public void GetValue()
     {
         var Vn = __word();
         var Ai = __word();
@@ -53,7 +53,7 @@ public partial class ErgoVM
     /// Backtrack on failure, otherwise continue
     /// execution with the following instruction.
     /// </summary>
-    protected void GetStructure()
+    public void GetStructure()
     {
         var f = __signature();
         var Ai = __addr();
@@ -92,7 +92,7 @@ public partial class ErgoVM
     /// Backtrack on failure, otherwise continue
     /// execution with the following instruction.
     /// </summary>
-    protected void GetList()
+    public void GetList()
     {
         var Ai = __word();
         var addr = deref(A[Ai]);
@@ -124,21 +124,21 @@ public partial class ErgoVM
     /// Backtrack on failure, otherwise continue
     /// execution with the following instruction.
     /// </summary>
-    protected void GetConstant()
+    public void GetConstant()
     {
         var c = (Term)__word();
         var Ai = __word();
         var addr = deref(A[Ai]);
         var cell = (Term)Store[addr];
 #if WAM_TRACE
-        Trace.WriteLine($"GCON: {Constants[c.Value]} {Ai}");
+        Trace.WriteLine($"[WAM] {nameof(GetConstant)}: c={Constants[c.Value]} Ai={Ai} REF={addr}");
 #endif
         if (cell is (REF, _))
         {
-            Heap[H] = c;
+            Store[addr] = c;      
             trail(addr);
         }
-        else 
+        else
             fail = cell is not (CON, var c1) || !Constants[c.Value].Equals(Constants[c1]);
         if (fail)
             backtrack();

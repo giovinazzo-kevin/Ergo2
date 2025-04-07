@@ -19,7 +19,7 @@ public partial class ErgoVM
     protected static __op __static(string opName)
     {
         var op = typeof(ErgoVM)
-            .GetMethod(opName, BindingFlags.NonPublic | BindingFlags.Instance)?
+            .GetMethod(opName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?
             .CreateDelegate<__op>();
         if (op is null)
             return __panic;

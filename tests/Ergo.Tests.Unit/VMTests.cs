@@ -5,6 +5,8 @@ using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
 using Ergo.Runtime.WAM;
+using System.ComponentModel;
+using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__TAG;
 
@@ -81,6 +83,55 @@ public class VMTests
         vm.Solution += _ => actualSolutions++;
         vm.Run(query);
         Assert.Equal(numSolutions, actualSolutions);
+    }
+
+    [Fact]
+    public void RefDerefsToConstant()
+    {
+        var vm = new ErgoVM();
+        var addr = 1033; // manually chosen RAM slot
+        vm.Store[addr] = (Term)(REF, addr);  // reflexive REF
+        vm.Store[addr] = (Term)(CON, 4);     // now overwrite it with a constant
+
+        var deref = vm.deref(addr);
+        Assert.Equal(addr, deref); // should resolve to same addr
+        Assert.Equal((int)(Term)(CON, 4), (int)(Term)vm.Store[deref]);
+    }
+
+    [Fact]
+    public void PutVariableWritesStackCorrectly()
+    {
+        var vm = new ErgoVM();
+        vm.E = 0; // Frame pointer at start of stack
+
+        // Simulate instruction: PutVariable Y0, A0
+        vm._QUERY = QueryBytecode.Preloaded([0, 0]);
+
+        vm.PutVariable();
+
+        var stackAddr = ErgoVM.__STACK(0 + 0 + 1);
+        var term = (Term)vm.Store[stackAddr];
+
+        Assert.True(term.Tag == REF);
+        Assert.Equal(stackAddr, term.Value);
+        Assert.Equal((int)term, vm.A[0]);
+    }
+
+    [Fact]
+    public void GetConstantBindsRefToConstant()
+    {
+        var vm = new ErgoVM();
+        var addr = 1033;
+
+        vm._QUERY = QueryBytecode.Preloaded([(int)(Term)(CON, 0), 0], ["hello"]);
+        vm.Store[addr] = (Term)(REF, addr);
+        vm.A[0] = addr;
+
+        vm.GetConstant();
+        Trace.WriteLine($"Expected: {(int)(Term)(CON, 0)}");
+        Trace.WriteLine($"Actual: {(int)(Term)vm.Store[addr]}");
+
+        Assert.Equal((int)(Term)(CON, 0), vm.Store[addr]);
     }
 
     [Fact]

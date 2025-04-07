@@ -1,4 +1,5 @@
 ﻿using Ergo.Compiler.Emission;
+using System.Diagnostics;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
@@ -9,21 +10,29 @@ public partial class ErgoVM
     {
         _QUERY = query.Bytecode;
         P = _QUERY.QueryStart;
-        while (P < Code.Length)
+        while (true)
         {
+            if (fail)
+            {
+                fail = false;
+                backtrack();
+            }
+
             var op = __word();
             OP_TABLE[op](this);
 
-            if (fail)
-                backtrack();
-
-            if (P >= Code.Length && !fail)
+            if ((P == 0 || P >= Code.Length) && !fail)
             {
                 EmitSolution();
                 if (B > BOTTOM_OF_STACK)
-                    break;
+                {
+                    fail = true;
+                    continue;
+                }
+                else break;
             }
         }
 
     }
 }
+

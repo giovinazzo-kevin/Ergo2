@@ -1,4 +1,5 @@
 ﻿using Ergo.Compiler.Emission;
+using System.Diagnostics;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
@@ -9,7 +10,7 @@ public partial class ErgoVM
     /// into both register Xn and register Ai.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutVariableHeap()
+    public void PutVariableHeap()
     {
         var Xn = __word();
         var Ai = __word();
@@ -20,22 +21,30 @@ public partial class ErgoVM
     /// environment to 'unbound' and let Ai point to it.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutVariable()
+    public void PutVariable()
     {
         var Yn = __word();
         var Ai = __word();
         var addr = E + Yn + 1;
-        A[Ai] = Stack[addr] = (Term)(REF, addr);
+        A[Ai] = Stack[addr] = (Term)(REF, __STACK(addr));
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutVariable)}: Yn={Yn} Ai={Ai} REF={__STACK(addr)}");
+        Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={Store[__STACK(addr)]}");
+#endif
+
     }
     /// <summary>
     /// Place the contents of Vn into register Ai.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutValue()
+    public void PutValue()
     {
         var Vn = __word();
         var Ai = __word();
         V[Vn] = A[Ai];
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutValue)}: Vn={Vn} Ai={Ai}");
+#endif
     }
     /// <summary>
     /// If the dereferenced value of Yn is not an
@@ -46,7 +55,7 @@ public partial class ErgoVM
     /// heap, and set Ai to point to that cell.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutUnsafeValue()
+    public void PutUnsafeValue()
     {
         var Yn = __word();
         var Ai = __word();
@@ -60,6 +69,9 @@ public partial class ErgoVM
             A[Ai] = Heap[H];
             H += 1;
         }
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutUnsafeValue)}: Yn={Yn} Ai={Ai} REF={addr}");
+#endif
     }
     /// <summary>
     /// Push a new functor cell containing f onto the heap
@@ -67,35 +79,44 @@ public partial class ErgoVM
     /// functor cell.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutStructure()
+    public void PutStructure()
     {
         var f = __signature();
         var Ai = __word();
         Heap[H] = f;
         A[Ai] = (Term)(STR, H);
         H += 1;
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutStructure)}: f={Constants[f.F]}/{f.N} Ai={Ai}");
+#endif
     }
     /// <summary>
     /// Set register Ai to contain a LIS cell pointing
     /// to the current top of the heap.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutList()
+    public void PutList()
     {
         var Ai = __word();
         A[Ai] = (Term)(LIS, H);
         H += 1;
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutList)}: Ai={Ai}");
+#endif
     }
     /// <summary>
     /// Place a constant cell containing c into register Ai.
     /// Continue execution with the following instruction.
     /// </summary>
-    protected void PutConstant()
+    public void PutConstant()
     {
         var c = (Term)(CON, __word());
         var Ai = __word();
         A[Ai] = c;
         H += 1;
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(PutConstant)}: c={c} Ai={Ai}");
+#endif
     }
     #endregion
 }

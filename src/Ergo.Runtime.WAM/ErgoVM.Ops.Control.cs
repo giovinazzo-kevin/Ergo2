@@ -13,7 +13,7 @@ public partial class ErgoVM
     protected void Allocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine(nameof(Allocate));
+        Trace.WriteLine($"[WAM] {nameof(Allocate)}");
 #endif
         var newE = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -32,7 +32,7 @@ public partial class ErgoVM
     protected void Deallocate()
     {
 #if WAM_TRACE
-        Trace.WriteLine(nameof(Deallocate));
+        Trace.WriteLine($"[WAM] {nameof(Deallocate)}");
 #endif
         CP = Stack[E + 1];
         E = Stack[E];
@@ -50,12 +50,13 @@ public partial class ErgoVM
         if (defined(p, out var a))
         {
 #if WAM_TRACE
-            Trace.WriteLine($"CALL: {Constants[p.F]}/{p.N}");
+            Trace.WriteLine($"[WAM] {nameof(Call)}: {Constants[p.F]}/{p.N}");
 #endif
             CP = P;
             N = p.N;
             B0 = B;
             P = a;
+            mode = GetMode.read;
         }
         else
         {
@@ -78,7 +79,7 @@ public partial class ErgoVM
         if (defined(p, out var a))
         {
 #if WAM_TRACE
-            Trace.WriteLine($"EXEC: {Constants[p.F]}/{p.N}");
+            Trace.WriteLine($"[WAM] {nameof(Execute)}: {Constants[p.F]}/{p.N}");
 #endif
             N = p.N;
             B0 = B;
@@ -100,7 +101,7 @@ public partial class ErgoVM
     protected void Proceed()
     {
 #if WAM_TRACE
-        Trace.WriteLine(nameof(Proceed));
+        Trace.WriteLine($"[WAM] Proceed: P={P}, CodeLen={Code.Length}");
 #endif
 
         P = CP;
@@ -111,7 +112,9 @@ public partial class ErgoVM
         // produce a substitution (Term[]) or Var->Val mapping.
         // For now, maybe just:
         Solution(this);
-        fail = true;
+#if WAM_TRACE
+        Trace.WriteLine("[WAM] EmitSolution");
+#endif
     }
     #endregion
 

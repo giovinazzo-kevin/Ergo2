@@ -7,11 +7,10 @@ using static Ergo.Compiler.Emission.Term.__TAG;
 public partial class ErgoVM
 {
     #region Ancillary Operations
-    protected void backtrack()
+    public void backtrack()
     {
-        fail = false;
 #if WAM_TRACE
-        Trace.WriteLine(nameof(backtrack));
+        Trace.WriteLine($"[WAM] {nameof(backtrack)}");
 #endif
         if (B == BOTTOM_OF_STACK)
         {
@@ -21,20 +20,29 @@ public partial class ErgoVM
         B0 = Stack[B + Stack[B] + 7];
         P = Stack[B + Stack[B] + 4];
     }
-    protected void fail_and_exit_program()
+    public void fail_and_exit_program()
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(fail_and_exit_program)}");
+#endif
         fail = true;
         P = Code.Length;
     }
-    protected __ADDR deref(__ADDR a)
+    public __ADDR deref(__ADDR a)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(deref)}: REF={a}");
+#endif
         Term t = Store[a];
         if (t is (REF, var b) && b != a)
             return b;
         return a;
     }
-    protected void bind(__ADDR a1, __ADDR a2)
+    public void bind(__ADDR a1, __ADDR a2)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(bind)}: {a1}={a2}");
+#endif
         var t1 = (Term)Store[a1]; var t2 = (Term)Store[a2];
         if (t1 is (REF, _) && (t2 is not (REF, _) || a1 < a2))
         {
@@ -47,22 +55,19 @@ public partial class ErgoVM
             trail(a2);
         }
     }
-    protected void trail(__ADDR a)
+    public void trail(__ADDR a)
     {
         if (a < HB || (H < a) && (a < B))
         {
             Trail[TR++] = a;
         }
     }
-    protected void unwind_trail(__ADDR a, __ADDR b)
+    public void unwind_trail(__ADDR a, __ADDR b)
     {
-#if WAM_TRACE
-        Trace.WriteLine($"[WAM] Trail unwound from {Stack[B + n + 5]} to {TR}");
-#endif
         for (var i = a; i < b; ++i)
             Store[Trail[i]] = (Term)(REF, Trail[i]);
     }
-    protected void tidy_trail()
+    public void tidy_trail()
     {
         var i = Stack[B + Stack[B] + 5];
         while (i < TR)
@@ -73,9 +78,11 @@ public partial class ErgoVM
                 Trail[i] = Trail[--TR];
         }
     }
-    protected void unify(__ADDR a1, __ADDR a2)
+    public void unify(__ADDR a1, __ADDR a2)
     {
 
     }
+
+    public static __ADDR __STACK(int offset) => HEAP_SIZE + offset;
     #endregion
 }
