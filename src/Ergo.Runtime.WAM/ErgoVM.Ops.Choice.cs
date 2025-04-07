@@ -13,7 +13,7 @@ public partial class ErgoVM
     public void TryMeElse()
     {
 #if WAM_TRACE
-        Trace.WriteLine(nameof(TryMeElse));
+        Trace.WriteLine($"[WAM] {nameof(TryMeElse)}: L={l} B={B} E={E} CP={CP} H={H} TR={TR} B0={B0}");
 #endif
         var l = __addr();
         var newB = E > B
@@ -40,7 +40,9 @@ public partial class ErgoVM
     /// </summary>
     public void RetryMeElse()
     {
-        Trace.WriteLine(nameof(RetryMeElse));
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(RetryMeElse)}: L={l} Rewinding to clause at P={P} TR={TR} H={H} CP={CP} B={B}");
+#endif
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -61,7 +63,9 @@ public partial class ErgoVM
     /// </summary>
     public void TrustMe()
     {
-        Trace.WriteLine(nameof(TrustMe));
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(TrustMe)}: Cutting to last clause. Previous B={B} → B={Stack[B + n + 3]}");
+#endif
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -84,7 +88,9 @@ public partial class ErgoVM
     /// </summary>
     public void Try()
     {
+#if WAM_TRACE
         Trace.WriteLine(nameof(Try));
+#endif
         var l = __addr();
         var newB = E > B
             ? E + Code[Stack[E + 1] - 1] + 2
@@ -112,7 +118,9 @@ public partial class ErgoVM
     /// </summary>
     public void Retry()
     {
+#if WAM_TRACE
         Trace.WriteLine(nameof(Retry));
+#endif
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)
@@ -134,7 +142,9 @@ public partial class ErgoVM
     /// </summary>
     public void Trust()
     {
+#if WAM_TRACE
         Trace.WriteLine(nameof(Trust));
+#endif
         var l = __addr();
         var n = Stack[B];
         for (int i = 1; i <= n; i++)

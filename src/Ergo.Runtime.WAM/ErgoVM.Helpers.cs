@@ -56,6 +56,9 @@ public partial class ErgoVM
     }
     protected void unwind_trail(__ADDR a, __ADDR b)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] Trail unwound from {Stack[B + n + 5]} to {TR}");
+#endif
         for (var i = a; i < b; ++i)
             Store[Trail[i]] = (Term)(REF, Trail[i]);
     }
