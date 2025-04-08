@@ -88,7 +88,10 @@ public class VMTests
     }
 
     [Theory]
+    [InlineData("parent(susan, john)", new string[] { })]
     [InlineData("parent(X, mary)", new string[] { "X/john" })]
+    [InlineData("parent(mary, X)", new string[] { "X/susan" })]
+    [InlineData("parent(X, Y)", new string[] { "X/john, Y/mary", "X/mary, Y/susan", "X/susan, Y/john" })]
     public void ParentQueryWorks(string query, string[] subs)
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
@@ -97,7 +100,7 @@ public class VMTests
         var actual = 0;
         vm.SolutionEmitted += _ =>
         {
-            Assert.Equal(vm.MaterializeSolution().ToString(), subs[actual++]);
+            Assert.Equal(subs[actual++], vm.MaterializeSolution().ToString());
         };
         vm.Run(q);
         Assert.Equal(subs.Length, actual);

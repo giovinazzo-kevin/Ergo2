@@ -125,11 +125,11 @@ public partial class ErgoVM
             var term = (Term)A[index];
             var addr = deref(term.Value);
             var resolved = (Term)Store[addr];
-
             if (resolved.Tag == CON)
-                bindings[i++] = new (name, Constants[resolved.Value]);
+                bindings[i++] = new(name, Constants[resolved.Value]);
             else
                 bindings[i++] = new(name, ReadHeapTerm(resolved.Value));
+
         }
         return new(bindings);
     }
