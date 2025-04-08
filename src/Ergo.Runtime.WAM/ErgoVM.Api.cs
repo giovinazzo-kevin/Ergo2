@@ -5,16 +5,16 @@ namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     public event Action<ErgoVM> SolutionEmitted = _ => { };
+    private int _traceLevel = 0;
 
     public void Run(Query query)
     {
         CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
-        _NAMES = _VARS.ToDictionary(x => x.Value.Index, x => x.Value);
         P = _QUERY.QueryStart;
-
-        while (true)
+        exit = fail = false;
+        while (!exit)
         {
             if (fail)
             {

@@ -4,6 +4,7 @@ using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
 using System;
+using System.Linq;
 using static Ergo.Compiler.Emission.Ops;
 
 namespace Ergo.Compiler.Emission;
@@ -44,6 +45,14 @@ public class Emitter
 
         EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame)
         {
+            if (term is __string { Value: "!" })
+            {
+                var cutReg = ctx.NumVars++;
+                ctx.Emit(get_level(cutReg));
+                ctx.Emit(cut(cutReg));
+                needsStackFrame = true;
+                return ctx;
+            }
             if (term is BinaryExpression { IsCons: true } cons && cons.Operator == Operators.Conjunction)
             {
                 JITGoal(ctx, cons.Lhs, out var lhsNeedsStackFrame);
@@ -51,8 +60,7 @@ public class Emitter
                 needsStackFrame = lhsNeedsStackFrame || rhsNeedsStackFrame;
                 return ctx;
             }
-            var sign = term.GetSignature()
-                .GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
+            var sign = term.GetSignature().GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
             needsStackFrame = term.GetVariables().Any();
             var args = term.GetArguments();
             for (int i = 0; i < args.Length; ++i)
@@ -70,24 +78,39 @@ public class Emitter
         var n = predicate.Signature.Arity;
         ctx.Label((p, n), ctx.PC);
         var clauseCtxs = new EmitterContext[predicate.Clauses.Count];
+
         foreach (var (clause, i) in predicate.Clauses.Iterate())
         {
             clauseCtxs[i] = ctx.Scope();
+
             if (clause.NeedsStackFrame)
                 clauseCtxs[i].Emit(allocate);
-            var args = clause.Args.Select(x => x).ToArray();
+
+            var args = clause.Args.ToArray();
             for (int j = 0; j < args.Length; j++)
-                Read(clauseCtxs[i], args, j);
+                Read(clauseCtxs[i], args, j); // assign inside Read!
+
+            clauseCtxs[i].NumVars = args.OfType<Variable>().Select(v => (int)(__int)v.Value).DefaultIfEmpty(-1).Max() + 1;
+
+            int? cutReg = null;
+            if (clause.Goals.Any(g => g is Cut))
+            {
+                cutReg = clauseCtxs[i].NumVars++;
+                clauseCtxs[i].Emit(get_level((int)cutReg));
+            }
+
             foreach (var goal in clause.Goals)
             {
                 for (int k = 0; k < goal.Args.Length; k++)
                     Write(clauseCtxs[i], goal.Args, k);
-                Goal(clauseCtxs[i], goal);
+                Goal(clauseCtxs[i], goal, cutReg);
             }
+
             if (clause.NeedsStackFrame)
                 clauseCtxs[i].Emit(deallocate);
             clauseCtxs[i].Emit(proceed);
         }
+
         for (var i = 0; i < predicate.Clauses.Count; i++)
         {
             if (predicate.Clauses.Count > 1)
@@ -103,11 +126,15 @@ public class Emitter
         }
     }
 
-    protected virtual void Goal(EmitterContext ctx, Goal g)
+
+    protected virtual void Goal(EmitterContext ctx, Goal g, int? cutReg = null)
     {
         switch (g)
         {
             case Cut:
+                if (cutReg is not int reg)
+                    throw new InvalidOperationException("Cut emitted without get_level.");
+                ctx.Emit(cut(reg));
                 break;
             case StaticGoal @static:
                 var p1 = ctx.Constant(@static.Callee.Signature.Functor.Value);
@@ -145,9 +172,11 @@ public class Emitter
                 var c = ctx.Constant(@const.Value);
                 ctx.Emit(get_constant(c, Ai));
                 break;
-            default: throw new NotSupportedException();
+            default:
+                throw new NotSupportedException();
         }
     }
+
 
     protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {

@@ -32,4 +32,6 @@ public class Clause(Predicate parent, Term[] args) : CallGraph.Node<Predicate>
         }
         return false;
     }
+
+    public Clause Clone() => new(Parent, [.. Args.Select(x => x.Clone())]);
 }

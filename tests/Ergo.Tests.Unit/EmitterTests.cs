@@ -66,7 +66,7 @@ public class EmitterTests : Tests
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Y).
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(65, ref span);
+        AssertInt32(69, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(0, ref span);
@@ -74,6 +74,8 @@ public class EmitterTests : Tests
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(1, ref span);
         AssertInt32(1, ref span);
+        AssertOp(OpCode.get_level, ref span);
+        AssertInt32(2, ref span);
         AssertOp(OpCode.put_value, ref span);
         AssertInt32(0, ref span);
         AssertInt32(0, ref span);
@@ -82,6 +84,8 @@ public class EmitterTests : Tests
         AssertInt32(1, ref span);
         AssertOp(OpCode.call, ref span);
         AssertSignature("parent", 2, ref span, query);
+        AssertOp(OpCode.cut, ref span);
+        AssertInt32(2, ref span);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Z), ancestor(Z,Y).

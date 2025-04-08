@@ -33,7 +33,7 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] {nameof(fail_and_exit_program)}");
 #endif
         P = Code.Length;
-        return fail = true;
+        return exit = fail = true;
     }
     public __WORD deref(__WORD addr)
     {
@@ -232,6 +232,19 @@ public partial class ErgoVM
 
             return new Lang.Ast.List(elements, tail);
         }
+    }
+
+    public string Pretty(Term t)
+    {
+        var addr = deref(t.Value);
+        var derefTerm = (Term)Store[addr];
+
+        return derefTerm.Tag switch
+        {
+            CON => Constants[derefTerm.Value].Expl,
+            REF => $"_{addr}", // like _4580
+            _ => "<?>"
+        };
     }
 
     #endregion

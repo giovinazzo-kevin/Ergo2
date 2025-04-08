@@ -22,10 +22,12 @@ public static class Ops
     public static readonly Op deallocate = new (OpCode.deallocate);
     public static readonly Op proceed = new (OpCode.proceed);
     public static readonly Func<__WORD, Op> call = (__WORD P) => new Op(OpCode.call, () => P);
+    public static readonly Func<__WORD, Op> cut = (__WORD L) => new Op(OpCode.cut, () => L);
+    public static readonly Func<__WORD, Op> get_level = (__WORD L) => new Op(OpCode.get_level, () => L);
 
     public static readonly Func<__WORD, Op> try_me_else = (__WORD L) => new Op(OpCode.try_me_else, () => L);
     public static readonly Func<__WORD, Op> retry_me_else = (__WORD L) => new Op(OpCode.retry_me_else, () => L);
-    public static readonly Op  trust_me = new (OpCode.trust_me);
+    public static readonly Op trust_me = new (OpCode.trust_me);
     #endregion
 }
 

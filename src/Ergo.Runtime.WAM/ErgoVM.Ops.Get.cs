@@ -19,7 +19,7 @@ public partial class ErgoVM
         var Vn = __word();
         var Ai = __word();
 #if WAM_TRACE
-        Trace.WriteLine($"GVAR: {Vn} {Ai}");
+        Trace.WriteLine($"[WAM] GetVariable: {Vn} {Ai}");
 #endif
         V[Vn] = A[Ai];
     }
@@ -33,7 +33,7 @@ public partial class ErgoVM
         var Vn = __word();
         var Ai = __word();
 #if WAM_TRACE
-        Trace.WriteLine($"GVAL: {Vn} {Ai}");
+        Trace.WriteLine($"[WAM] GetValue: {Vn} {Ai}");
 #endif
         unify(Vn, Ai);
         if (fail) 
@@ -60,7 +60,7 @@ public partial class ErgoVM
         var addr = deref(A[Ai]);
         Term cell = Store[addr];
 #if WAM_TRACE
-        Trace.WriteLine($"GSTR: {cell.Value} {Ai}");
+        Trace.WriteLine($"[WAM] GetStructure: {cell.Value} {Ai}");
 #endif
         if (cell is (REF, _))
         {
@@ -98,7 +98,7 @@ public partial class ErgoVM
         var addr = deref(A[Ai]);
         var cell = (Term)Store[addr];
 #if WAM_TRACE
-        Trace.WriteLine($"GLIS: {cell.Value} {Ai}");
+        Trace.WriteLine($"[WAM] GetList: {cell.Value} {Ai}");
 #endif
         if (cell is (REF, _))
         {

@@ -1,4 +1,6 @@
-﻿namespace Ergo.Runtime.WAM;
+﻿using System.Diagnostics;
+
+namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     #region Cut Instructions
@@ -10,6 +12,9 @@ public partial class ErgoVM
     /// </summary>
     protected void NeckCut()
     {
+#if WAM_TRACE
+        Trace.WriteLine("[WAM] NeckCut");
+#endif
         if (B <= B0) return;
         B = B0;
         tidy_trail();
@@ -20,6 +25,9 @@ public partial class ErgoVM
     /// </summary>
     protected void GetLevel()
     {
+#if WAM_TRACE
+        Trace.WriteLine("[WAM] GetLevel");
+#endif
         var n = __word();
         Stack[E + 2 + n] = B0;
     }
@@ -32,6 +40,9 @@ public partial class ErgoVM
     {
         var n = __word();
         var Yn = Stack[E + 2 + n];
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] CUT! n={n} Yn={Yn} B={B}");
+#endif
         if (B <= Yn)
             return;
         B = Yn;

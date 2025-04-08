@@ -12,7 +12,7 @@ parent(john, mary).
 parent(mary, susan).
 
 ancestor(X, Y) :-
-  parent(X, Y).
+  parent(X, Y), !.
 
 ancestor(X, Y) :-
   parent(X, Z), 

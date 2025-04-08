@@ -1,5 +1,6 @@
 ﻿using Ergo.Compiler.Emission;
 using System.Diagnostics;
+using static Ergo.Runtime.WAM.ErgoVM;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
@@ -50,8 +51,13 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+            _F = p.F;
+            _N = p.N;
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(Call)}: {Constants[p.F]}/{p.N}");
+            _traceLevel++;
+            Trace.WriteLine($"Call: ({_traceLevel}) {Constants[p.F]} " +
+                $"({string.Join(", ", Enumerable.Range(0, p.N).Select(i => Pretty(A[i])))})");
 #endif
             CP = P;
             N = p.N;
@@ -102,11 +108,13 @@ public partial class ErgoVM
     public void Proceed()
     {
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] Proceed: P={P}, CodeLen={Code.Length}");
+        Trace.WriteLine($"[WAM] Proceed: P={P}, CP={CP}, CodeLen={Code.Length}");
+        Trace.WriteLine($"Exit: ({_traceLevel}) {Constants[_F]}" +
+            $"({string.Join(", ", Enumerable.Range(0, _N).Select(i => Pretty(A[i])))})");
 #endif
-        EmitSolution(); // Only place truth is committed
-        fail = true;    // Force WAM to consider backtracking
-                        // Don't increment P—halt after emit
+        if (CP >= Code.Length || B == B0)
+            EmitSolution();
+        fail = true;
     }
 
     public void EmitSolution()

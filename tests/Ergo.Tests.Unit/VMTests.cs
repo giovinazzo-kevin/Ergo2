@@ -93,13 +93,18 @@ public class VMTests : Tests
     [Theory]
     [InlineData("ancestor(john, mary)", 1)]
     [InlineData("ancestor(john, susan)", 1)]
+    [InlineData("parent(X, Y), !, complex_fact(0,1,2).", 1)]
     public void AncestorSucceeds(string query, int expected)
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
         var q = kb.Query(query);
         var vm = new ErgoVM();
         var solutions = 0;
-        vm.SolutionEmitted += (_) => solutions++;
+        vm.SolutionEmitted += (_) =>
+        {
+            Trace.WriteLine(vm.MaterializeSolution());
+            solutions++;
+        };
         vm.Run(q);
         Assert.Equal(expected, solutions);
     }
