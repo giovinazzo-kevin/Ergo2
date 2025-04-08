@@ -14,3 +14,4 @@ public abstract class Term : IExplainable
     public static implicit operator Term(bool b) => new __bool(b);
     public static implicit operator Term(double d) => new __double(d);
 }
+

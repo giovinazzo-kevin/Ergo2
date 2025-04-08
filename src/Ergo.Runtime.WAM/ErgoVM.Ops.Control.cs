@@ -120,7 +120,7 @@ public partial class ErgoVM
     {
         int i = 0;
         var bindings = new Binding[_VARS.Count];
-        foreach (var (name, index) in _VARS)
+        foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index))
         {
             var term = (Term)A[index];
             var addr = deref(term.Value);

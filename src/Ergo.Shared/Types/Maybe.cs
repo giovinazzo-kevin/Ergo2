@@ -94,7 +94,7 @@ public readonly struct Maybe<T>
     {
         if (HasValue) { value = Value; return true; }
 
-        value = default;
+        value = default!;
         return false;
     }
     public T GetOr(T other)

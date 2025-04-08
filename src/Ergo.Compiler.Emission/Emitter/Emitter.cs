@@ -32,7 +32,7 @@ public class Emitter
         for (int i = 0; i < vars.Length; i++)
         {
             vars[i].Value = (__int)i;
-            variableMap[vars[i].Name] = i;
+            variableMap[vars[i].Name] = new(vars[i].Name, i);
         }
         if (needsStackFrame)
             ctx.Emit(allocate);
