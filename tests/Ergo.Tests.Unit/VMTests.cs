@@ -12,25 +12,9 @@ using static Ergo.Compiler.Emission.Term.__TAG;
 
 namespace Ergo.UnitTests;
 
-public class VMTests
+public class VMTests : Tests
 {
-    protected KnowledgeBase Consult(string moduleName)
-    {
-        const string MODULE_PATH = "./ergo/";
-        const string BIN_PATH = "./bin/";
-        var kbLocator = new KnowledgeBaseLocator(BIN_PATH);
-        var compiledKb = kbLocator.Index.Find(moduleName).FirstOrDefault();
-        if (compiledKb != null)
-            return new KnowledgeBase(ErgoFileStream.Open(compiledKb));
-        var moduleLocator = new ModuleLocator(MODULE_PATH);
-        var libraryLocator = new LibraryLocator(Libraries.Standard);
-        var operatorLookup = new OperatorLookup();
-        var analyzer = new Analyzer(moduleLocator, libraryLocator, operatorLookup);
-        var graph = analyzer.LoadModule(moduleName);
-        var emitter = new Emitter();
-        var kb = emitter.KnowledgeBase(graph);
-        return kb;
-    }
+
 
     [Theory]
     [InlineData(CON, 2852519)]
@@ -67,7 +51,7 @@ public class VMTests
         var query = kb.Query(fact);
         var vm = new ErgoVM();
         var actualSolutions = 0;
-        vm.SolutionEmitted += _ => actualSolutions++;
+        vm.SolutionEmitted += (_) => actualSolutions++;
         vm.Run(query);
         Assert.Equal(numSolutions, actualSolutions);
     }
@@ -82,7 +66,7 @@ public class VMTests
         var q = kb.Query(query);
         var vm = new ErgoVM();
         var actual = 0;
-        vm.SolutionEmitted += _ => actual++;
+        vm.SolutionEmitted += (_) => actual++;
         vm.Run(q);
         Assert.Equal(expected, actual);
     }
@@ -98,7 +82,7 @@ public class VMTests
         var q = kb.Query(query);
         var vm = new ErgoVM();
         var actual = 0;
-        vm.SolutionEmitted += _ =>
+        vm.SolutionEmitted += (_) =>
         {
             Assert.Equal(subs[actual++], vm.MaterializeSolution().ToString());
         };
@@ -115,7 +99,7 @@ public class VMTests
         var q = kb.Query(query);
         var vm = new ErgoVM();
         var solutions = 0;
-        vm.SolutionEmitted += _ => solutions++;
+        vm.SolutionEmitted += (_) => solutions++;
         vm.Run(q);
         Assert.Equal(expected, solutions);
     }
@@ -128,10 +112,31 @@ public class VMTests
         var query = kb.Query(fact);
         var vm = new ErgoVM();
         var actualSolutions = 0;
-        vm.SolutionEmitted += _ => actualSolutions++;
+        vm.SolutionEmitted += (_) => actualSolutions++;
         vm.Run(query);
         Assert.Equal(numSolutions, actualSolutions);
     }
+
+    [Fact]
+    public void QueryEmitsPutVariableCorrectly()
+    {
+        AssertQuery("parent(X, Y)", Validate);
+
+        void Validate(QueryBytecode bytes)
+        {
+            var span = bytes.Query;
+            AssertOp(OpCode.allocate, ref span);
+            AssertOp(OpCode.put_variable, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
+            AssertOp(OpCode.put_variable, ref span);
+            AssertInt32(1, ref span);
+            AssertInt32(1, ref span);
+            AssertOp(OpCode.call, ref span);
+            AssertSignature("parent", 2, ref span, bytes);
+        }
+    }
+
 
     [Fact]
     public void RefDerefsToConstant()

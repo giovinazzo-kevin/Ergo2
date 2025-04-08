@@ -6,6 +6,9 @@ namespace Ergo.Lang.Ast;
 
 public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinary, head, body)
 {
+    private Term _head = head;
+    private Term _body = body;
+
     public new readonly Term Functor = head;
     public new readonly Term[] Args = head.GetArguments();
 
@@ -18,23 +21,6 @@ public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinar
     public override string Expl => $"{Functor} {Operator.CanonicalFunctor.Value}\n{
         string.Join(",\n", Goals.Select(x => "    " + x.Expl))
     }";
-}
 
-public class Query
-{
-    public readonly Term[] Goals;
-
-    private Query(params Term[] goals)
-    {
-        Goals = goals;
-    }
-
-    public static implicit operator Query(Term term)
-    {
-        if (term is ConsExpression cons && cons.Operator == Operators.Conjunction)
-            return new Query([.. cons.Contents]);
-        return new Query(term);
-    }
-
-
+    public override Term Clone() => new Clause(_head, _body);
 }

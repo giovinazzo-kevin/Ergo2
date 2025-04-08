@@ -12,6 +12,7 @@ public partial class ErgoVM
     public __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
     public QueryBytecode _QUERY = null!;
     public Dictionary<string, __VAR> _VARS = null!;
+    public Dictionary<int, __VAR> _NAMES = null!;
     #endregion
 
     #region Logical Memory Areas

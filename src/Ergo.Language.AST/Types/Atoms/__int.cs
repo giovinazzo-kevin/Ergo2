@@ -2,7 +2,7 @@
 
 namespace Ergo.Lang.Ast;
 
-public sealed class __int(int val) : Atom(typeof(__int), val)
+public sealed class __int(int value) : Atom(typeof(__int), value)
 {
     public static implicit operator __int(int n) => new(n);
     public static implicit operator int(__int n) => (int)n.Value;
@@ -13,4 +13,5 @@ public sealed class __int(int val) : Atom(typeof(__int), val)
     public override string Expl => $"{Value}"!.Parenthesized(IsParenthesized);
     public override bool Equals(object? obj) => base.Equals(obj);
     public override int GetHashCode() => base.GetHashCode();
+    public override Term Clone() => (__int)value;
 }

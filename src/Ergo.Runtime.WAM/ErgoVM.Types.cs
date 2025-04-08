@@ -18,10 +18,10 @@ public partial class ErgoVM
     {
         public override string ToString() => $"{Variable}/{Value.Expl}";
     }
-    public readonly ref struct Solution(ReadOnlySpan<Binding> bindings)
+    public readonly struct Solution(Binding[] bindings)
     {
-        public readonly ReadOnlySpan<Binding> Bindings = bindings;
-        public override string ToString() => String.Join(", ", Bindings.ToArray());
+        public readonly Binding[] Bindings = bindings;
+        public override string ToString() => String.Join(", ", Bindings);
     }
     #endregion
 }

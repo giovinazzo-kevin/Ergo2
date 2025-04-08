@@ -16,8 +16,8 @@ public partial class ErgoVM
 #endif
         if (B == BOTTOM_OF_STACK)
         {
-            fail_and_exit_program();
-            return fail;
+            Trace.WriteLine("[WAM] backtrack: hit bottom of stack → FAIL FINAL");
+            return fail_and_exit_program();
         }
         B0 = Stack[B + Stack[B] + 7];
         P = Stack[B + Stack[B] + 4];
@@ -27,13 +27,13 @@ public partial class ErgoVM
             Trace.WriteLine($"  Stack[{B + i}] = {Stack[B + i]}");
         return fail;
     }
-    public void fail_and_exit_program()
+    public bool fail_and_exit_program()
     {
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(fail_and_exit_program)}");
 #endif
-        fail = true;
         P = Code.Length;
+        return fail = true;
     }
     public __WORD deref(__WORD addr)
     {
@@ -50,35 +50,54 @@ public partial class ErgoVM
 
     public void bind(__ADDR a1, __ADDR a2)
     {
+        if (a1 == a2)
+            return; // Don't bind a cell to itself, ever
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(bind)}: {a1}={a2}");
 #endif
         var t1 = (Term)Store[a1]; var t2 = (Term)Store[a2];
         if (t1 is (REF, _) && (t2 is not (REF, _) || a1 < a2))
         {
+#if WAM_TRACE
+            Trace.WriteLine($"[WAM] {nameof(bind)}: Store[a1]=Store[a2] {Store[a1]}={Store[a2]}");
+#endif
             Store[a1] = Store[a2];
             trail(a1);
         }
         else
         {
+#if WAM_TRACE
+            Trace.WriteLine($"[WAM] {nameof(bind)}: Store[a2]=Store[a1] {Store[a2]}={Store[a1]}");
+#endif
             Store[a2] = Store[a1];
             trail(a2);
         }
     }
     public void trail(__ADDR a)
     {
-        if (a < HB || (H < a) && (a < B))
-        {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] TRAIL addr={a}, store={((Term)Store[a]).Tag}/{((Term)Store[a]).Value}");
+#endif
+        if ((a < HB || (H < a && a < B)) && TR < Trail.Length)
             Trail[TR++] = a;
-        }
     }
     public void unwind_trail(__ADDR a, __ADDR b)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] unwind_trail a={a} b={b}");
+#endif
         for (var i = a; i < b; ++i)
-            Store[Trail[i]] = (Term)(REF, Trail[i]);
+        {
+            var addr = Trail[i];
+            Store[addr] = (Term)(REF, addr);
+            Trace.WriteLine($"[WAM] UNWIND addr={i}, resetting to REF {i}");
+        }
     }
     public void tidy_trail()
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] tidy_trail");
+#endif
         var i = Stack[B + Stack[B] + 5];
         while (i < TR)
         {
@@ -90,6 +109,9 @@ public partial class ErgoVM
     }
     public void unify(__ADDR a1, __ADDR a2)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] unify a1={a1} a2={a2}");
+#endif
         Stack<(int, int)> todo = new();
         todo.Push((deref(a1), deref(a2)));
 
@@ -151,6 +173,9 @@ public partial class ErgoVM
 
     public Lang.Ast.Term ReadHeapTerm(__ADDR addr)
     {
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] ReadHeapTerm addr={addr}");
+#endif
         var term = (Term)Store[addr];
         return Read(term);
 

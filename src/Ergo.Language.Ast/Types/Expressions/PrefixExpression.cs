@@ -10,5 +10,6 @@ public class PrefixExpression(Operator op, Term arg) : UnaryExpression(op, arg)
         fx => $"{Operator.CanonicalFunctor.Value} {Arg.Expl}",
         fy or _ => $"{Operator.CanonicalFunctor.Value}{Arg.Expl}",
     }).Parenthesized(IsParenthesized);
+    public override Term Clone() => new PrefixExpression(Operator, Arg);
 }
 

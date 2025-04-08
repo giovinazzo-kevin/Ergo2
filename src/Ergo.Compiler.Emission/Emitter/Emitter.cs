@@ -75,8 +75,9 @@ public class Emitter
             clauseCtxs[i] = ctx.Scope();
             if (clause.NeedsStackFrame)
                 clauseCtxs[i].Emit(allocate);
-            for (int j = 0; j < clause.Args.Length; j++)
-                Read(clauseCtxs[i], clause.Args, j);
+            var args = clause.Args.Select(x => x).ToArray();
+            for (int j = 0; j < args.Length; j++)
+                Read(clauseCtxs[i], args, j);
             foreach (var goal in clause.Goals)
             {
                 for (int k = 0; k < goal.Args.Length; k++)
@@ -133,12 +134,12 @@ public class Emitter
                 var fn = (Signature)(f, @struct.Arity);
                 ctx.Emit(get_structure(fn, Ai));
                 break;
-            case Variable @var when var.Value is __int @i:
-                ctx.Emit(get_value((__WORD)@i, Ai));
-                break;
-            case Variable @var:
+            case Variable @var when var.Value is not __int:
                 var.Value = (__int)ctx.NumVars;
                 ctx.Emit(get_variable(ctx.NumVars++, Ai));
+                break;
+            case Variable @var:
+                ctx.Emit(get_value((__WORD)(__int)var.Value, Ai));
                 break;
             case Atom @const:
                 var c = ctx.Constant(@const.Value);

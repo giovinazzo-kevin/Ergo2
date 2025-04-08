@@ -42,4 +42,5 @@ public class ConsExpression : BinaryExpression
     }
 
     public override string Expl => $"{Lhs.Expl}{Operator.CanonicalFunctor.Value} {Rhs.Expl}".Parenthesized(IsParenthesized);
+    public override Term Clone() => new ConsExpression(Operator, Lhs.Clone(), Rhs.Clone());
 }

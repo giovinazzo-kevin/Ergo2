@@ -104,16 +104,23 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] Proceed: P={P}, CodeLen={Code.Length}");
 #endif
-
-        P = CP;
+        EmitSolution(); // Only place truth is committed
+        fail = true;    // Force WAM to consider backtracking
+                        // Don't increment P—halt after emit
     }
+
     public void EmitSolution()
     {
-        SolutionEmitted(this);
-        P = Code.Length; // 💥 Prevent re-execution
 #if WAM_TRACE
         Trace.WriteLine("[WAM] EmitSolution");
+        Trace.WriteLine($"[WAM] EmitSolution: fail={fail}, P={P}, B={B}, B0={B0}");
+        for (int i = 0; i < _VARS.Count; i++)
+        {
+            Trace.WriteLine($"[WAM] A[{i}] = {A[i]}, deref = {deref(((Term)A[i]).Value)}, Store = {Store[deref(((Term)A[i]).Value)]}");
+        }
 #endif
+        SolutionEmitted(this);
+        P = Code.Length; // 💥 Prevent re-execution
     }
 
     public Solution MaterializeSolution()
@@ -125,10 +132,18 @@ public partial class ErgoVM
             var term = (Term)A[index];
             var addr = deref(term.Value);
             var resolved = (Term)Store[addr];
+            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → addr={addr}, tag={resolved.Tag}, val={resolved.Value}");
             if (resolved.Tag == CON)
                 bindings[i++] = new(name, Constants[resolved.Value]);
             else
-                bindings[i++] = new(name, ReadHeapTerm(resolved.Value));
+            {
+                var unresolvedAddr = resolved.Value;
+                var unresolvedName = _VARS
+                    .Where(kv => deref(((Term)A[kv.Value.Index]).Value) == unresolvedAddr)
+                    .Select(kv => kv.Key)
+                    .FirstOrDefault() ?? $"_{unresolvedAddr}";
+                bindings[i++] = new(name, unresolvedName);
+            }
 
         }
         return new(bindings);

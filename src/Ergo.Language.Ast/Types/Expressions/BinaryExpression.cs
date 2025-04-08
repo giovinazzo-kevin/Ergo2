@@ -107,4 +107,5 @@ public class BinaryExpression(Operator op, Term lhs, Term rhs) : Expression(op, 
         "|" => $"{Lhs.Expl}{Operator.CanonicalFunctor.Value}{Rhs.Expl}",
         _ => $"{Lhs.Expl} {Operator.CanonicalFunctor.Value} {Rhs.Expl}"
     }).Parenthesized(IsParenthesized);
+    public override Term Clone() => new BinaryExpression(Operator, Lhs.Clone(), Rhs.Clone());
 }

@@ -12,4 +12,6 @@ public sealed class SignatureExpression : BinaryExpression
         Functor = functor;
         Arity = arity;
     }
+
+    public override Term Clone() => new SignatureExpression((Atom)Functor.Clone(), (__int)Arity.Clone());
 }

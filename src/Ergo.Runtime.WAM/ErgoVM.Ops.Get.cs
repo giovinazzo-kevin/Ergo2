@@ -138,8 +138,9 @@ public partial class ErgoVM
         }
         else if (term.Tag == REF)
         {
-            Store[term.Value] = (Term)(CON, c);
-            trail(term.Value);
+            var addr = deref(term.Value);
+            Store[addr] = (Term)(CON, c);
+            trail(addr);
         }
         else
         {

@@ -14,4 +14,5 @@ public class Complex(Atom functor, params Term[] args) : Term
             .Parenthesized(IsParenthesized);
     public override bool Equals(object? obj) => obj is Complex { Functor: { } f, Args: { } a } && Functor.Equals(f);
     public override int GetHashCode() => Args.Prepend(Functor).Aggregate(0, HashCode.Combine);
+    public override Term Clone() => new Complex((Atom)Functor.Clone(), Args.Select(arg => arg.Clone()).ToArray());
 }

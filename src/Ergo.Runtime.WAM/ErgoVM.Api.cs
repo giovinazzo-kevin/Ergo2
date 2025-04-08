@@ -8,27 +8,31 @@ public partial class ErgoVM
 
     public void Run(Query query)
     {
+        CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
+        _NAMES = _VARS.ToDictionary(x => x.Value.Index, x => x.Value);
         P = _QUERY.QueryStart;
+
         while (true)
         {
-            if (fail && backtrack())
-                break;
-            else if (P == 0 || P >= Code.Length)
+            if (fail)
             {
-                EmitSolution();
-                if (B > BOTTOM_OF_STACK)
-                {
-                    fail = true;
-                    continue;
-                }
+                if (backtrack())
+                    break;
+                continue; // Go to next choice point
+            }
+
+            // Execution halts naturally when we run out of code
+            if (P >= Code.Length)
+            {
                 break;
             }
+
             var op = __word();
             OP_TABLE[op](this);
         }
-
     }
+
 }
 

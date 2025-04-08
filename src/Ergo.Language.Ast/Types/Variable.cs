@@ -32,4 +32,5 @@ public class Variable : Term
 
     public static implicit operator Variable(string name) => new(name);
     public static bool IsVariableIdentifier(string s) => s[0] == '_' || char.IsLetter(s[0]) && char.IsUpper(s[0]);
+    public override Term Clone() => new Variable(Name, runtime: true) { Value = _value?.Clone()! };
 }

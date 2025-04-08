@@ -8,4 +8,5 @@ public class PostfixExpression(Operator op, Term arg) : UnaryExpression(op, arg)
     {
         _ => $"{Arg.Expl}{Operator.CanonicalFunctor.Value}",
     }).Parenthesized(IsParenthesized);
+    public override Term Clone() => new PostfixExpression(Operator, Arg);
 }

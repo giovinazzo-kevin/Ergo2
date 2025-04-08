@@ -60,4 +60,5 @@ public class List : CollectionExpression
         : ListTail 
          ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}{COMMA}{Tail.Expl[Collection.OpeningDelim.Length..^Collection.ClosingDelim.Length]}{Collection.ClosingDelim}"
         : base.Expl).Parenthesized(IsParenthesized);
+    public override Term Clone() => new List(Head.Select(t => t.Clone()), Tail.Clone());
 }
