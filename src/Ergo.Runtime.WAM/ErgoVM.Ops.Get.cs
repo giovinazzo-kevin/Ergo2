@@ -126,20 +126,30 @@ public partial class ErgoVM
     /// </summary>
     public void GetConstant()
     {
-        var c = (Term)__word();
+        var c = __word();           // constant index
         var Ai = __word();
-        var addr = deref(A[Ai]);
-        var cell = (Term)Store[addr];
+        var term = (Term)A[Ai];
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(GetConstant)}: c={Constants[c.Value]} Ai={Ai} REF={addr}");
+        Trace.WriteLine($"[WAM] {nameof(GetConstant)}: c={c} Ai={Ai}");
 #endif
-        if (cell is (REF, _))
+        if (term.Tag == CON)
         {
-            Store[addr] = c;      
-            trail(addr);
+            fail = term.Value != c;
+        }
+        else if (term.Tag == REF)
+        {
+            Store[term.Value] = (Term)(CON, c);
+            trail(term.Value);
         }
         else
-            fail = cell is not (CON, var c1) || !Constants[c.Value].Equals(Constants[c1]);
+        {
+            var addr = deref(term.Value);
+            var cell = (Term)Store[addr];
+            fail = cell is not (CON, var c1) || c1 != c;
+        }
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] {nameof(GetConstant)}: fail={fail}");
+#endif
         if (fail)
             backtrack();
     }

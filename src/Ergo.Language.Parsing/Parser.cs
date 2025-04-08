@@ -144,6 +144,7 @@ public class Parser : IDisposable
     public Func<Maybe<Directive>> Directive => Transact([() =>
         PrefixExpression()
         .Where(x => x.Operator.Equals(Operators.HornUnary))
+        .Where(x => x.Arg is Atom || x.Arg is Complex)
         .Select(x => new Directive(x.Arg))
     ], isBlock: true);
     public Func<Maybe<Clause>> Clause => Transact([() =>

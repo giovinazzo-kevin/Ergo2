@@ -26,10 +26,10 @@ public partial class ErgoVM
         var Yn = __word();
         var Ai = __word();
         var addr = E + Yn + 1;
-        A[Ai] = Stack[addr] = (Term)(REF, __STACK(addr));
+        A[Ai] = Stack[addr] = (Term)(REF, (addr));
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(PutVariable)}: Yn={Yn} Ai={Ai} REF={__STACK(addr)}");
-        Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={((Term)Store[__STACK(addr)]).Value}");
+        Trace.WriteLine($"[WAM] {nameof(PutVariable)}: Yn={Yn} Ai={Ai} REF={(addr)}");
+        Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={((Term)Store[(addr)]).Value}");
 #endif
 
     }
@@ -115,7 +115,8 @@ public partial class ErgoVM
         A[Ai] = c;
         H += 1;
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(PutConstant)}: c={c} Ai={Ai}");
+        Trace.WriteLine($"[WAM] {nameof(PutConstant)}: c={c.Value} Ai={Ai}");
+        Trace.WriteLine($"[DBG] Constant[{c.Value}] = {Constants[c.Value]}");
 #endif
     }
     #endregion

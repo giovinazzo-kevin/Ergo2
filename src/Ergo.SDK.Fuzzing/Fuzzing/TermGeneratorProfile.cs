@@ -78,13 +78,6 @@ public readonly record struct TermGeneratorProfile(
     };
     public static readonly TermGeneratorProfile Debug = Default with
     {
-        Name = nameof(Debug),
-        MaxIdentifierLength = 1,
-        MaxComplexArgLength = 1,
-        MaxComplexFunctorLength = 1,
-        MaxComplexArity = 4,
-        MaxComplexDepth = 16,
-        MaxExpressionDepth = 8,
-        IncludeQuotedStrings = false
+        Name = nameof(Debug)
     };
 }

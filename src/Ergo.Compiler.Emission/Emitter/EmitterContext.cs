@@ -1,6 +1,7 @@
 ﻿using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
 using Microsoft.VisualBasic;
+using System.Diagnostics;
 using System.Text;
 using static Ergo.Compiler.Emission.Term;
 
@@ -18,6 +19,25 @@ public sealed class EmitterContext
     public int NumVars { get; set; } = 0;
 
     internal EmitterContext(OperatorLookup? operators = null) => _operators = operators ?? new ();
+
+    public static EmitterContext From(KnowledgeBaseBytecode kb)
+    {
+        var buf = new __WORD[64];
+        var ctx = new EmitterContext(kb.Operators)
+        {
+            _constants = [.. kb.Constants.ToArray().SelectMany(atom =>
+            {
+                var tag = Term.TagOf(atom);
+                Bytecode.GetSerializer(tag)(buf, atom, out var written);
+                return buf[..written].ToArray(); // flatten
+            })],
+            _constantLookup = kb.ConstantsLookup.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+            _labels = new Dictionary<__WORD, __WORD>(kb.Labels) // shallow copy for isolation
+        };
+        return ctx;
+    }
+
+
     public EmitterContext Scope() => new(_operators)
     {
         _constants = _constants,

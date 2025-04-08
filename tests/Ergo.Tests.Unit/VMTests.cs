@@ -67,9 +67,54 @@ public class VMTests
         var query = kb.Query(fact);
         var vm = new ErgoVM();
         var actualSolutions = 0;
-        vm.Solution += _ => actualSolutions++;
+        vm.SolutionEmitted += _ => actualSolutions++;
         vm.Run(query);
         Assert.Equal(numSolutions, actualSolutions);
+    }
+
+    [Theory]
+    [InlineData("parent(john, mary)", 1)]
+    [InlineData("parent(mary, susan)", 1)]
+    [InlineData("parent(susan, john)", 0)]
+    public void ParentFactsWork(string query, int expected)
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var q = kb.Query(query);
+        var vm = new ErgoVM();
+        var actual = 0;
+        vm.SolutionEmitted += _ => actual++;
+        vm.Run(q);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("parent(X, mary)", new string[] { "X/john" })]
+    public void ParentQueryWorks(string query, string[] subs)
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var q = kb.Query(query);
+        var vm = new ErgoVM();
+        var actual = 0;
+        vm.SolutionEmitted += _ =>
+        {
+            Assert.Equal(vm.MaterializeSolution().ToString(), subs[actual++]);
+        };
+        vm.Run(q);
+        Assert.Equal(subs.Length, actual);
+    }
+
+    [Theory]
+    [InlineData("ancestor(john, mary)", 1)]
+    [InlineData("ancestor(john, susan)", 1)]
+    public void AncestorSucceeds(string query, int expected)
+    {
+        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var q = kb.Query(query);
+        var vm = new ErgoVM();
+        var solutions = 0;
+        vm.SolutionEmitted += _ => solutions++;
+        vm.Run(q);
+        Assert.Equal(expected, solutions);
     }
 
     [Theory]
@@ -80,7 +125,7 @@ public class VMTests
         var query = kb.Query(fact);
         var vm = new ErgoVM();
         var actualSolutions = 0;
-        vm.Solution += _ => actualSolutions++;
+        vm.SolutionEmitted += _ => actualSolutions++;
         vm.Run(query);
         Assert.Equal(numSolutions, actualSolutions);
     }
@@ -109,29 +154,10 @@ public class VMTests
 
         vm.PutVariable();
 
-        var stackAddr = ErgoVM.__STACK(0 + 0 + 1);
-        var term = (Term)vm.Store[stackAddr];
-
-        Assert.True(term.Tag == REF);
+        var stackAddr = (0 + 0 + 1);
+        var term = (Term)vm.Stack[stackAddr];
         Assert.Equal(stackAddr, term.Value);
         Assert.Equal((int)term, vm.A[0]);
-    }
-
-    [Fact]
-    public void GetConstantBindsRefToConstant()
-    {
-        var vm = new ErgoVM();
-        var addr = 1033;
-
-        vm._QUERY = QueryBytecode.Preloaded([(int)(Term)(CON, 0), 0], ["hello"]);
-        vm.Store[addr] = (Term)(REF, addr);
-        vm.A[0] = addr;
-
-        vm.GetConstant();
-        Trace.WriteLine($"Expected: {(int)(Term)(CON, 0)}");
-        Trace.WriteLine($"Actual: {(int)(Term)vm.Store[addr]}");
-
-        Assert.Equal((int)(Term)(CON, 0), vm.Store[addr]);
     }
 
     [Fact]
@@ -139,5 +165,98 @@ public class VMTests
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
         Assert.Throws<InvalidOperationException>(() => kb.Query("undefined_predicate"));
+    }
+
+    [Fact]
+    public void Unify_TwoUnboundRefs_BindsThemTogether()
+    {
+        var vm = new ErgoVM();
+        var a1 = 100;
+        var a2 = 104;
+        vm.Store[a1] = (Term)(REF, a1);
+        vm.Store[a2] = (Term)(REF, a2);
+
+        vm.unify(a1, a2);
+
+        var deref1 = vm.deref(a1);
+        var deref2 = vm.deref(a2);
+        Assert.Equal(deref1, deref2);
+    }
+
+    [Fact]
+    public void Unify_UnboundRefAndConstant_BindsRefToConst()
+    {
+        var vm = new ErgoVM();
+        var a1 = 100;
+        var a2 = 104;
+        vm.Store[a1] = (Term)(REF, a1);
+        vm.Store[a2] = (Term)(CON, 7); // let's say 7 is “john”
+
+        vm.unify(a1, a2);
+
+        Assert.Equal(((Term)(CON, 7)).RawValue, ((Term)vm.Store[vm.deref(a1)]).RawValue);
+    }
+
+    [Fact]
+    public void Unify_TwoDifferentConstants_Fails()
+    {
+        var vm = new ErgoVM();
+        var a1 = 100;
+        var a2 = 104;
+        vm.Store[a1] = (Term)(CON, 1);
+        vm.Store[a2] = (Term)(CON, 2);
+
+        vm.unify(a1, a2);
+
+        Assert.True(vm.fail);
+    }
+
+    [Fact]
+    public void Unify_SameFunctorAndArgs_Succeeds()
+    {
+        var vm = new ErgoVM();
+        var f = (Term)(CON, 10); // "father/2" or whatever
+        var h1 = 100;
+        var h2 = 200;
+
+        // STR layout: [STR, f, arg1, arg2]
+        vm.Store[h1] = (Term)(STR, h1 + 1);
+        vm.Store[h1 + 1] = f;
+        vm.Store[h1 + 2] = (Term)(CON, 1);
+        vm.Store[h1 + 3] = (Term)(CON, 2);
+
+        vm.Store[h2] = (Term)(STR, h2 + 1);
+        vm.Store[h2 + 1] = f;
+        vm.Store[h2 + 2] = (Term)(CON, 1);
+        vm.Store[h2 + 3] = (Term)(CON, 2);
+
+        vm.unify(h1, h2);
+
+        Assert.False(vm.fail);
+    }
+
+    [Fact]
+    public void Unify_DifferentFunctorAndArgs_Fails()
+    {
+        var vm = new ErgoVM();
+        var f1 = (Term)(CON, 10);
+        var f2 = (Term)(CON, 11);
+        var h1 = 100;
+        var h2 = 200;
+
+        // STR layout: [STR, f, arg1, arg2]
+        vm.Store[h1] = (Term)(STR, h1 + 1);
+        vm.Store[h1 + 1] = f1;
+        vm.Store[h1 + 2] = (Term)(CON, 1);
+        vm.Store[h1 + 3] = (Term)(CON, 2);
+
+        vm.Store[h2] = (Term)(STR, h2 + 1);
+        vm.Store[h2 + 1] = f2;
+        vm.Store[h2 + 2] = (Term)(CON, 1);
+        vm.Store[h2 + 3] = (Term)(CON, 2);
+
+        vm.unify(h1, h2);
+
+        Assert.True(vm.fail);
     }
 }

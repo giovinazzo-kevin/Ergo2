@@ -25,15 +25,22 @@ public class Emitter
 
     public virtual Query Query(Lang.Ast.Term query, KnowledgeBaseBytecode kb)
     {
-        var ctx = new EmitterContext(new());
+        var ctx = EmitterContext.From(kb);
         var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame);
+        var variableMap = new VariableMap();
+        var vars = query.GetVariables().Distinct().ToArray();
+        for (int i = 0; i < vars.Length; i++)
+        {
+            vars[i].Value = (__int)i;
+            variableMap[vars[i].Name] = i;
+        }
         if (needsStackFrame)
             ctx.Emit(allocate);
         ctx.Concat(scope);
         if (needsStackFrame)
             ctx.Emit(deallocate);
         var code = ctx.ToQuery(kb);
-        return new Query(code);
+        return new Query(code, variableMap);
 
         EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame)
         {

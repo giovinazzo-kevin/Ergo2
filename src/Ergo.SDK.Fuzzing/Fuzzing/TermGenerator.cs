@@ -66,7 +66,7 @@ public class TermGenerator
     public Func<Complex> Complex => () =>
     {
         using var _ = Transact(Profile with { MaxComplexDepth = Profile.MaxComplexDepth - 1 });
-        var functor = Get(__string, Profile with { 
+        var functor = Get(() => (__string)String(), Profile with { 
             MaxIdentifierLength = Profile.MaxComplexFunctorLength });
         if (Profile.MaxComplexDepth <= 0)
             return new Complex(functor, [Literals.False]);
