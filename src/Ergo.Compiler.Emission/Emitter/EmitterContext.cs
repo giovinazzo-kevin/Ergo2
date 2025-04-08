@@ -1,6 +1,8 @@
-﻿using Ergo.Lang.Lexing;
+﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Lexing;
 using Microsoft.VisualBasic;
 using System.Text;
+using static Ergo.Compiler.Emission.Term;
 
 namespace Ergo.Compiler.Emission;
 
@@ -36,45 +38,30 @@ public sealed class EmitterContext
     {
         _labels[sig] = address;
     }
+
     public int Constant(object value)
     {
-        if (_constantLookup.TryGetValue(value, out var result)) 
+        if (_constantLookup.TryGetValue(value, out var result))
             return result;
-        var j = _constantLookup[value] = _constantLookup.Count;
-        _constants.Add(value.GetType().GetHashCode());
-        switch (value)
-        {
-            case bool __bool:
-                _constants.Add(__bool ? 1 : 0);
-                break;
-            case int __int:
-                _constants.Add(__int);
-                break;
-            case double __double:
-                var bits = BitConverter.DoubleToInt64Bits(__double);
-                _constants.Add((__WORD)(bits & 0xFFFFFFFF));
-                _constants.Add((__WORD)((bits >> 32) & 0xFFFFFFFF));
-                break;
-            case string __string:
-                var bytes = Encoding.UTF8.GetBytes(__string);
-                var padding = (sizeof(__WORD) - bytes.Length % sizeof(__WORD)) % sizeof(__WORD);
-                Array.Resize(ref bytes, bytes.Length + padding);
-                var span = bytes.AsSpan();
-                var lenInWords = (__WORD)Math.Ceiling((double)span.Length / sizeof(__WORD));
-                _constants.Add(lenInWords);
-                for (int i = 0; i < lenInWords; i++)
-                {
-                    var start = i * sizeof(__WORD);
-                    var end = Math.Min(span.Length, start + sizeof(__WORD));
-                    var word = BitConverter.ToInt32(span[start..end]);
-                    _constants.Add(word);
-                }
-                break;
-            default:
-                throw new NotSupportedException();
-        }
-        return j;
+
+        // Prepare buffer and get Atom
+        Span<__WORD> buffer = stackalloc __WORD[64];
+        var atom = Atom.FromObject(value);
+        var tag = Term.TagOf(atom);
+
+        if (!Bytecode.RegisteredTags.Contains(tag))
+            throw new NotSupportedException($"No serializer registered for constant tag: {tag}");
+
+        Bytecode.ConstantSerializer serializer = Bytecode.GetSerializer(tag);
+        serializer(buffer, atom, out int wordsWritten);
+
+        var index = _constantLookup[value] = _constantLookup.Count;
+        for (int i = 0; i < wordsWritten; i++)
+            _constants.Add(buffer[i]);
+
+        return index;
     }
+
     public KnowledgeBaseBytecode ToKnowledgeBase()
     {
         var labelsLength = _labels.Values.Count * 2 ;

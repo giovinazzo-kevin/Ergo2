@@ -3,16 +3,20 @@ using Ergo.Lang.Ast;
 using Ergo.Shared.Extensions;
 using System;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Ergo.Compiler.Emission.Term;
+using static Ergo.Compiler.Emission.Term.__CONST_TAG;
 
 namespace Ergo.Compiler.Emission;
 
 public abstract class Bytecode
 {
-    private static readonly int HASH_BOOL = typeof(bool).GetHashCode();
-    private static readonly int HASH_INT32 = typeof(int).GetHashCode();
-    private static readonly int HASH_DOUBLE = typeof(double).GetHashCode();
-    private static readonly int HASH_STRING = typeof(string).GetHashCode();
+    public delegate Atom ConstantDeserializer(ref ReadOnlySpan<__WORD> span);
+    public delegate void ConstantSerializer(Span<__WORD> buffer, Atom value, out int wordsWritten);
+
+    private static readonly Dictionary<__CONST_TAG, ConstantDeserializer> _constantDeserializers = new();
+    private static readonly Dictionary<__CONST_TAG, ConstantSerializer> _constantSerializers = new();
+
+    public static IEnumerable<__CONST_TAG> RegisteredTags => _constantDeserializers.Keys;
 
     protected readonly __WORD[] _bytes;
     protected readonly int _codeStart;
@@ -21,6 +25,43 @@ public abstract class Bytecode
     public ReadOnlySpan<Atom> Constants => _consts;
     public readonly Dictionary<object, int> ConstantsLookup;
     public readonly Dictionary<__WORD, __WORD> Labels = [];
+
+    public static void RegisterConstantDeserializer(__CONST_TAG tag, ConstantDeserializer handler)
+    {
+        if (_constantDeserializers.ContainsKey(tag))
+            throw new InvalidOperationException($"Deserializer already registered for tag {tag}");
+        _constantDeserializers[tag] = handler;
+    }
+
+    public static void RegisterConstantSerializer(__CONST_TAG tag, ConstantSerializer handler)
+    {
+        if (_constantSerializers.ContainsKey(tag))
+            throw new InvalidOperationException($"Serializer already registered for tag {tag}");
+        _constantSerializers[tag] = handler;
+    }
+
+    public static ConstantSerializer GetSerializer(__CONST_TAG tag)
+    {
+        return _constantSerializers[tag];
+    }
+
+    public static ConstantDeserializer GetDeserializer(__CONST_TAG tag)
+    {
+        return _constantDeserializers[tag];
+    }
+
+    static Bytecode()
+    {
+        RegisterConstantDeserializer(BOOL, DeserializeBool);
+        RegisterConstantDeserializer(INT, DeserializeInt);
+        RegisterConstantDeserializer(DOUBLE, DeserializeDouble);
+        RegisterConstantDeserializer(STRING, DeserializeString);
+
+        RegisterConstantSerializer(BOOL, SerializeBool);
+        RegisterConstantSerializer(INT, SerializeInt);
+        RegisterConstantSerializer(DOUBLE, SerializeDouble);
+        RegisterConstantSerializer(STRING, SerializeString);
+    }
 
     protected Bytecode(__WORD[] bytes, Atom[] constants)
     {
@@ -79,41 +120,90 @@ public abstract class Bytecode
 
     protected static Atom DeserializeConstant(ref ReadOnlySpan<__WORD> span)
     {
-        var type = span[0];
-        if (type == HASH_BOOL)
+        var tag = (__CONST_TAG)span[0];
+
+        if (_constantDeserializers.TryGetValue(tag, out var handler))
+            return handler(ref span);
+
+        throw new NotSupportedException($"Unknown constant tag: {tag}");
+    }
+
+    private static Atom DeserializeBool(ref ReadOnlySpan<__WORD> span)
+    {
+        var result = (__bool)(span[1] != 0);
+        span = span[2..];
+        return result;
+    }
+
+    private static Atom DeserializeInt(ref ReadOnlySpan<__WORD> span)
+    {
+        var result = (__int)span[1];
+        span = span[2..];
+        return result;
+    }
+
+    private static Atom DeserializeDouble(ref ReadOnlySpan<__WORD> span)
+    {
+        var high = (ulong)(uint)span[1];
+        var low = (ulong)(uint)span[2];
+        var bits = (high << 32) | low;
+        var result = (__double)BitConverter.UInt64BitsToDouble(bits);
+        span = span[3..];
+        return result;
+    }
+
+    private static Atom DeserializeString(ref ReadOnlySpan<__WORD> span)
+    {
+        var lenInWords = span[1];
+        var words = span.Slice(2, lenInWords);
+        var bytes = new byte[lenInWords * sizeof(__WORD)];
+
+        for (int i = 0; i < lenInWords; ++i)
         {
-            var asBool = span[1] != 0;
-            span = span[2..];
-            return (__bool)asBool;
+            bytes[i * 4 + 0] = (byte)(words[i] >> 0);
+            bytes[i * 4 + 1] = (byte)(words[i] >> 8);
+            bytes[i * 4 + 2] = (byte)(words[i] >> 16);
+            bytes[i * 4 + 3] = (byte)(words[i] >> 24);
         }
-        if (type == HASH_INT32)
-        {
-            var asInt = span[1];
-            span = span[2..];
-            return (__int)asInt;
-        }
-        if (type == HASH_DOUBLE)
-        {
-            var asDouble = BitConverter.UInt64BitsToDouble((ulong)(span[1] << 32) | (ulong)span[2]);
-            span = span[3..];
-            return (__double)asDouble;
-        }
-        if (type == HASH_STRING)
-        {
-            var lenInWords = span[1];
-            span = span[2..];
-            var words = span[..lenInWords];
-            var bytes = new byte[lenInWords * sizeof(__WORD)];
-            for (int j = 0; j < lenInWords; ++j)
-            {
-                bytes[j * 4 + 0] = (byte)(words[j] >> 0);
-                bytes[j * 4 + 1] = (byte)(words[j] >> 8);
-                bytes[j * 4 + 2] = (byte)(words[j] >> 16);
-                bytes[j * 4 + 3] = (byte)(words[j] >> 24);
-            }
-            span = span[lenInWords..];
-            return (__string)Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-        }
-        throw new NotSupportedException();
+
+        span = span[(2 + lenInWords)..];
+        return (__string)Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+    }
+
+    private static void SerializeBool(Span<__WORD> buffer, Atom value, out int wordsWritten)
+    {
+        buffer[0] = (int)BOOL;
+        buffer[1] = ((bool)value.Value) ? 1 : 0;
+        wordsWritten = 2;
+    }
+
+    private static void SerializeInt(Span<__WORD> buffer, Atom value, out int wordsWritten)
+    {
+        buffer[0] = (int)INT;
+        buffer[1] = (int)value.Value;
+        wordsWritten = 2;
+    }
+
+    private static void SerializeDouble(Span<__WORD> buffer, Atom value, out int wordsWritten)
+    {
+        buffer[0] = (int)DOUBLE;
+        ulong bits = BitConverter.DoubleToUInt64Bits((double)value.Value);
+        buffer[1] = (int)(bits >> 32);
+        buffer[2] = (int)(bits & 0xFFFFFFFF);
+        wordsWritten = 3;
+    }
+
+    private static void SerializeString(Span<__WORD> buffer, Atom value, out int wordsWritten)
+    {
+        var bytes = Encoding.UTF8.GetBytes((string)value.Value);
+        var len = (bytes.Length + 3) / 4;
+        buffer[0] = (int)STRING;
+        buffer[1] = len;
+
+        Array.Resize(ref bytes, len * 4); // Pad with \0s
+        for (int i = 0; i < len; i++)
+            buffer[2 + i] = BitConverter.ToInt32(bytes, i * 4);
+
+        wordsWritten = 2 + len;
     }
 }

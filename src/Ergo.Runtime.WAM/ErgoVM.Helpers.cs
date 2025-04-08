@@ -28,12 +28,12 @@ public partial class ErgoVM
         fail = true;
         P = Code.Length;
     }
-    public __ADDR deref(__ADDR a)
+    public __ADDR deref(Term a)
     {
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(deref)}: REF={a}");
 #endif
-        Term t = Store[a];
+        Term t = Store[a.Value];
         if (t is (REF, var b) && b != a)
             return b;
         return a;

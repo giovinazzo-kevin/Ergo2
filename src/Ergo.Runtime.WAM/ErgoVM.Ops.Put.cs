@@ -29,7 +29,7 @@ public partial class ErgoVM
         A[Ai] = Stack[addr] = (Term)(REF, __STACK(addr));
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(PutVariable)}: Yn={Yn} Ai={Ai} REF={__STACK(addr)}");
-        Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={Store[__STACK(addr)]}");
+        Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={((Term)Store[__STACK(addr)]).Value}");
 #endif
 
     }

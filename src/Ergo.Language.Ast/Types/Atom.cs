@@ -29,4 +29,16 @@ public abstract class Atom : Term
     public static bool operator ==(Atom a, int b) => (int)a.Value == b;
     public static bool operator !=(Atom a, int b) => (int)a.Value != b;
     public static bool IsAtomIdentifier(string s) => !Variable.IsVariableIdentifier(s);
+    public static Atom FromObject(object value)
+    {
+        return value switch
+        {
+            string s => (__string)s,
+            bool b => (__bool)b,
+            int i => (__int)i,
+            double d => (__double)d,
+            Atom a => a,
+            _ => throw new NotSupportedException($"Unsupported atom type: {value.GetType()}"),
+        };
+    }
 }
