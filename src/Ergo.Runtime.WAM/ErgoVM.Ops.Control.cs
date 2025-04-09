@@ -51,13 +51,12 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+            _traceLevel++;
             _F = p.F;
             _N = p.N;
+            Trace.WriteLine($"{nameof(Call)}: {Constants[p.F]}/{p.N}");
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(Call)}: {Constants[p.F]}/{p.N}");
-            _traceLevel++;
-            Trace.WriteLine($"Call: ({_traceLevel}) {Constants[p.F]} " +
-                $"({string.Join(", ", Enumerable.Range(0, p.N).Select(i => Pretty(A[i])))})");
 #endif
             CP = P;
             N = p.N;
@@ -107,10 +106,11 @@ public partial class ErgoVM
     /// </summary>
     public void Proceed()
     {
-#if WAM_TRACE
-        Trace.WriteLine($"[WAM] Proceed: P={P}, CP={CP}, CodeLen={Code.Length}");
+        _traceLevel--;
         Trace.WriteLine($"Exit: ({_traceLevel}) {Constants[_F]}" +
             $"({string.Join(", ", Enumerable.Range(0, _N).Select(i => Pretty(A[i])))})");
+#if WAM_TRACE
+        Trace.WriteLine($"[WAM] Proceed: P={P}, CP={CP}, CodeLen={Code.Length}");
 #endif
         if (CP >= Code.Length || B == B0)
             EmitSolution();

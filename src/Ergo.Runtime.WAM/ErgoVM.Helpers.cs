@@ -236,13 +236,16 @@ public partial class ErgoVM
 
     public string Pretty(Term t)
     {
-        var addr = deref(t.Value);
-        var derefTerm = (Term)Store[addr];
-
-        return derefTerm.Tag switch
+        if (t.Tag == Term.__TAG.REF)
         {
-            CON => Constants[derefTerm.Value].Expl,
-            REF => $"_{addr}", // like _4580
+            var addr = deref(t.Value);
+            t = (Term)Store[addr];
+        }
+
+        return t.Tag switch
+        {
+            CON => Constants[t.Value].Expl,
+            REF => $"_{t.Value}", // like _4580
             _ => "<?>"
         };
     }
