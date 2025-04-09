@@ -75,6 +75,8 @@ public class ParserTests
         var result = parenthesized 
             ? parser.Parenthesized("(", ")", parserFunc(parser)) 
             : parserFunc(parser)();
+        parser.Context.ParseRoot.Print(excludeFailures: false);
+        parser.Context.ParseRoot.Print(excludeFailures: true);
         return result.GetOrThrow();
     }
 

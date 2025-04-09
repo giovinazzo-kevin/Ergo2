@@ -18,6 +18,12 @@ public static class Ops
     public static readonly Func<__WORD, __WORD, Op> put_variable = (__WORD Vn, __WORD Ai) => new Op(OpCode.put_variable, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_structure = (__WORD Pn, __WORD Xi) => new Op(OpCode.put_structure, () => Pn, () => Xi);
 
+    public static readonly Func<__WORD, Op> unify_variable = (__WORD Vn) => new Op(OpCode.unify_variable, () => Vn);
+    public static readonly Func<__WORD, Op> unify_value = (__WORD Vn) => new Op(OpCode.unify_value, () => Vn);
+    public static readonly Func<__WORD, Op> unify_local_value = (__WORD Vn) => new Op(OpCode.unify_local_value, () => Vn);
+    public static readonly Func<__WORD, Op> unify_constant = (__WORD c) => new Op(OpCode.unify_constant, () => c);
+    public static readonly Func<__WORD, Op> unify_void = (__WORD n) => new Op(OpCode.unify_void, () => n);
+
     public static readonly Op allocate = new (OpCode.allocate);
     public static readonly Op deallocate = new (OpCode.deallocate);
     public static readonly Op proceed = new (OpCode.proceed);

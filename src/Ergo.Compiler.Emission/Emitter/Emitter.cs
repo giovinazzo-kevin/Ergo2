@@ -152,6 +152,29 @@ public class Emitter
         }
     }
 
+    protected virtual void EmitUnify(EmitterContext ctx, Lang.Ast.Term term)
+    {
+        switch (term)
+        {
+            case Variable v when v.Value is not __int:
+                v.Value = (__int)ctx.NumVars;
+                ctx.Emit(unify_variable(ctx.NumVars++));
+                break;
+
+            case Variable v:
+                ctx.Emit(unify_value((__WORD)(__int)v.Value));
+                break;
+
+            case Atom c:
+                var constId = ctx.Constant(c.Value);
+                ctx.Emit(unify_constant(constId));
+                break;
+
+            default:
+                throw new NotSupportedException("Nested compound terms not yet supported inside structure heads.");
+        }
+    }
+
     protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {
         switch (args[Ai])
@@ -160,6 +183,9 @@ public class Emitter
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
                 ctx.Emit(get_structure(fn, Ai));
+                foreach (var arg in @struct.Args)
+                    EmitUnify(ctx, arg);
+
                 break;
             case Variable @var when var.Value is not __int:
                 var.Value = (__int)ctx.NumVars;

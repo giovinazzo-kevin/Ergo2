@@ -115,6 +115,11 @@ public class EmitterTests : Tests
         AssertSignature("ancestor", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
+        // structured_fact/1
+        AssertOp(OpCode.allocate, ref span);
+        AssertOp(OpCode.get_structure, ref span);
+        AssertInt32(66, ref span);
+
         // ?- fact.
         AssertOp(OpCode.call, ref span);
         AssertSignature("fact", 0, ref span, query);

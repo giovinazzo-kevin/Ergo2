@@ -17,3 +17,5 @@ ancestor(X, Y) :-
 ancestor(X, Y) :-
   parent(X, Z), 
   ancestor(Z, Y).
+
+structured_fact(f(X, a)) :- fact.

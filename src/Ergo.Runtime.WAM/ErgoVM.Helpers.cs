@@ -118,58 +118,78 @@ public partial class ErgoVM
         while (todo.Count > 0)
         {
             var (u, v) = todo.Pop();
-            if (u == v) continue;
-
-            var x = (Term)Store[u];
-            var y = (Term)Store[v];
-
-            if (x.Tag == REF || y.Tag == REF)
-            {
-                bind(u, v);
-                continue;
-            }
-
-            if (x.Tag != y.Tag)
-            {
-                fail = true;
-                return;
-            }
-
-            switch (x.Tag)
-            {
-                case CON:
-                    if (x.Value != y.Value)
-                    {
-                        fail = true;
-                        return;
-                    }
-                    break;
-
-                case STR:
-                    var f1 = Store[x.Value];
-                    var f2 = Store[y.Value];
-                    if (!Equals(f1, f2))
-                    {
-                        fail = true;
-                        return;
-                    }
-
-                    var arity = ((Signature)f1).N;
-                    for (int i = 1; i <= arity; ++i)
-                        todo.Push((x.Value + i, y.Value + i));
-                    break;
-
-                case LIS:
-                    todo.Push((x.Value, y.Value));
-                    todo.Push((x.Value + 1, y.Value + 1));
-                    break;
-
-                default:
-                    fail = true;
-                    return;
-            }
+            if (!MatchTerms(u, v, todo)) return;
         }
     }
+
+    public bool MatchTerms(__ADDR u, __ADDR v, Stack<(int, int)> todo)
+    {
+        if (u == v) return true;
+
+        var x = (Term)Store[u];
+        var y = (Term)Store[v];
+
+        if (x.Tag == REF || y.Tag == REF)
+        {
+            bind(u, v);
+            return true;
+        }
+
+        if (x.Tag != y.Tag)
+        {
+            fail = true;
+            return false;
+        }
+
+        switch (x.Tag)
+        {
+            case CON:
+                if (x.Value != y.Value)
+                {
+                    fail = true;
+                    return false;
+                }
+                break;
+
+            case STR:
+                return WalkStructure(x.Value, y.Value, todo);
+
+            case LIS:
+                WalkList(x.Value, y.Value, todo);
+                break;
+
+            default:
+                fail = true;
+                return false;
+        }
+
+        return true;
+    }
+
+    public bool WalkStructure(__ADDR xAddr, __ADDR yAddr, Stack<(int, int)> todo)
+    {
+        var f1 = Store[xAddr];
+        var f2 = Store[yAddr];
+
+        if (!Equals(f1, f2))
+        {
+            fail = true;
+            return false;
+        }
+
+        var arity = ((Signature)f1).N;
+        for (int i = 1; i <= arity; ++i)
+            todo.Push((xAddr + i, yAddr + i));
+
+        return true;
+    }
+
+    public void WalkList(__ADDR xAddr, __ADDR yAddr, Stack<(int, int)> todo)
+    {
+        todo.Push((xAddr, yAddr));
+        todo.Push((xAddr + 1, yAddr + 1));
+    }
+
 
     public Lang.Ast.Term ReadHeapTerm(__ADDR addr)
     {
