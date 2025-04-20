@@ -72,7 +72,7 @@ public class Emitter
             for (int i = 0; i < args.Length; ++i)
                 Write(ctx, args, i);
             if (!kb.TryResolve(sign, out var label))
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Predicate {sign} could not be resolved"); 
             ctx.Emit(call(label));
             return ctx;
         }

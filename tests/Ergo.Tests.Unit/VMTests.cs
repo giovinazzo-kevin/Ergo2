@@ -161,11 +161,23 @@ public class VMTests : Tests
         }
     }
 
-
     [Fact]
-    public void ParseEmitsCorrectBytecode()
+    public void BacktrackWorks()
     {
-        var kb = Consult("vm_tests");
+        AssertQuery("backtrack_tests", "value(X)", Validate);
+
+        void Validate(QueryBytecode bytes)
+        {
+            var span = bytes.Query;
+
+            AssertOp(OpCode.allocate, ref span);
+            AssertOp(OpCode.put_variable, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
+            AssertOp(OpCode.call, ref span);
+            AssertSignature("value", 1, ref span, bytes);
+            AssertOp(OpCode.deallocate, ref span);
+        }
     }
 
 

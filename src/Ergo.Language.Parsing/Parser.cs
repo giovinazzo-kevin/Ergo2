@@ -129,7 +129,7 @@ public class Parser : IDisposable
         .Select(x => new List(x.Contents))
     ]);
     public Func<Maybe<List>> ListSingleton => Transact([() =>
-         Parenthesized(Collections.List, Term)
+         Parenthesized(Collections.List, BinaryExpressionRhs)
         .Select(x => new List([x]))
     ]);
     public Func<Maybe<__string>> EmptyList => Transact([() =>
@@ -138,7 +138,7 @@ public class Parser : IDisposable
     ]);
     public Func<Maybe<List>> List => Transact([
         ListHeadTail, 
-        ListNoTail, 
+        ListNoTail,
         ListSingleton
     ]);
     public Func<Maybe<Directive>> Directive => Transact([() =>
