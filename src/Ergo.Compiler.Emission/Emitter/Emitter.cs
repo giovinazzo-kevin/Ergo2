@@ -21,6 +21,9 @@ public class Emitter
                 Predicate(ctx, pred);
         }
         var code = ctx.ToKnowledgeBase();
+#if EMITTER_TRACE
+        System.Diagnostics.Trace.WriteLine(ctx.Dump(query: false));
+#endif
         return new KnowledgeBase((string)graph.Root.Value, code);
     }
 
@@ -41,6 +44,9 @@ public class Emitter
         if (needsStackFrame)
             ctx.Emit(deallocate);
         var code = ctx.ToQuery(kb);
+#if EMITTER_TRACE
+        System.Diagnostics.Trace.WriteLine(ctx.Dump(query: true));
+#endif
         return new Query(code, variableMap);
 
         EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame)
@@ -133,8 +139,12 @@ public class Emitter
         {
             case Cut:
                 if (cutReg is not int reg)
-                    throw new InvalidOperationException("Cut emitted without get_level.");
-                ctx.Emit(cut(reg));
+                {
+                    reg = ctx.NumVars++;
+                    ctx.Emit(get_level(reg));
+                    cutReg = reg;
+                }
+                ctx.Emit(cut((int)cutReg));
                 break;
             case StaticGoal @static:
                 var p1 = ctx.Constant(@static.Callee.Signature.Functor.Value);

@@ -9,6 +9,8 @@ public static class Operators
     public static readonly Operator Disjunction = new(1100, xfy, Functors.Semicolon, Functors.Disjunction);
     public static readonly Operator Conjunction = new(1000, xfy, Functors.Comma, Functors.Conjunction);
 
+    public static readonly Operator Unification = new(700, xfy, Functors.Unification);
+
     public static readonly Operator Addition = new(500, yfx, Functors.Addition);
     public static readonly Operator Subtraction = new(500, yfx, Functors.Subtraction);
     public static readonly Operator Multiplication = new(400, yfx, Functors.Multiplication);

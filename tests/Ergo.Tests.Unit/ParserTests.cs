@@ -9,8 +9,10 @@ using Ergo.Shared.Extensions;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using static Ergo.Lang.Ast.Operator;
 
 namespace Ergo.UnitTests;
 
@@ -384,5 +386,28 @@ clause(Y) :-
     {
         var result = Expect(input, p => p.Atom, parenthesized: true);
         Assert.Equal(input, result.Parenthesized().Expl);
+    }
+
+    [Fact]
+    public void flatten_parse_tree()
+    {
+        var lookup = new OperatorLookup([Operators.Unification]);
+        var lexer = new Lexer(ErgoFileStream.Open(new FileInfo($"./ergo/vm_tests.ergo")), lookup);
+        var parser = new Parser(lexer);
+        var module = parser.Parse(parser.Module).GetOrThrow();
+
+
+        // Let her sing
+        Trace.WriteLine("========== TRACE (FULL) ==========");
+        parser.Context.ParseRoot.Print(excludeFailures: false);
+        Trace.WriteLine("========== TRACE (TRUE) ==========");
+        parser.Context.ParseRoot.Print();
+
+        Assert.Equal(3, module.Clauses.Length);
+
+        var clause = module.Clauses[2]; // parse/1
+
+        var goal = clause.Rhs;
+        Assert.NotNull(goal);
     }
 }

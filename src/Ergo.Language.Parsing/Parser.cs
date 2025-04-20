@@ -172,12 +172,6 @@ public class Parser : IDisposable
     ]);
     #endregion
     #region Helpers
-    [Conditional("PARSER_TRACE")]
-    public void Trace(IExplainable some, string method = "")
-    {
-        var indent = new string(' ', Context.ParseDepth * 2);
-        System.Diagnostics.Trace.WriteLine($"{indent}{method}: {some.Expl}");
-    }
     public Func<Maybe<T>> Transact<T>(IEnumerable<Func<Maybe<T>>> parsers, bool isBlock = false, [CallerMemberName] string method = "")
         where T : IExplainable
     {
@@ -191,9 +185,8 @@ public class Parser : IDisposable
             Context.EnterParse();
             return Maybe.Or(parsers)
                 .Do(tx.Commit, tx.Rollback)
-                .Do(x => Context.AnnotateLastNode(method, x.Expl, success: true),
+                .Do(x  => Context.AnnotateLastNode(method, x.Expl, success: true),
                     () => Context.AnnotateLastNode(method, "", success: false))
-                .Do(x => Trace(x, method), () => Context.MemoizeFailure(Lexer.State, method))
                 .DoAlways(() => {
                     if (isBlock)
                         Context.ExitBlock();

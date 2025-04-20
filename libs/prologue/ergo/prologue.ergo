@@ -1,7 +1,10 @@
-:- module(_, []).
+:- module(_, ['='/2, '->'/2, '\\+'/2, append/3]).
 
 :- op(1050, xfy, '->').
 :- op(900, fy, '\\+').
+:- op(700, xfy, '=').
+
+'='(_X, _Y).
 
 If -> Then; _Else :- If, !, Then.
 _If -> _Then; Else :- !, Else.

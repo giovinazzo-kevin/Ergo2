@@ -43,10 +43,16 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] CUT! n={n} Yn={Yn} B={B}");
 #endif
-        if (B <= Yn)
-            return;
-        B = Yn;
-        tidy_trail();
+
+        // Actively remove choice points after the cut
+        while (B > Yn)
+        {
+            // Restore trail and heap if needed
+            unwind_trail(B, TR);
+            B = Stack[B + Stack[B] + 3]; // previous choice point (saved B)
+        }
+
+        tidy_trail(); // Clean up trail after cut
     }
     #endregion
 }

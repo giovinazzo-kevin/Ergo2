@@ -1,0 +1,12 @@
+:- module(_, [flatten/2, parse/1]).
+
+flatten([], []).
+flatten([H|T], Flat) :-
+    flatten(H, FH),
+    flatten(T, FT),
+    append(FH, FT, Flat).
+
+parse(Tree) :-
+    Tree = node(left(X), right(Y)),
+    flatten([X, Y], Flat),
+    process(Flat).

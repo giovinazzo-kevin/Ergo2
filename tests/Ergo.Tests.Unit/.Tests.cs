@@ -29,9 +29,9 @@ public class Tests
         return kb;
     }
 
-    protected void AssertQuery(string query, Validator validate)
+    protected void AssertQuery(string file, string query, Validator validate)
     {
-        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var kb = Consult(file);
         var q = kb.Query(query);
         validate(q.Bytecode);
     }

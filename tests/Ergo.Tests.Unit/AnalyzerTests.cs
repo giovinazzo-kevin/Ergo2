@@ -30,7 +30,9 @@ public class AnalyzerTests
     public void Prologue()
     {
         var module = Load<LibPrologue>();
-        Assert.Equal(2, module.Predicates.Count);
+        Assert.Equal(3, module.Predicates.Count);
+        Assert.True(module.Predicates.TryGetValue(new("=", 2), out var unif_2));
+        Assert.Equal(1, unif_2.Clauses.Count);
         Assert.True(module.Predicates.TryGetValue(new("->", 2), out var if_2));
         Assert.Equal(1, if_2.Clauses.Count);
         Assert.Equal(3, if_2.Clauses[0].Goals.Count);

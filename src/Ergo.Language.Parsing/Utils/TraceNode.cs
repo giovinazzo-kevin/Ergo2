@@ -11,15 +11,22 @@ public class TraceNode
     public List<TraceNode> Children { get; } = [];
     public TraceNode? Parent { get; set; }
 
-    public void Print(string indent = "", bool isLast = true, bool excludeFailures = true)
+    public void Print(string indent = "", bool isLast = true, bool excludeFailures = true, int depth = 0)
     {
-        if (!Success && excludeFailures)
+        // Print if success OR we are at the top level (depth 0 or 1) even if failure
+        if (!Success && excludeFailures && depth > 1)
             return;
+
         Trace.WriteLine($"{indent}{(isLast ? "└── " : "├── ")}{this}");
-        var visible = Children.Where(c => c.Success || !excludeFailures).ToList();
+
+        var visible = Children
+            .Where(c => c.Success || !excludeFailures || depth < 1) // allow failed children at top level
+            .ToList();
+
         for (int i = 0; i < visible.Count; i++)
-            visible[i].Print(indent + (isLast ? "    " : "│   "), i == visible.Count - 1, excludeFailures);
+            visible[i].Print(indent + (isLast ? "    " : "│   "), i == visible.Count - 1, excludeFailures, depth + 1);
     }
+
     public override string ToString()
     {
         return $"{Status} {Method}: {Value?.Replace("\n", "")}";

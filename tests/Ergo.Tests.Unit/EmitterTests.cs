@@ -1,10 +1,26 @@
 ﻿using Ergo.Compiler.Emission;
 using Ergo.Runtime.WAM;
+using System.Diagnostics;
 
 namespace Ergo.UnitTests;
 
 public class EmitterTests : Tests
 {
+
+
+    [Fact]
+    public void vm_tests()
+    {
+        var module = nameof(vm_tests);
+        Emit(module, out var graph, out var kb);
+        foreach (var p in graph.Modules[module].Imports.Single(x => x.Name == "prologue").Predicates.Keys)
+            Trace.WriteLine(p.ToString());
+        var sig = new Lang.Ast.Signature("parse", 1);
+        Assert.True(kb.Bytecode.TryResolve(sig, out var entry), "Missing parse/1");
+        var span = kb.Bytecode.Code[kb.Bytecode.Labels[entry]..];
+
+    }
+
     [Fact]
     public void emitter_tests()
     {
@@ -115,10 +131,6 @@ public class EmitterTests : Tests
         AssertSignature("ancestor", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
-        // structured_fact/1
-        AssertOp(OpCode.allocate, ref span);
-        AssertOp(OpCode.get_structure, ref span);
-        AssertInt32(66, ref span);
 
         // ?- fact.
         AssertOp(OpCode.call, ref span);

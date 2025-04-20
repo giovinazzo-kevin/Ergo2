@@ -6,6 +6,7 @@ using Ergo.Lang.Ast.WellKnown;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
 using Ergo.Shared.Types;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Ergo.Compiler.Analysis;
@@ -33,6 +34,7 @@ public class Analyzer
 
     protected Module.Stage LoadStage_Link(Module module)
     {
+        Trace.WriteLine($"{nameof(LoadStage_Link)}: {module.Name}");
         var libraries = LibraryLocator.Find(module.Name)
             .Select(type => Activator.CreateInstance(type, [module]))
             .Cast<Library>();
@@ -50,6 +52,7 @@ public class Analyzer
 
     protected Module.Stage LoadStage_Open(CallGraph graph, Module module, ErgoFileStream stream)
     {
+        Trace.WriteLine($"{nameof(LoadStage_Open)}: {module.Name}");
         var lexer = new Lexer(stream, Operators);
         module._parser = new Parser(lexer);
         return Module.Stage.Opened;
@@ -57,6 +60,7 @@ public class Analyzer
 
     protected Module.Stage LoadStage_Preload(CallGraph graph, Module module)
     {
+        Trace.WriteLine($"{nameof(LoadStage_Preload)}: {module.Name}");
         var directives = module._parser!.DirectiveDefinitions()
             .GetOr([]);
         if (directives.Length == 0)
@@ -87,8 +91,10 @@ public class Analyzer
 
     protected static Module.Stage LoadStage_Load(CallGraph graph, Module module)
     {
+        Trace.WriteLine($"{nameof(LoadStage_Load)}: {module.Name}");
         var clauseDefs = module._parser!.ClauseOrFactDefinitions()
             .GetOr([]);
+        module._parser.Context.ParseRoot.Print();
         var clauseDefsBySig = clauseDefs
             .ToLookup(c => c.Functor.GetSignature()
                 .GetOrThrow(new AnalyzerException(AnalyzerError.Clause0HeadCanNotBeAVariable, c.Expl)));

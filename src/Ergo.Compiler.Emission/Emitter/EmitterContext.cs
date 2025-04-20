@@ -137,4 +137,30 @@ public sealed class EmitterContext
         _constants.CopyTo(span[1..]);
         return new(data, kb.Constants.ToArray(), kb.Code.Length);
     }
+
+    public string Dump(bool query)
+    {
+        var pc = 0;
+        var sb = new StringBuilder();
+        var labels = _labels.ToDictionary(x => x.Value, x => x.Key);
+        var constants = _constantLookup.ToDictionary(x => x.Value, x => x.Key);
+        foreach (var op in _instructions)
+        {
+            if (!query && labels.TryGetValue(pc, out var label))
+            {
+                var sig = (Signature)label;
+                sb.Append(constants[sig.F]);
+                sb.Append('/');
+                sb.Append(sig.N);
+                sb.Append(':');
+                sb.AppendLine();
+            }
+            sb.Append($"{pc:D4}: {op.Code.ToString().PadRight(20)}");
+            var args = op.Args.Select(a => a().ToString());
+            sb.Append(string.Join(", ", args));
+            sb.AppendLine();
+            pc += op.Size;
+        }
+        return sb.ToString();
+    }
 }

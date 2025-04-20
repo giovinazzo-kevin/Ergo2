@@ -125,7 +125,7 @@ public class VMTests : Tests
     [Fact]
     public void QueryEmitsPutVariableCorrectly()
     {
-        AssertQuery("parent(X, Y)", Validate);
+        AssertQuery(nameof(EmitterTests.emitter_tests), "parent(X, Y)", Validate);
 
         void Validate(QueryBytecode bytes)
         {
@@ -140,6 +140,32 @@ public class VMTests : Tests
             AssertOp(OpCode.call, ref span);
             AssertSignature("parent", 2, ref span, bytes);
         }
+    }
+
+    [Fact]
+    public void QueryEmitsParseCorrectly()
+    {
+        AssertQuery("vm_tests", "parse(Tree)", Validate);
+
+        void Validate(QueryBytecode bytes)
+        {
+            var span = bytes.Query;
+
+            AssertOp(OpCode.allocate, ref span);
+            AssertOp(OpCode.put_variable, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
+            AssertOp(OpCode.call, ref span);
+            AssertSignature("parse", 1, ref span, bytes);
+            AssertOp(OpCode.deallocate, ref span);
+        }
+    }
+
+
+    [Fact]
+    public void ParseEmitsCorrectBytecode()
+    {
+        var kb = Consult("vm_tests");
     }
 
 

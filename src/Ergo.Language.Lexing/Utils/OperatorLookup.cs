@@ -8,7 +8,7 @@ namespace Ergo.Lang.Lexing;
 public class OperatorLookup
 {
     protected readonly List<string> functors = [];
-    protected readonly Dictionary<string, List<Operator>> table = [];
+    protected readonly Dictionary<string, HashSet<Operator>> table = [];
     protected readonly HashSet<Operator> operators = [];
     public IReadOnlyList<string> Functors => functors;
     public IReadOnlyCollection<Operator> Values => operators;
