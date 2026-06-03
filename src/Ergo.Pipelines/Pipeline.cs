@@ -49,7 +49,7 @@ public sealed class Pipeline<TInput, TOutput>(IPipeline[] steps, object[] envs)
             }
             catch (TargetInvocationException ex)
             {
-                return new PipelineError(step, ex.InnerException);
+                return new PipelineError(step, ex.InnerException ?? ex);
             }
         }
         return ((Success<TOutput>)data!).Value;

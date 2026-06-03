@@ -52,6 +52,9 @@
 		<None Update="ergo\backtrack_tests.ergo">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="ergo\wam_tests.ergo">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="ergo\vm_tests.ergo">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

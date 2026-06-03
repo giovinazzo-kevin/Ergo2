@@ -164,7 +164,12 @@ public class VMTests : Tests
     [Fact]
     public void BacktrackWorks()
     {
-        AssertQuery("backtrack_tests", "value(X)", Validate);
+        var query = AssertQuery("backtrack_tests", "value(X)", Validate);
+        var vm = new ErgoVM();
+
+        var actualSolutions = 0;
+        vm.SolutionEmitted += (_) => actualSolutions++;
+        vm.Run(query);
 
         void Validate(QueryBytecode bytes)
         {
@@ -179,6 +184,32 @@ public class VMTests : Tests
             AssertOp(OpCode.deallocate, ref span);
         }
     }
+
+
+    [Fact]
+    public void BlackBookPredicatesEmitCorrectly()
+    {
+        var query = AssertQuery("wam_tests", "p1(X, Y, Z)", Validate);
+        var vm = new ErgoVM();
+
+        var actualSolutions = 0;
+        vm.SolutionEmitted += (_) => actualSolutions++;
+        vm.Run(query);
+
+        void Validate(QueryBytecode bytes)
+        {
+            var span = bytes.Code;
+
+            AssertOp(OpCode.allocate, ref span);
+            AssertOp(OpCode.put_variable, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
+            AssertOp(OpCode.call, ref span);
+            AssertSignature("value", 1, ref span, bytes);
+            AssertOp(OpCode.deallocate, ref span);
+        }
+    }
+
 
 
     [Fact]

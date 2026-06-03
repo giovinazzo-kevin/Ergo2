@@ -54,7 +54,6 @@ public partial class ErgoVM
             _traceLevel++;
             _F = p.F;
             _N = p.N;
-            Trace.WriteLine($"{nameof(Call)}: {Constants[p.F]}/{p.N}");
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(Call)}: {Constants[p.F]}/{p.N}");
 #endif
@@ -62,7 +61,6 @@ public partial class ErgoVM
             N = p.N;
             B0 = B;
             P = a;
-            mode = GetMode.read;
         }
         else
         {

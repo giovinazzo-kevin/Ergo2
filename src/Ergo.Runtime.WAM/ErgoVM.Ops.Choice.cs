@@ -19,7 +19,7 @@ public partial class ErgoVM
             : B + Stack[B] + 8;
         var n = Stack[newB] = N;
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(TryMeElse)}: L={l} B={B} E={E} CP={CP} H={H} TR={TR} B0={B0}");
+        Trace.WriteLine($"[WAM] {nameof(TryMeElse)} (1): newB={newB} L={l} B={B} B0={B0} HB={HB} E={E} CP={CP} H={H} TR={TR}");
 #endif
         for (int i = 1; i <= n; i++)
             Stack[newB + i] = A[i - 1];

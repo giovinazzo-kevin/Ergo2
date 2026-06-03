@@ -144,6 +144,11 @@ public sealed class EmitterContext
         var sb = new StringBuilder();
         var labels = _labels.ToDictionary(x => x.Value, x => x.Key);
         var constants = _constantLookup.ToDictionary(x => x.Value, x => x.Key);
+        if (query)
+        {
+            sb.Append("Query:");
+            sb.AppendLine();
+        }
         foreach (var op in _instructions)
         {
             if (!query && labels.TryGetValue(pc, out var label))
@@ -156,7 +161,12 @@ public sealed class EmitterContext
                 sb.AppendLine();
             }
             sb.Append($"{pc:D4}: {op.Code.ToString().PadRight(20)}");
-            var args = op.Args.Select(a => a().ToString());
+            var args = op.Args.Select(a => a().ToString()).ToArray();
+            if (op.Code == OpCode.call)
+            {
+                var sig = ((Signature)op.Args[0]());
+                args[0] = $"{constants[sig.F]}/{sig.N}";
+            }
             sb.Append(string.Join(", ", args));
             sb.AppendLine();
             pc += op.Size;

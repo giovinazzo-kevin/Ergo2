@@ -29,11 +29,12 @@ public class Tests
         return kb;
     }
 
-    protected void AssertQuery(string file, string query, Validator validate)
+    protected Query AssertQuery(string file, string query, Validator validate)
     {
         var kb = Consult(file);
         var q = kb.Query(query);
         validate(q.Bytecode);
+        return q;
     }
 
     protected void Emit(string moduleName, out CallGraph graph, out KnowledgeBase kb)
