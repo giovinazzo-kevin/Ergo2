@@ -4,6 +4,15 @@ using System.Diagnostics;
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
+    public readonly List<__op> BuiltIns = [];
+
+    public void RegisterBuiltIn(KnowledgeBase kb, string name, int arity, __op handler)
+    {
+        var idx = kb.RegisterBuiltInLabel(name, arity);
+        while (BuiltIns.Count <= idx) BuiltIns.Add(null!);
+        BuiltIns[idx] = handler;
+    }
+
     public event Action<ErgoVM> SolutionEmitted = _ => { };
     private int _traceLevel = 0;
 

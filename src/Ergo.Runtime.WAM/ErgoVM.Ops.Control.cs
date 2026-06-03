@@ -52,6 +52,15 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+            if (a < 0)
+            {
+                CP = P;
+                N = p.N;
+                B0 = B;
+                BuiltIns[-(a + 1)](this);
+                if (!fail) P = CP;
+                return;
+            }
             _traceLevel++;
             _F = p.F;
             _N = p.N;
@@ -83,6 +92,14 @@ public partial class ErgoVM
         var p = __signature();
         if (defined(p, out var a))
         {
+            if (a < 0)
+            {
+                N = p.N;
+                B0 = B;
+                BuiltIns[-(a + 1)](this);
+                if (!fail) P = CP;
+                return;
+            }
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(Execute)}: {Constants[p.F]}/{p.N}");
 #endif

@@ -1,6 +1,7 @@
 ﻿using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
 using Ergo.SDK.Fuzzing;
+
 var opLookup = new OperatorLookup([
     new (60, Operator.Type.xf, (__string)"$"),
     new (500, Operator.Type.yfx, (__string)"+"),

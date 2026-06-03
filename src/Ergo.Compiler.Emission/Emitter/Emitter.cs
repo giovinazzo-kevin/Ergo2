@@ -30,7 +30,8 @@ public class Emitter
     public virtual Query Query(Lang.Ast.Term query, KnowledgeBaseBytecode kb)
     {
         var ctx = EmitterContext.From(kb);
-        var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame);
+        var queryVars = new Dictionary<string, int>();
+        var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame, queryVars);
         var variableMap = new VariableMap();
         var queryArgs = query.GetArguments();
         var vars = query.GetVariables().Distinct().ToArray();
@@ -60,7 +61,7 @@ public class Emitter
 #endif
         return new Query(code, variableMap);
 
-        EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame)
+        EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame, Dictionary<string, int> queryVars)
         {
             if (term is __string { Value: "!" })
             {
@@ -72,8 +73,8 @@ public class Emitter
             }
             if (term is BinaryExpression { IsCons: true } cons && cons.Operator == Operators.Conjunction)
             {
-                JITGoal(ctx, cons.Lhs, out var lhsNeedsStackFrame);
-                JITGoal(ctx, cons.Rhs, out var rhsNeedsStackFrame);
+                JITGoal(ctx, cons.Lhs, out var lhsNeedsStackFrame, queryVars);
+                JITGoal(ctx, cons.Rhs, out var rhsNeedsStackFrame, queryVars);
                 needsStackFrame = lhsNeedsStackFrame || rhsNeedsStackFrame;
                 return ctx;
             }
@@ -81,7 +82,20 @@ public class Emitter
             needsStackFrame = term.GetVariables().Any();
             var args = term.GetArguments();
             for (int i = 0; i < args.Length; ++i)
-                Write(ctx, args, i);
+            {
+                // Use name-based tracking for query variables
+                // (parser may create distinct Variable objects for same name across conjunction)
+                if (args[i] is Variable v && queryVars.TryGetValue(v.Name, out var knownIdx))
+                    ctx.Emit(put_value(knownIdx, i));
+                else if (args[i] is Variable v2)
+                {
+                    var newIdx = ctx.NumVars;
+                    queryVars[v2.Name] = newIdx;
+                    ctx.Emit(put_variable(ctx.NumVars++, i));
+                }
+                else
+                    Write(ctx, args, i);
+            }
             if (!kb.TryResolve(sign, out var label))
                 throw new InvalidOperationException($"Predicate {sign} could not be resolved"); 
             ctx.Emit(call(label));

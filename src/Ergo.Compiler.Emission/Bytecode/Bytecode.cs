@@ -23,6 +23,17 @@ public abstract class Bytecode
     protected Atom[] _consts;
     public ReadOnlySpan<__WORD> Code => _bytes.AsSpan(_codeStart);
     public ReadOnlySpan<Atom> Constants => _consts;
+
+    public int AddConstant(Atom atom)
+    {
+        if (ConstantsLookup.TryGetValue(atom.Value, out var existing))
+            return existing;
+        var idx = _consts.Length;
+        ConstantsLookup[atom.Value] = idx;
+        Array.Resize(ref _consts, _consts.Length + 1);
+        _consts[idx] = atom;
+        return idx;
+    }
     public readonly Dictionary<object, int> ConstantsLookup;
     public readonly Dictionary<__WORD, __WORD> Labels = [];
 

@@ -31,6 +31,17 @@ public sealed partial class KnowledgeBase
         return new([]);
     }
 
+    private int _nextBuiltInIdx = 0;
+
+    public int RegisterBuiltInLabel(string name, int arity)
+    {
+        var c = Bytecode.AddConstant(new Lang.Ast.__string(name));
+        var sig = (Signature)(c, arity);
+        var idx = _nextBuiltInIdx++;
+        Bytecode.Labels[sig] = -(idx + 1);
+        return idx;
+    }
+
     public Query Query(string query)
     {
         var file = ErgoFileStream.Create(query, nameof(Query));
