@@ -8,6 +8,6 @@ public partial class ErgoVM
     public const int MAX_ARGS = 256;
     public const int MAX_TMPS = 256;
 
-    public const int BOTTOM_OF_STACK = 0;
+    public const int BOTTOM_OF_STACK = HEAP_SIZE;
     #endregion
 }

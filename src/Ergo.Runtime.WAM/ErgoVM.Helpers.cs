@@ -19,12 +19,12 @@ public partial class ErgoVM
             Trace.WriteLine("[WAM] backtrack: hit bottom of stack → FAIL FINAL");
             return fail_and_exit_program();
         }
-        B0 = Stack[B + Stack[B] + 7];
-        P = Stack[B + Stack[B] + 4];
+        B0 = Store[B + Store[B] + 7];
+        P = Store[B + Store[B] + 4];
         Trace.WriteLine($"[WAM] Backtrack → P={P}, Code.Length={Code.Length}");
         Trace.WriteLine($"[WAM] Stack Snapshot @ B={B}:");
         for (int i = 0; i < 10; i++)
-            Trace.WriteLine($"  Stack[{B + i}] = {Stack[B + i]}");
+            Trace.WriteLine($"  Store[{B + i}] = {Store[B + i]}");
         return fail;
     }
     public bool fail_and_exit_program()
@@ -98,7 +98,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] tidy_trail");
 #endif
-        var i = Stack[B + Stack[B] + 5];
+        var i = Store[B + Store[B] + 5];
         while (i < TR)
         {
             if (Trail[i] < HB || (H < Trail[i] && Trail[i] < B))
@@ -270,5 +270,18 @@ public partial class ErgoVM
         };
     }
 
+    /// <summary>
+    /// Compute the gap after an environment frame at E.
+    /// Reads the saved CP to find the frame size from Code[CP-1].
+    /// Falls back to current arity N when the saved CP is out of range
+    /// (e.g., top-level query where CP = int.MaxValue).
+    /// </summary>
+    public int envsize()
+    {
+        var savedCP = Store[E + 1];
+        if (savedCP > 0 && savedCP <= Code.Length)
+            return Code[savedCP - 1];
+        return Math.Max(N, 16);
+    }
     #endregion
 }

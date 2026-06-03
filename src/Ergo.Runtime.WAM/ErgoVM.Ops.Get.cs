@@ -57,8 +57,16 @@ public partial class ErgoVM
     {
         var f = __signature();
         var Ai = __addr();
-        var addr = deref(A[Ai]);
-        Term cell = Store[addr];
+        var term = (Term)A[Ai];
+        __ADDR addr;
+        if (term.Tag == REF)
+        {
+            addr = deref(term.Value);
+            term = (Term)Store[addr];
+        }
+        else
+            addr = -1; // not used for non-REF
+        Term cell = term;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] GetStructure: {cell.Value} {Ai}");
 #endif
@@ -95,8 +103,16 @@ public partial class ErgoVM
     public void GetList()
     {
         var Ai = __word();
-        var addr = deref(A[Ai]);
-        var cell = (Term)Store[addr];
+        var term = (Term)A[Ai];
+        __ADDR addr;
+        if (term.Tag == REF)
+        {
+            addr = deref(term.Value);
+            term = (Term)Store[addr];
+        }
+        else
+            addr = -1;
+        var cell = term;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] GetList: {cell.Value} {Ai}");
 #endif

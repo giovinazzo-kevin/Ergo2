@@ -29,7 +29,7 @@ public partial class ErgoVM
         Trace.WriteLine("[WAM] GetLevel");
 #endif
         var n = __word();
-        Stack[E + 2 + n] = B0;
+        Store[E + 2 + n] = B0;
     }
     /// <summary>
     /// Discard all (if any) choice points after that
@@ -39,20 +39,16 @@ public partial class ErgoVM
     protected void Cut()
     {
         var n = __word();
-        var Yn = Stack[E + 2 + n];
+        var Yn = Store[E + 2 + n];
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] CUT! n={n} Yn={Yn} B={B}");
 #endif
 
-        // Actively remove choice points after the cut
-        while (B > Yn)
+        if (B > Yn)
         {
-            // Restore trail and heap if needed
-            unwind_trail(B, TR);
-            B = Stack[B + Stack[B] + 3]; // previous choice point (saved B)
+            B = Yn;
+            tidy_trail();
         }
-
-        tidy_trail(); // Clean up trail after cut
     }
     #endregion
 }

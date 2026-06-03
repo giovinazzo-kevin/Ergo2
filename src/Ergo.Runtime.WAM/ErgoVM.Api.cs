@@ -13,6 +13,10 @@ public partial class ErgoVM
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
         P = _QUERY.QueryStart;
+        E = HEAP_SIZE;
+        B = HEAP_SIZE;
+        H = 0;
+        TR = 0;
         exit = fail = false;
         while (!exit)
         {
@@ -23,10 +27,12 @@ public partial class ErgoVM
                 continue; // Go to next choice point
             }
 
-            // Execution halts naturally when we run out of code
+            // Solution found: query code ran to completion
             if (P >= Code.Length)
             {
-                break;
+                EmitSolution();
+                fail = true;
+                continue; // Try to backtrack for more solutions
             }
 
             var op = __word();

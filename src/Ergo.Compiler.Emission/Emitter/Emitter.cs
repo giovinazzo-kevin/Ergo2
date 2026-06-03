@@ -32,11 +32,22 @@ public class Emitter
         var ctx = EmitterContext.From(kb);
         var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame);
         var variableMap = new VariableMap();
+        var queryArgs = query.GetArguments();
         var vars = query.GetVariables().Distinct().ToArray();
         for (int i = 0; i < vars.Length; i++)
         {
             vars[i].Value = (__int)i;
-            variableMap[vars[i].Name] = new(vars[i].Name, i);
+            // Find the actual A register index for this variable
+            int ai = i; // fallback for conjunctions
+            for (int j = 0; j < queryArgs.Length; j++)
+            {
+                if (queryArgs[j] is Variable v && v.Name == vars[i].Name)
+                {
+                    ai = j;
+                    break;
+                }
+            }
+            variableMap[vars[i].Name] = new(vars[i].Name, ai);
         }
         if (needsStackFrame)
             ctx.Emit(allocate);

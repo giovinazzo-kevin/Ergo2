@@ -17,11 +17,12 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(Allocate)}");
 #endif
+        var es = envsize();
         var newE = E > B
-            ? E + Code[Stack[E + 1] - 1] + 2
-            : B + Stack[B] + 8;
-        Stack[newE] = E;
-        Stack[newE + 1] = CP;
+            ? E + es + 2
+            : B + Store[B] + 8;
+        Store[newE] = E;
+        Store[newE + 1] = CP;
         E = newE;
     }
     /// <summary>
@@ -36,8 +37,8 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(Deallocate)}");
 #endif
-        CP = Stack[E + 1];
-        E = Stack[E];
+        CP = Store[E + 1];
+        E = Store[E];
     }
     /// <summary>
     /// If P is defined, then save the current Choice Point's
@@ -110,9 +111,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] Proceed: P={P}, CP={CP}, CodeLen={Code.Length}");
 #endif
-        if (CP >= Code.Length || B == B0)
-            EmitSolution();
-        fail = true;
+        P = CP;
     }
 
     public void EmitSolution()

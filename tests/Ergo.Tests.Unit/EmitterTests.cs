@@ -142,16 +142,18 @@ public class EmitterTests : Tests
     {
         var vm = new ErgoVM();
         vm._QUERY = QueryBytecode.EMPTY;
+        vm.E = ErgoVM.HEAP_SIZE;
+        vm.B = ErgoVM.HEAP_SIZE;
         vm.N = 2;
         vm.A[0] = 111;
         vm.A[1] = 222;
-        vm.TryMeElse(); // fake __addr() in test
+        vm.TryMeElse();
 
         var b = vm.B;
-        Assert.Equal(2, vm.Stack[b]);         // N
-        Assert.Equal(111, vm.Stack[b + 1]);   // A[0]
-        Assert.Equal(222, vm.Stack[b + 2]);   // A[1]
-        Assert.Equal(vm.E, vm.Stack[b + 3]);  // E
+        Assert.Equal(2, vm.Store[b]);                    // N
+        Assert.Equal(111, vm.Store[b + 1]);              // A[0]
+        Assert.Equal(222, vm.Store[b + 2]);              // A[1]
+        Assert.Equal(ErgoVM.HEAP_SIZE, vm.Store[b + 3]); // E
     }
 
     [Fact]
@@ -162,14 +164,14 @@ public class EmitterTests : Tests
         vm.N = 2;
         vm.A[0] = 111;
         vm.A[1] = 222;
-        vm.E = 0;
-        vm.B = 10;
-        vm.Stack[vm.B] = 2; // N
+        vm.E = ErgoVM.HEAP_SIZE;
+        vm.B = ErgoVM.HEAP_SIZE + 10;
+        vm.Store[vm.B] = 2; // N
         vm.CP = 1234;
         vm.TR = 44;
         vm.H = 77;
         vm.HB = 77;
-        vm.B0 = 0;
+        vm.B0 = ErgoVM.HEAP_SIZE;
 
         // TryMeElse sets up the choice point
         vm.TryMeElse();
@@ -183,11 +185,11 @@ public class EmitterTests : Tests
 
         vm.RetryMeElse();
 
-        Assert.Equal(0, vm.E);
-        Assert.Equal(20, vm.B);
-        Assert.Equal(2, vm.Stack[b]);       // N
-        Assert.Equal(111, vm.Stack[b + 1]); // A[0]
-        Assert.Equal(222, vm.Stack[b + 2]); // A[1]
+        Assert.Equal(ErgoVM.HEAP_SIZE, vm.E);
+        Assert.Equal(ErgoVM.HEAP_SIZE + 20, vm.B);
+        Assert.Equal(2, vm.Store[b]);       // N
+        Assert.Equal(111, vm.Store[b + 1]); // A[0]
+        Assert.Equal(222, vm.Store[b + 2]); // A[1]
         Assert.Equal(1234, vm.CP);
         Assert.Equal(44, vm.TR); // Rolled back
         Assert.Equal(77, vm.H);  // Rolled back

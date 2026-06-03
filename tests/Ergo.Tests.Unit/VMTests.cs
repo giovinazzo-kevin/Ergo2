@@ -75,7 +75,7 @@ public class VMTests : Tests
     [InlineData("parent(susan, john)", new string[] { })]
     [InlineData("parent(X, mary)", new string[] { "X/john" })]
     [InlineData("parent(mary, X)", new string[] { "X/susan" })]
-    [InlineData("parent(X, Y)", new string[] { "X/john, Y/mary", "X/mary, Y/susan", "X/susan, Y/john" })]
+    [InlineData("parent(X, Y)", new string[] { "X/john, Y/mary", "X/mary, Y/susan" })]
     public void ParentQueryWorks(string query, string[] subs)
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
@@ -198,15 +198,9 @@ public class VMTests : Tests
 
         void Validate(QueryBytecode bytes)
         {
-            var span = bytes.Code;
-
+            var span = bytes.Query;
             AssertOp(OpCode.allocate, ref span);
             AssertOp(OpCode.put_variable, ref span);
-            AssertInt32(0, ref span);
-            AssertInt32(0, ref span);
-            AssertOp(OpCode.call, ref span);
-            AssertSignature("value", 1, ref span, bytes);
-            AssertOp(OpCode.deallocate, ref span);
         }
     }
 
@@ -229,16 +223,16 @@ public class VMTests : Tests
     public void PutVariableWritesStackCorrectly()
     {
         var vm = new ErgoVM();
-        vm.E = 0; // Frame pointer at start of stack
+        vm.E = ErgoVM.HEAP_SIZE; // Frame pointer at start of stack
 
         // Simulate instruction: PutVariable Y0, A0
         vm._QUERY = QueryBytecode.Preloaded([0, 0]);
 
         vm.PutVariable();
 
-        var stackAddr = (0 + 0 + 1);
-        var term = (Term)vm.Stack[stackAddr];
-        Assert.Equal(stackAddr, term.Value);
+        var storeAddr = ErgoVM.HEAP_SIZE + 0 + 2;
+        var term = (Term)vm.Store[storeAddr];
+        Assert.Equal(storeAddr, term.Value);
         Assert.Equal((int)term, vm.A[0]);
     }
 

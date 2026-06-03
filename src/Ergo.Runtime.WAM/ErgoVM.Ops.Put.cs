@@ -25,8 +25,8 @@ public partial class ErgoVM
     {
         var Yn = __word();
         var Ai = __word();
-        var addr = E + Yn + 1;
-        A[Ai] = Stack[addr] = (Term)(REF, (addr));
+        var addr = E + Yn + 2;
+        V[Yn] = A[Ai] = Store[addr] = (Term)(REF, (addr));
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(PutVariable)}: Yn={Yn} Ai={Ai} REF={(addr)}");
         Trace.WriteLine($"[DBG] E={E}, Yn={Yn}, addr={addr}, RAM[addr]={((Term)Store[(addr)]).Value}");
@@ -41,7 +41,7 @@ public partial class ErgoVM
     {
         var Vn = __word();
         var Ai = __word();
-        V[Vn] = A[Ai];
+        A[Ai] = V[Vn];
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(PutValue)}: Vn={Vn} Ai={Ai}");
 #endif
@@ -59,7 +59,7 @@ public partial class ErgoVM
     {
         var Yn = __word();
         var Ai = __word();
-        var addr = deref(E + Yn + 1);
+        var addr = deref(E + Yn + 2);
         if (addr < E)
             A[Ai] = (Term)(REF, addr);
         else
