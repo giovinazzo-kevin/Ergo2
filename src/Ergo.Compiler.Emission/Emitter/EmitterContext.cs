@@ -162,7 +162,7 @@ public sealed class EmitterContext
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
-        return new(data, [], kb.Code.Length);
+        return new(data, [], kb.Code.Length, kb.Code.Length + instructionsLength);
     }
 
     public string Dump(bool query)

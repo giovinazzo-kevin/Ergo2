@@ -53,6 +53,14 @@ public class Emitter
         if (needsStackFrame)
             ctx.Emit(allocate);
         ctx.Concat(scope);
+        // Restore query variable bindings from stack frame to A after call returns
+        // (callees with body goals may clobber A registers; V registers may be clobbered by nested calls)
+        // put_unsafe_value reads from Store[E + Yn + 2] and globalizes to heap before deallocate
+        foreach (var (name, vIdx) in queryVars)
+        {
+            if (variableMap.TryGetValue(name, out var entry))
+                ctx.Emit(put_unsafe_value(vIdx, entry.Index));
+        }
         if (needsStackFrame)
             ctx.Emit(deallocate);
         var code = ctx.ToQuery(kb);
@@ -94,7 +102,7 @@ public class Emitter
                     ctx.Emit(put_variable(ctx.NumVars++, i));
                 }
                 else
-                    Write(ctx, args, i, null, deep: true);
+                    Write(ctx, args, i, queryVars, deep: true);
             }
             if (!kb.TryResolve(sign, out var label))
             {
@@ -322,12 +330,15 @@ public class Emitter
         switch (term)
         {
             case Variable v when v.Value is __int i:
+                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value (via Value) for '{v.Name}' → V[{(__WORD)i}]");
                 ctx.Emit(set_value((__WORD)i));
                 break;
             case Variable v when varsByName != null && varsByName.TryGetValue(v.Name, out var knownIdx):
+                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value for '{v.Name}' → V[{knownIdx}]");
                 ctx.Emit(set_value(knownIdx));
                 break;
             case Variable v:
+                System.Diagnostics.Trace.WriteLine($"[EMIT] set_variable for '{v.Name}' (varsByName={varsByName != null}, found={varsByName?.ContainsKey(v.Name)})");
                 var newIdx = ctx.NumVars;
                 v.Value = (__int)newIdx;
                 if (varsByName != null) varsByName[v.Name] = newIdx;
@@ -411,19 +422,32 @@ public class Emitter
             scope.Emit(Ops.get_level((int)cutReg));
         }
 
-        foreach (var goal in goals)
+        EmitGoals(scope, goals, varsByName, cutReg);
+
+        void EmitGoals(EmitterContext sc, IEnumerable<Lang.Ast.Term> gs, Dictionary<string, int> vars, int? cr)
         {
-            if (goal is Atom a && a.Value is string s && s == "!")
+            foreach (var goal in gs)
             {
-                scope.Emit(Ops.cut((int)cutReg!));
-                continue;
+                // Flatten conjunctions into sequential goal calls
+                if (goal is BinaryExpression { IsCons: true } cons
+                    && cons.Operator.Equals(Lang.Ast.WellKnown.Operators.Conjunction))
+                {
+                    var flat = new ConsExpression(cons.Operator, cons.Lhs, cons.Rhs).Contents;
+                    EmitGoals(sc, flat, vars, cr);
+                    continue;
+                }
+                if (goal is Atom a && a.Value is string s && s == "!")
+                {
+                    sc.Emit(Ops.cut((int)cr!));
+                    continue;
+                }
+                var goalArgs = goal.GetArguments();
+                for (int k = 0; k < goalArgs.Length; k++)
+                    Write(sc, goalArgs, k, vars, deep: true);
+                var sig = goal.GetSignature().GetOrThrow();
+                var p = sc.Constant(sig.Functor.Value);
+                sc.Emit(Ops.call((Signature)(p, sig.Arity)));
             }
-            var goalArgs = goal.GetArguments();
-            for (int k = 0; k < goalArgs.Length; k++)
-                Write(scope, goalArgs, k, varsByName, deep: true);
-            var sig = goal.GetSignature().GetOrThrow();
-            var p = scope.Constant(sig.Functor.Value);
-            scope.Emit(Ops.call((Signature)(p, sig.Arity)));
         }
 
         if (needsStack)

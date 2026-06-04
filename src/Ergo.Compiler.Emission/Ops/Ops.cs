@@ -14,6 +14,7 @@ public static class Ops
     public static readonly Func<__WORD, __WORD, Op> get_structure = (__WORD Pn, __WORD Xi) => new Op(OpCode.get_structure, () => Pn, () => Xi);
 
     public static readonly Func<__WORD, __WORD, Op> put_constant = (__WORD c, __WORD Ai) => new Op(OpCode.put_constant, () => c, () => Ai);
+    public static readonly Func<__WORD, __WORD, Op> put_unsafe_value = (__WORD Yn, __WORD Ai) => new Op(OpCode.put_unsafe_value, () => Yn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_value = (__WORD Vn, __WORD Ai) => new Op(OpCode.put_value, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_variable = (__WORD Vn, __WORD Ai) => new Op(OpCode.put_variable, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_structure = (__WORD Pn, __WORD Xi) => new Op(OpCode.put_structure, () => Pn, () => Xi);

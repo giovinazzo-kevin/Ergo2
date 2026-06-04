@@ -132,9 +132,45 @@ public class DynamicTests : Tests
                 var codeStr = string.Join(", ", clause.Code.Select(w => w.ToString()));
                 _out.WriteLine($"DynClause code [{clause.Code.Length} words]: {codeStr}");
                 _out.WriteLine($"DynClause offset: {clause.Offset}");
-                _out.WriteLine($"DynClause constants: [{string.Join(", ", clause.NewConstants.Select(c => c.Expl))}]");
             }
         }
+
+        // Now query and trace A registers at solution time
+        var solutions = new List<ErgoVM.Solution>();
+        void handler(ErgoVM v)
+        {
+            _out.WriteLine($"--- Solution emit ---");
+            for (int i = 0; i < 2; i++)
+            {
+                var raw = v.A[i];
+                var tag = raw & 3;
+                var val = raw >> 2;
+                _out.WriteLine($"A[{i}] raw={raw} tag={tag} value={val}");
+                if (tag == 3) // REF
+                {
+                    var addr = v.deref(val);
+                    var resolved = v.Store[addr];
+                    var rTag = resolved & 3;
+                    var rVal = resolved >> 2;
+                    _out.WriteLine($"  deref({val}) -> addr={addr} resolved raw={resolved} tag={rTag} value={rVal}");
+                    if (rTag == 0) // CON
+                        _out.WriteLine($"  constant[{rVal}] = {v.Constants[rVal].Expl}");
+                }
+            }
+            solutions.Add(v.MaterializeSolution());
+        }
+        vm.SolutionEmitted += handler;
+        vm._lastDynDispatchP = -1;
+        vm._dbgGetConstantCount = 0;
+        vm.Run(kb.Query("likes(A, B)"));
+        _out.WriteLine($"TryCallDynamic dispatched to P={vm._lastDynDispatchP}");
+        _out.WriteLine($"GetConstant called {vm._dbgGetConstantCount} times");
+        _out.WriteLine($"Last GetConstant: c={vm._dbgGetConstantLastC} Ai={vm._dbgGetConstantLastAi} tag={vm._dbgGetConstantLastTag} addr={vm._dbgGetConstantLastAddr}");
+        vm.SolutionEmitted -= handler;
+
+        _out.WriteLine($"Solutions: {solutions.Count}");
+        foreach (var sol in solutions)
+            _out.WriteLine($"  {sol}");
     }
 
     [Fact]

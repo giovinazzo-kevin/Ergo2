@@ -26,7 +26,13 @@ public partial class ErgoVM
         {
             var contIdx = -(P + 1);
             if (!RetryDynamic(contIdx))
-                return backtrack(); // no more clauses, try previous choice point
+            {
+                // No more dynamic clauses — remove choice point and continue
+                var n = Store[B];
+                B = Store[B + n + 3];
+                HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
+                return backtrack();
+            }
         }
         Trace.WriteLine($"[WAM] Backtrack → P={P}, Code.Length={Code.Length}");
         Trace.WriteLine($"[WAM] Stack Snapshot @ B={B}:");

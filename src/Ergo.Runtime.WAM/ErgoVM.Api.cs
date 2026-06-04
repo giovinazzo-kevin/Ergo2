@@ -83,11 +83,14 @@ public partial class ErgoVM
         CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
-        var queryEnd = Code.Length; // Before dynamic code is appended
+        var queryEnd = _QUERY.QueryEnd >= 0 ? _QUERY.QueryEnd : Code.Length;
+        // Sentinel pad: ensures no dynamic clause offset == queryEnd
+        _QUERY.AppendCode(new __WORD[] { -1 });
         // Re-append live dynamic clauses to new query bytecode
         if (_dynamics.Count > 0)
             RehydrateDynamicCode();
         _dynConts.Clear();
+        _inDynClause = false;
         P = _QUERY.QueryStart;
         E = HEAP_SIZE;
         B = HEAP_SIZE;
@@ -104,7 +107,7 @@ public partial class ErgoVM
             }
 
             // Solution found: query code ran to completion
-            if (P >= queryEnd)
+            if (P == queryEnd)
             {
                 EmitSolution();
                 fail = true;

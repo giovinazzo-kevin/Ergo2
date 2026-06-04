@@ -132,6 +132,7 @@ public partial class ErgoVM
     public void Proceed()
     {
         _traceLevel--;
+        _inDynClause = false;
         Trace.WriteLine($"Exit: ({_traceLevel}) {Constants[_F]}" +
             $"({string.Join(", ", Enumerable.Range(0, _N).Select(i => Pretty(A[i])))})");
 #if WAM_TRACE
@@ -161,20 +162,17 @@ public partial class ErgoVM
         foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index))
         {
             var term = (Term)A[index];
-            var addr = deref(term.Value);
-            var resolved = (Term)Store[addr];
-            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → addr={addr}, tag={resolved.Tag}, val={resolved.Value}");
-            if (resolved.Tag == CON)
-                bindings[i++] = new(name, Constants[resolved.Value]);
-            else
+            // A may hold REF (normal), CON (after put_unsafe_value), or STR
+            if (term.Tag == REF)
             {
-                var unresolvedAddr = resolved.Value;
-                var unresolvedName = _VARS
-                    .Where(kv => deref(((Term)A[kv.Value.Index]).Value) == unresolvedAddr)
-                    .Select(kv => kv.Key)
-                    .FirstOrDefault() ?? $"_{unresolvedAddr}";
-                bindings[i++] = new(name, unresolvedName);
+                var addr = deref(term.Value);
+                term = (Term)Store[addr];
             }
+            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → tag={term.Tag}, val={term.Value}");
+            if (term.Tag == CON)
+                bindings[i++] = new(name, Constants[term.Value]);
+            else
+                bindings[i++] = new(name, $"_{term.Value}");
 
         }
         return new(bindings);

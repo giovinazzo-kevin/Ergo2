@@ -140,11 +140,21 @@ public partial class ErgoVM
     /// Backtrack on failure, otherwise continue
     /// execution with the following instruction.
     /// </summary>
+    public int _dbgGetConstantCount = 0;
+    public int _dbgGetConstantLastC = -1;
+    public int _dbgGetConstantLastAi = -1;
+    public int _dbgGetConstantLastTag = -1;
+    public int _dbgGetConstantLastAddr = -1;
+
     public void GetConstant()
     {
         var c = __word();           // constant index
         var Ai = __word();
         var term = (Term)A[Ai];
+        _dbgGetConstantCount++;
+        _dbgGetConstantLastC = c;
+        _dbgGetConstantLastAi = Ai;
+        _dbgGetConstantLastTag = (__WORD)term.Tag;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(GetConstant)}: c={c} Ai={Ai}");
 #endif
@@ -155,8 +165,23 @@ public partial class ErgoVM
         else if (term.Tag == REF)
         {
             var addr = deref(term.Value);
-            Store[addr] = (Term)(CON, c);
-            trail(addr);
+            _dbgGetConstantLastAddr = addr;
+            var resolved = (Term)Store[addr];
+            if (resolved.Tag == REF && resolved.Value == addr)
+            {
+                // Unbound — bind to constant
+                Store[addr] = (Term)(CON, c);
+                trail(addr);
+            }
+            else if (resolved.Tag == CON)
+            {
+                // Already bound — check equality
+                fail = resolved.Value != c;
+            }
+            else
+            {
+                fail = true;
+            }
         }
         else
         {

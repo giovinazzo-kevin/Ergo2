@@ -151,6 +151,9 @@ public partial class ErgoVM
         }
     }
 
+    public int _lastDynDispatchP = -1; // diagnostic: last P set by TryCallDynamic
+    private bool _inDynClause; // set by TryCallDynamic, cleared by Proceed
+
     /// <summary>
     /// Attempts to dispatch a call to a dynamic predicate.
     /// Returns true if the signature is dynamic, false to fall through to static.
@@ -174,13 +177,13 @@ public partial class ErgoVM
         N = sig.N;
         B0 = B;
 
-        if (visible.Length > 1)
+        // Always create a choice point — even for a single clause.
+        // This prevents body-internal choice points from being
+        // retried after the dynamic clause returns.
         {
-            // Create dynamic continuation for retry
             var contIdx = _dynConts.Count;
             _dynConts.Add(new DynContinuation(sig.RawValue, 1, goalGen));
 
-            // Create choice point with negative BP = dynamic continuation
             var n = sig.N;
             var newB = (E > B) ? E + envsize() + 2 : B + Store[B] + 8;
             Store[newB] = n;
@@ -189,7 +192,7 @@ public partial class ErgoVM
             Store[newB + n + 1] = E;
             Store[newB + n + 2] = CP;
             Store[newB + n + 3] = B;
-            Store[newB + n + 4] = -(contIdx + 1); // negative = dynamic continuation
+            Store[newB + n + 4] = -(contIdx + 1);
             Store[newB + n + 5] = TR;
             Store[newB + n + 6] = H;
             Store[newB + n + 7] = B0;
@@ -198,6 +201,8 @@ public partial class ErgoVM
         }
 
         P = visible[0].Offset;
+        _lastDynDispatchP = P;
+        _inDynClause = true;
         return true;
     }
 
@@ -246,6 +251,7 @@ public partial class ErgoVM
         }
 
         P = visible[cont.ClauseIndex].Offset;
+        _inDynClause = true;
         fail = false;
         return true;
     }
