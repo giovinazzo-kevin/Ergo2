@@ -219,7 +219,11 @@ public partial class ErgoVM
             for (int i = 0; i < functor.N; i++)
                 args[i] = Read(Heap[addr + 1 + i]);
 
-            return new Lang.Ast.Complex(Constants[functor.F], args);
+            var atom = Constants[functor.F];
+            if (_reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
+                return reconstruct(args);
+
+            return new Lang.Ast.Complex(atom, args);
         }
 
         Lang.Ast.Term ReadList(__ADDR addr)

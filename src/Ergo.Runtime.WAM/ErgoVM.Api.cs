@@ -1,10 +1,70 @@
 ﻿using Ergo.Compiler.Emission;
+using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.WellKnown;
 using System.Diagnostics;
+using static Ergo.Lang.Ast.Operator;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     public readonly List<__op> BuiltIns = [];
+
+    #region Abstract Term Reconstruction
+    private readonly Dictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> _reconstructors = [];
+
+    public void RegisterReconstructor(object functor, int arity, Func<Lang.Ast.Term[], Lang.Ast.Term> factory)
+    {
+        _reconstructors[(functor, arity)] = factory;
+    }
+
+    public void RegisterOperator(Operator op)
+    {
+        int arity = op.Fixity_ switch
+        {
+            Fixity.Prefix or Fixity.Postfix => 1,
+            Fixity.Infix => 2,
+            _ => throw new NotSupportedException($"Unknown fixity: {op.Fixity_}")
+        };
+        Func<Lang.Ast.Term[], Lang.Ast.Term> factory = op.Fixity_ switch
+        {
+            Fixity.Infix => args => new BinaryExpression(op, args[0], args[1]),
+            Fixity.Prefix => args => new PrefixExpression(op, args[0]),
+            Fixity.Postfix => args => new PostfixExpression(op, args[0]),
+            _ => throw new NotSupportedException()
+        };
+        foreach (Atom functor in op.Functors)
+            _reconstructors[(functor.Value, arity)] = factory;
+    }
+
+    public void RegisterOperator(Operator op, Func<Lang.Ast.Term[], Lang.Ast.Term> factory)
+    {
+        int arity = op.Fixity_ switch
+        {
+            Fixity.Prefix or Fixity.Postfix => 1,
+            Fixity.Infix => 2,
+            _ => throw new NotSupportedException()
+        };
+        foreach (Atom functor in op.Functors)
+            _reconstructors[(functor.Value, arity)] = factory;
+    }
+
+    public void RegisterWellKnownOperators()
+    {
+        // General operator reconstruction
+        RegisterOperator(Operators.Conjunction);
+        RegisterOperator(Operators.Disjunction);
+        RegisterOperator(Operators.Unification);
+        RegisterOperator(Operators.Addition);
+        RegisterOperator(Operators.Subtraction);
+        RegisterOperator(Operators.Multiplication);
+        RegisterOperator(Operators.Division);
+        RegisterOperator(Operators.Pipe);
+
+        // Special cases: :-/2 → Clause, :-/1 → Directive
+        RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
+        RegisterOperator(Operators.HornUnary, args => new Lang.Ast.Directive(args[0]));
+    }
+    #endregion
 
     public void RegisterBuiltIn(KnowledgeBase kb, string name, int arity, __op handler)
     {
