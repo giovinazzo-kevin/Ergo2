@@ -25,6 +25,8 @@ public partial class ErgoVM
         _dynamics[sig.RawValue] = new DynamicPredicate();
     }
 
+    public IReadOnlyDictionary<__WORD, DynamicPredicate> GetDynamicPredicates() => _dynamics;
+
     /// <summary>
     /// Declares a predicate as dynamic: adds constant + label to KB so queries
     /// can resolve it, and registers it in the VM for runtime dispatch.
