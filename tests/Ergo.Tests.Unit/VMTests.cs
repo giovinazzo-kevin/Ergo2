@@ -157,6 +157,9 @@ public class VMTests : Tests
             AssertInt32(0, ref span);
             AssertOp(OpCode.call, ref span);
             AssertSignature("parse", 1, ref span, bytes);
+            AssertOp(OpCode.put_unsafe_value, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
             AssertOp(OpCode.deallocate, ref span);
         }
     }
@@ -181,6 +184,9 @@ public class VMTests : Tests
             AssertInt32(0, ref span);
             AssertOp(OpCode.call, ref span);
             AssertSignature("value", 1, ref span, bytes);
+            AssertOp(OpCode.put_unsafe_value, ref span);
+            AssertInt32(0, ref span);
+            AssertInt32(0, ref span);
             AssertOp(OpCode.deallocate, ref span);
         }
     }
