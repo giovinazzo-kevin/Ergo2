@@ -269,11 +269,32 @@ public class Emitter
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
-                ctx.Emit(put_structure(fn, Ai));
                 if (deep)
                 {
-                    foreach (var subArg in @struct.Args)
-                        EmitSet(ctx, subArg, varsByName);
+                    // Build nested sub-args bottom-up in temp registers
+                    int nextTempA = Ai + 1;
+                    var subVRegs = new int[@struct.Args.Length];
+                    var isNested = new bool[@struct.Args.Length];
+                    for (int k = 0; k < @struct.Args.Length; k++)
+                    {
+                        if (@struct.Args[k] is Complex nested)
+                        {
+                            subVRegs[k] = WriteDeepComplex(ctx, nested, ref nextTempA, varsByName);
+                            isNested[k] = true;
+                        }
+                    }
+                    ctx.Emit(put_structure(fn, Ai));
+                    for (int k = 0; k < @struct.Args.Length; k++)
+                    {
+                        if (isNested[k])
+                            ctx.Emit(set_value(subVRegs[k]));
+                        else
+                            EmitSet(ctx, @struct.Args[k], varsByName);
+                    }
+                }
+                else
+                {
+                    ctx.Emit(put_structure(fn, Ai));
                 }
                 break;
             case Variable @var when var.Value is __int @i:
@@ -318,6 +339,45 @@ public class Emitter
             default:
                 throw new NotSupportedException($"Nested compound terms in set mode not yet supported: {term.GetType().Name}");
         }
+    }
+
+    /// <summary>
+    /// Recursively builds a compound term on the heap bottom-up.
+    /// Inner structures are built first in temp A registers, copied to V via get_variable.
+    /// Returns the V register index holding the STR reference.
+    /// </summary>
+    private int WriteDeepComplex(EmitterContext ctx, Complex @struct, ref int nextTempA, Dictionary<string, int>? varsByName)
+    {
+        // Recursively build nested Complex sub-args first
+        var subVRegs = new int[@struct.Args.Length];
+        var isNested = new bool[@struct.Args.Length];
+        for (int k = 0; k < @struct.Args.Length; k++)
+        {
+            if (@struct.Args[k] is Complex nested)
+            {
+                subVRegs[k] = WriteDeepComplex(ctx, nested, ref nextTempA, varsByName);
+                isNested[k] = true;
+            }
+        }
+
+        // Build this structure
+        var f = ctx.Constant(@struct.Functor.Value);
+        var fn = (Signature)(f, @struct.Arity);
+        var tempA = nextTempA++;
+        ctx.Emit(put_structure(fn, tempA));
+
+        for (int k = 0; k < @struct.Args.Length; k++)
+        {
+            if (isNested[k])
+                ctx.Emit(set_value(subVRegs[k]));
+            else
+                EmitSet(ctx, @struct.Args[k], varsByName);
+        }
+
+        // Copy A[tempA] → V[vn] for parent's set_value
+        var vn = ctx.NumVars++;
+        ctx.Emit(get_variable(vn, tempA));
+        return vn;
     }
 
     /// <summary>
