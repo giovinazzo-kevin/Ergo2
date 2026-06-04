@@ -94,7 +94,7 @@ public class Emitter
                     ctx.Emit(put_variable(ctx.NumVars++, i));
                 }
                 else
-                    Write(ctx, args, i);
+                    Write(ctx, args, i, null, deep: true);
             }
             if (!kb.TryResolve(sign, out var label))
                 throw new InvalidOperationException($"Predicate {sign} could not be resolved"); 
@@ -212,6 +212,11 @@ public class Emitter
 
     protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {
+        Read(ctx, args, Ai, null);
+    }
+
+    protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName)
+    {
         switch (args[Ai])
         {
             case Complex @struct:
@@ -223,8 +228,13 @@ public class Emitter
 
                 break;
             case Variable @var when var.Value is not __int:
-                var.Value = (__int)ctx.NumVars;
+                var idx = ctx.NumVars;
+                var.Value = (__int)idx;
+                if (varsByName != null) varsByName[@var.Name] = idx;
                 ctx.Emit(get_variable(ctx.NumVars++, Ai));
+                break;
+            case Variable @var when varsByName != null && varsByName.TryGetValue(@var.Name, out var knownIdx):
+                ctx.Emit(get_value(knownIdx, Ai));
                 break;
             case Variable @var:
                 ctx.Emit(get_value((__WORD)(__int)var.Value, Ai));
@@ -241,18 +251,33 @@ public class Emitter
 
     protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai)
     {
+        Write(ctx, args, Ai, null);
+    }
+
+    protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName, bool deep = false)
+    {
         switch (args[Ai])
         {
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
                 ctx.Emit(put_structure(fn, Ai));
+                if (deep)
+                {
+                    foreach (var subArg in @struct.Args)
+                        EmitSet(ctx, subArg, varsByName);
+                }
                 break;
             case Variable @var when var.Value is __int @i:
                 ctx.Emit(put_value((__WORD)@i, Ai));
                 break;
+            case Variable @var when varsByName != null && varsByName.TryGetValue(@var.Name, out var knownIdx):
+                ctx.Emit(put_value(knownIdx, Ai));
+                break;
             case Variable @var:
-                var.Value = (__int)ctx.NumVars;
+                var newIdx = ctx.NumVars;
+                var.Value = (__int)newIdx;
+                if (varsByName != null) varsByName[@var.Name] = newIdx;
                 ctx.Emit(put_variable(ctx.NumVars++, Ai));
                 break;
             case Atom @const:
@@ -261,5 +286,82 @@ public class Emitter
                 break;
             default: throw new NotSupportedException();
         }
+    }
+
+    protected virtual void EmitSet(EmitterContext ctx, Lang.Ast.Term term, Dictionary<string, int>? varsByName = null)
+    {
+        switch (term)
+        {
+            case Variable v when v.Value is __int i:
+                ctx.Emit(set_value((__WORD)i));
+                break;
+            case Variable v when varsByName != null && varsByName.TryGetValue(v.Name, out var knownIdx):
+                ctx.Emit(set_value(knownIdx));
+                break;
+            case Variable v:
+                var newIdx = ctx.NumVars;
+                v.Value = (__int)newIdx;
+                if (varsByName != null) varsByName[v.Name] = newIdx;
+                ctx.Emit(set_variable(ctx.NumVars++));
+                break;
+            case Atom c:
+                ctx.Emit(set_constant(ctx.Constant(c.Value)));
+                break;
+            default:
+                throw new NotSupportedException($"Nested compound terms in set mode not yet supported: {term.GetType().Name}");
+        }
+    }
+
+    /// <summary>
+    /// Compiles a single dynamically asserted clause (fact or rule) into raw bytecode.
+    /// Uses name-based variable tracking since ReadHeapTerm creates distinct Variable objects.
+    /// Returns the raw instruction words ready to be appended to the code buffer.
+    /// </summary>
+    public __WORD[] EmitDynamicClause(EmitterContext ctx, Lang.Ast.Term term)
+    {
+        var clause = term as Lang.Ast.Clause;
+        var head = clause?.Functor ?? term;
+        var goals = clause?.Goals.ToArray() ?? Array.Empty<Lang.Ast.Term>();
+        var headArgs = head.GetArguments();
+
+        var scope = ctx.Scope();
+        var varsByName = new Dictionary<string, int>();
+        bool needsStack = goals.Length > 0;
+
+        if (needsStack)
+            scope.Emit(Ops.allocate);
+
+        for (int j = 0; j < headArgs.Length; j++)
+            Read(scope, headArgs, j, varsByName);
+
+        scope.NumVars = varsByName.Count > 0 ? varsByName.Values.Max() + 1 : 0;
+
+        int? cutReg = null;
+        if (goals.Any(g => g is Atom a && a.Value is string s && s == "!"))
+        {
+            cutReg = scope.NumVars++;
+            scope.Emit(Ops.get_level((int)cutReg));
+        }
+
+        foreach (var goal in goals)
+        {
+            if (goal is Atom a && a.Value is string s && s == "!")
+            {
+                scope.Emit(Ops.cut((int)cutReg!));
+                continue;
+            }
+            var goalArgs = goal.GetArguments();
+            for (int k = 0; k < goalArgs.Length; k++)
+                Write(scope, goalArgs, k, varsByName, deep: true);
+            var sig = goal.GetSignature().GetOrThrow();
+            var p = scope.Constant(sig.Functor.Value);
+            scope.Emit(Ops.call((Signature)(p, sig.Arity)));
+        }
+
+        if (needsStack)
+            scope.Emit(Ops.deallocate);
+        scope.Emit(Ops.proceed);
+
+        return scope.ToRawInstructions();
     }
 }

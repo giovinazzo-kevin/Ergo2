@@ -4,6 +4,8 @@ using Ergo.Lang.Ast.WellKnown;
 using Ergo.Runtime.WAM;
 using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term.__TAG;
+using Term = Ergo.Compiler.Emission.Term;
+using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.UnitTests;
 

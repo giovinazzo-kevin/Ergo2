@@ -59,6 +59,33 @@ public sealed class EmitterContext
         _labels[sig] = address;
     }
 
+    /// <summary>
+    /// Returns just the raw instruction words without any headers.
+    /// Used for dynamic clause compilation where code is appended to an existing buffer.
+    /// </summary>
+    public __WORD[] ToRawInstructions()
+    {
+        var length = _instructions.Sum(x => x.Size);
+        var data = new __WORD[length];
+        var span = data.AsSpan();
+        for (int i = 0; i < _instructions.Count; i++)
+            _instructions[i].Emit(ref span);
+        return data;
+    }
+
+    /// <summary>
+    /// Returns constants that were added during this context's lifetime
+    /// but are not present in the given bytecode's constant table.
+    /// </summary>
+    public IEnumerable<(object Value, int Index)> NewConstants(Bytecode target)
+    {
+        foreach (var (value, index) in _constantLookup)
+        {
+            if (!target.ConstantsLookup.ContainsKey(value))
+                yield return (value, index);
+        }
+    }
+
     public int Constant(object value)
     {
         if (_constantLookup.TryGetValue(value, out var result))
@@ -135,7 +162,7 @@ public sealed class EmitterContext
         span = data.AsSpan();
         span[0] = _constantLookup.Count;
         _constants.CopyTo(span[1..]);
-        return new(data, kb.Constants.ToArray(), kb.Code.Length);
+        return new(data, [], kb.Code.Length);
     }
 
     public string Dump(bool query)

@@ -3,6 +3,8 @@ using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
 using System.Diagnostics;
 using static Ergo.Lang.Ast.Operator;
+using Query = Ergo.Compiler.Emission.Query;
+using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
@@ -81,6 +83,11 @@ public partial class ErgoVM
         CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
+        var queryEnd = Code.Length; // Before dynamic code is appended
+        // Re-append live dynamic clauses to new query bytecode
+        if (_dynamics.Count > 0)
+            RehydrateDynamicCode();
+        _dynConts.Clear();
         P = _QUERY.QueryStart;
         E = HEAP_SIZE;
         B = HEAP_SIZE;
@@ -97,7 +104,7 @@ public partial class ErgoVM
             }
 
             // Solution found: query code ran to completion
-            if (P >= Code.Length)
+            if (P >= queryEnd)
             {
                 EmitSolution();
                 fail = true;

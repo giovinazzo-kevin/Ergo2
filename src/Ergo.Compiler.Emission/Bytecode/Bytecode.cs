@@ -18,7 +18,7 @@ public abstract class Bytecode
 
     public static IEnumerable<__CONST_TAG> RegisteredTags => _constantDeserializers.Keys;
 
-    protected readonly __WORD[] _bytes;
+    protected __WORD[] _bytes;
     protected readonly int _codeStart;
     protected Atom[] _consts;
     public ReadOnlySpan<__WORD> Code => _bytes.AsSpan(_codeStart);
@@ -36,6 +36,18 @@ public abstract class Bytecode
     }
     public readonly Dictionary<object, int> ConstantsLookup;
     public readonly Dictionary<__WORD, __WORD> Labels = [];
+
+    /// <summary>
+    /// Appends compiled code to the end of the code buffer.
+    /// Returns the Code-relative offset where the chunk was placed.
+    /// </summary>
+    public int AppendCode(__WORD[] chunk)
+    {
+        var codeOffset = _bytes.Length - _codeStart;
+        Array.Resize(ref _bytes, _bytes.Length + chunk.Length);
+        Array.Copy(chunk, 0, _bytes, _bytes.Length - chunk.Length, chunk.Length);
+        return codeOffset;
+    }
 
     public static void RegisterConstantDeserializer(__CONST_TAG tag, ConstantDeserializer handler)
     {

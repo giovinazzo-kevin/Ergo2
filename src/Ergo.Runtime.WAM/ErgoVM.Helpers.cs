@@ -21,6 +21,13 @@ public partial class ErgoVM
         }
         B0 = Store[B + Store[B] + 7];
         P = Store[B + Store[B] + 4];
+        // Dynamic predicate retry: negative P encodes a continuation index
+        if (P < 0)
+        {
+            var contIdx = -(P + 1);
+            if (!RetryDynamic(contIdx))
+                return backtrack(); // no more clauses, try previous choice point
+        }
         Trace.WriteLine($"[WAM] Backtrack → P={P}, Code.Length={Code.Length}");
         Trace.WriteLine($"[WAM] Stack Snapshot @ B={B}:");
         for (int i = 0; i < 10; i++)
@@ -196,14 +203,23 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] ReadHeapTerm addr={addr}");
 #endif
+        addr = deref(addr);
         var term = (Term)Store[addr];
         return Read(term);
 
         Lang.Ast.Term Read(Term term)
         {
+            // Follow REF chains for bound variables
+            if (term.Tag == REF)
+            {
+                var a = deref(term.Value);
+                var resolved = (Term)Store[a];
+                if (resolved.Tag == REF && resolved.Value == a)
+                    return new Lang.Ast.Variable($"_{a}"); // Unbound
+                return Read(resolved);
+            }
             return term.Tag switch
             {
-                REF => new Lang.Ast.Variable($"_{term.Value}"),
                 CON => Constants[term.Value],
                 STR => ReadStructure(term.Value),
                 LIS => ReadList(term.Value),
