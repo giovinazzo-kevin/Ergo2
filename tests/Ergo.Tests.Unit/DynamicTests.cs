@@ -123,6 +123,9 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
 
+        // Must declare dynamic before query compilation can resolve it
+        vm.DeclareDynamic(kb, "immediate", 1);
+
         // Assert and query in the same execution
         var q = kb.Query("assert(immediate(yes)), immediate(X)");
         var solutions = 0;

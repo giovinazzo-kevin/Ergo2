@@ -26,6 +26,21 @@ public partial class ErgoVM
     }
 
     /// <summary>
+    /// Declares a predicate as dynamic: adds constant + label to KB so queries
+    /// can resolve it, and registers it in the VM for runtime dispatch.
+    /// Equivalent to :- dynamic F/N.
+    /// </summary>
+    public void DeclareDynamic(KnowledgeBase kb, string functor, int arity)
+    {
+        var c = kb.Bytecode.AddConstant(new Lang.Ast.__string(functor));
+        var sig = (Signature)(c, arity);
+        if (!kb.Bytecode.Labels.ContainsKey(sig.RawValue))
+            kb.Bytecode.Labels[sig.RawValue] = int.MinValue; // sentinel, TryCallDynamic intercepts
+        if (!_dynamics.ContainsKey(sig.RawValue))
+            _dynamics[sig.RawValue] = new DynamicPredicate();
+    }
+
+    /// <summary>
     /// Returns the Store address of argument register A[i].
     /// </summary>
     private static int ArgAddr(int i) => HEAP_SIZE + STACK_SIZE + i;
@@ -98,6 +113,10 @@ public partial class ErgoVM
             dyn = new DynamicPredicate();
             _dynamics[packed.RawValue] = dyn;
         }
+
+        // Ensure future queries can resolve this predicate
+        if (!_kb.Labels.ContainsKey(packed.RawValue))
+            _kb.Labels[packed.RawValue] = int.MinValue;
 
         if (atEnd)
             dyn.Clauses.Add(dynClause);

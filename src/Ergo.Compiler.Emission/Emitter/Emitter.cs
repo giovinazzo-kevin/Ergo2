@@ -97,7 +97,15 @@ public class Emitter
                     Write(ctx, args, i, null, deep: true);
             }
             if (!kb.TryResolve(sign, out var label))
-                throw new InvalidOperationException($"Predicate {sign} could not be resolved"); 
+            {
+                // Check if it's declared dynamic — emit call for runtime resolution
+                var c = ctx.Constant(sign.Functor.Value);
+                var dynSig = (Signature)(c, sign.Arity);
+                if (kb.Labels.ContainsKey(dynSig))
+                    label = dynSig;
+                else
+                    throw new InvalidOperationException($"Predicate {sign} could not be resolved");
+            }
             ctx.Emit(call(label));
             return ctx;
         }
