@@ -36,6 +36,7 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
 
 
     public Stage LoadStage { get; internal set; }
+    public bool IsLoading { get; internal set; }
     internal Parser? _parser { get; set; } = null;
 
     public Maybe<T> Get<T>(string name)

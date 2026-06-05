@@ -89,7 +89,7 @@ public partial class ErgoVM
     /// <summary>
     /// Returns the Store address of argument register A[i].
     /// </summary>
-    private static int ArgAddr(int i) => HEAP_SIZE + STACK_SIZE + i;
+    public static int ArgAddr(int i) => HEAP_SIZE + STACK_SIZE + i;
 
     /// <summary>
     /// Re-appends all live dynamic clause code to the current _QUERY bytecode.

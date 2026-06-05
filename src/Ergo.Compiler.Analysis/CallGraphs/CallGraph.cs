@@ -13,8 +13,11 @@ public class CallGraph(Analyzer analyzer, string rootModule)
     public readonly Dictionary<__string, Module> Modules = [];
     public readonly __string Root = rootModule;
 
-    public IEnumerable<Directive> ResolveDirectives(Signature signature, Module context)
+    public IEnumerable<Directive> ResolveDirectives(Signature signature, Module context, HashSet<Module>? visited = null)
     {
+        visited ??= [];
+        if (!visited.Add(context))
+            return [];
         if (signature.Module.TryGetValue(out var qualification)
             && Modules.TryGetValue(qualification, out var module))
         {
@@ -26,7 +29,7 @@ public class CallGraph(Analyzer analyzer, string rootModule)
                 .SelectMany(l => l.ExportedDirectives)
                 .Where(d => d.Signature == signature.Unqualified)
             .Concat(context.Imports
-                .SelectMany(i => ResolveDirectives(signature, i)));
+                .SelectMany(i => ResolveDirectives(signature, i, visited)));
     }
 
 }

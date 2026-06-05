@@ -97,8 +97,11 @@ public class Emitter
                 return ctx;
             }
             var sign = term.GetSignature().GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
-            needsStackFrame = term.GetVariables().Any();
-            var args = term.GetArguments();
+            // Unwrap module qualification: io:write(X) → write(X)
+            var goal = term is BinaryExpression { Operator: var op } bin && op == Operators.Module
+                ? bin.Rhs : term;
+            needsStackFrame = goal.GetVariables().Any();
+            var args = goal.GetArguments();
             for (int i = 0; i < args.Length; ++i)
             {
                 // Use name-based tracking for query variables

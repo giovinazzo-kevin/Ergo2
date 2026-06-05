@@ -16,7 +16,7 @@ public class Analyze : IPipeline<ErgoFileStream, CallGraph, Analyze.Env>
         public ModuleLocator ModuleLocator { get; set; } = ModuleLocator.Default;
         public LibraryLocator LibraryLocator { get; set; } = new (Libraries.Standard);
         public OperatorLookup Operators { get; set; } = new ();
-        public string DefaultImport { get; set; } = "prologue";
+        public string DefaultImport { get; set; } = "stdlib";
     }
 
     public static readonly Analyze Instance = new();

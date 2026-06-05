@@ -3,7 +3,7 @@ using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 
-namespace Ergo.Libs.Prologue.Directives;
+namespace Ergo.Libs.Stdlib.Directives;
 
 public sealed class DeclareDynamic(Library parent) : Compiler.Analysis.Directive(parent, new("dynamic", 1), 20)
 {

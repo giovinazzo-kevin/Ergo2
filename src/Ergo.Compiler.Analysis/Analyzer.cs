@@ -23,7 +23,7 @@ public class Analyzer
         ModuleLocator = moduleLocator ?? ModuleLocator.Default;
         LibraryLocator = libraryLocator;
         Operators = opLookup;
-        DefaultImports = defaultImports.Length > 0 ? defaultImports : ["prologue"];
+        DefaultImports = defaultImports.Length > 0 ? defaultImports : ["stdlib"];
     }
 
 
@@ -65,7 +65,8 @@ public class Analyzer
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         module.Imports.AddRange(DefaultImports
             .Where(name => module.Name != name)
-            .Select(name => LoadModule(graph, name)));
+            .Where(name => !graph.Modules.TryGetValue(name, out var m) || m.LoadStage >= Module.Stage.Linked)
+            .Select(name => graph.Modules.TryGetValue(name, out var m) ? m : LoadModule(graph, name)));
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives)
         {
@@ -175,9 +176,15 @@ public class Analyzer
         if (module.LoadStage < Module.Stage.Opened)
             module.LoadStage = LoadStage_Open(graph, module, fs);
         if (module.LoadStage < Module.Stage.Preloaded)
-            module.LoadStage = LoadStage_Preload(graph, module);
+        {
+            module.LoadStage = Module.Stage.Preloaded;
+            LoadStage_Preload(graph, module);
+        }
         if (module.LoadStage < Module.Stage.Loaded)
-            module.LoadStage = LoadStage_Load(graph, module);
+        {
+            module.LoadStage = Module.Stage.Loaded;
+            LoadStage_Load(graph, module);
+        }
         return module;
     }
 

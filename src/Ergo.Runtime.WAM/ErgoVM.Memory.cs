@@ -6,6 +6,9 @@ namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     #region External Memory
+    public TextWriter Out { get; set; } = Console.Out;
+    public TextWriter Err { get; set; } = Console.Error;
+    public TextReader In { get; set; } = Console.In;
     #endregion
 
     #region Physical Memory Layout
