@@ -13,7 +13,7 @@ public class EmitterTests : Tests
     {
         var module = nameof(vm_tests);
         Emit(module, out var graph, out var kb);
-        foreach (var p in graph.Modules[module].Imports.Single(x => x.Name == "prologue").Predicates.Keys)
+        foreach (var p in graph.Modules[module].Imports.Single(x => x.Name == "stdlib").Predicates.Keys)
             Trace.WriteLine(p.ToString());
         var sig = new Lang.Ast.Signature("parse", 1);
         Assert.True(kb.Bytecode.TryResolve(sig, out var entry), "Missing parse/1");
