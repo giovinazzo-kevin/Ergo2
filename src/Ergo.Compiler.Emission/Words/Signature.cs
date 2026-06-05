@@ -4,12 +4,15 @@ public readonly ref struct Signature
 {
     public static readonly __WORD BITMASK = (__WORD)Math.Pow(2, BITCOUNT) - 1;
     public const int BITCOUNT = 6;
+    public static readonly __WORD VARIADIC = BITMASK; // 63 = wildcard arity
 
     public readonly __WORD RawValue;
     // Pointer to the constant table
     public readonly __WORD F;
-    // Integer (arity; max = 2^ARITY_BITS - 1)
+    // Integer (arity; max = 2^ARITY_BITS - 2, BITMASK = variadic)
     public readonly __WORD N;
+
+    public bool IsVariadic => N == VARIADIC;
 
     private Signature(__WORD raw)
     {

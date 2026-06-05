@@ -280,9 +280,9 @@ public partial class ErgoVM
         }
     }
 
-    public string Pretty(Term t)
+    public string Pretty(Term t, bool quoted = false)
     {
-        if (t.Tag == Term.__TAG.REF)
+        if (t.Tag == REF)
         {
             var addr = deref(t.Value);
             t = (Term)Store[addr];
@@ -290,10 +290,53 @@ public partial class ErgoVM
 
         return t.Tag switch
         {
-            CON => Constants[t.Value].Expl,
-            REF => $"_{t.Value}", // like _4580
+            CON => quoted ? Constants[t.Value].Expl : Constants[t.Value].Value.ToString()!,
+            REF => $"_{t.Value}",
+            STR => PrettyStructure(t.Value, quoted),
+            LIS => PrettyList(t.Value, quoted),
             _ => "<?>"
         };
+    }
+
+    private string PrettyStructure(__ADDR addr, bool quoted = false)
+    {
+        var sig = (Signature)Heap[addr];
+        var functor = quoted ? Constants[sig.F].Expl : Constants[sig.F].Value.ToString()!;
+        if (sig.N == 0) return functor;
+        var args = new string[sig.N];
+        for (int i = 0; i < sig.N; i++)
+            args[i] = Pretty((Term)Heap[addr + 1 + i], quoted);
+        return $"{functor}({string.Join(", ", args)})";
+    }
+
+    private string PrettyList(__ADDR addr, bool quoted = false)
+    {
+        var elems = new List<string>();
+        while (true)
+        {
+            var head = (Term)Heap[addr];
+            var tail = (Term)Heap[addr + 1];
+            elems.Add(Pretty(head, quoted));
+            if (tail.Tag == CON && Constants[tail.Value].Value is string s && s == "[]")
+                break;
+            if (tail.Tag == LIS)
+            {
+                addr = tail.Value;
+                continue;
+            }
+            if (tail.Tag == REF)
+            {
+                var d = deref(tail.Value);
+                var dt = (Term)Store[d];
+                if (dt.Tag == LIS) { addr = dt.Value; continue; }
+                if (dt.Tag == CON && Constants[dt.Value].Value is string s2 && s2 == "[]") break;
+                elems.Add("|" + Pretty(dt, quoted));
+                break;
+            }
+            elems.Add("|" + Pretty(tail, quoted));
+            break;
+        }
+        return $"[{string.Join(",", elems)}]";
     }
 
     /// <summary>

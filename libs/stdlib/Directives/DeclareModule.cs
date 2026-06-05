@@ -25,7 +25,7 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
         {
             if (exp is not SignatureExpression { Functor: var functor, Arity: var arity })
                 throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(SignatureExpression), Signature, exp);
-            module.Exports.Add(new(default, functor, arity));
+            module.Exports.Add(new(default, functor, (int)arity.Value));
         }
     }
 }

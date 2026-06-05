@@ -49,7 +49,13 @@ public partial class ErgoVM
 
     #region Memory Access Helpers
     protected bool defined(Signature sig, out __ADDR address)
-        => _QUERY.Labels.TryGetValue(sig, out address);
+    {
+        if (_QUERY.Labels.TryGetValue(sig, out address))
+            return true;
+        // Variadic fallback: try wildcard arity
+        Signature variadic = (sig.F, (__WORD)Ergo.Compiler.Emission.Signature.VARIADIC);
+        return _QUERY.Labels.TryGetValue(variadic, out address);
+    }
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)
     {
         for (__WORD i = 0; i < n; i++)

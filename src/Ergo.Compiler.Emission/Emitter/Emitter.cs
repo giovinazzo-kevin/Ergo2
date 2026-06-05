@@ -121,7 +121,7 @@ public class Emitter
             {
                 // Check if it's declared dynamic — emit call for runtime resolution
                 var c = ctx.Constant(sign.Functor.Value);
-                var dynSig = (Signature)(c, sign.Arity);
+                var dynSig = (Signature)(c, sign.Arity.TryGetValue(out var dynA) ? dynA : (int)Signature.VARIADIC);
                 if (kb.Labels.ContainsKey(dynSig))
                     label = dynSig;
                 else
@@ -135,7 +135,7 @@ public class Emitter
     protected virtual void Predicate(EmitterContext ctx, Predicate predicate)
     {
         var p = ctx.Constant(predicate.Signature.Functor.Value);
-        var n = predicate.Signature.Arity;
+        var n = predicate.Signature.Arity.TryGetValue(out var predArity) ? predArity : (int)Signature.VARIADIC;
         ctx.Label((p, n), ctx.PC);
         var clauseCtxs = new EmitterContext[predicate.Clauses.Count];
 
@@ -202,7 +202,7 @@ public class Emitter
                 break;
             case StaticGoal @static:
                 var p1 = ctx.Constant(@static.Callee.Signature.Functor.Value);
-                var n1 = @static.Callee.Signature.Arity;
+                var n1 = @static.Callee.Signature.Arity.TryGetValue(out var sA) ? sA : (int)Signature.VARIADIC;
                 ctx.Emit(call((Signature)(p1, n1)));
                 break;
             case DynamicGoal @dynamic:
@@ -485,7 +485,7 @@ public class Emitter
                     Write(sc, goalArgs, k, vars, deep: true);
                 var sig = goal.GetSignature().GetOrThrow();
                 var p = sc.Constant(sig.Functor.Value);
-                sc.Emit(Ops.call((Signature)(p, sig.Arity)));
+                sc.Emit(Ops.call((Signature)(p, sig.Arity.TryGetValue(out var gA) ? gA : (int)Signature.VARIADIC)));
             }
         }
 

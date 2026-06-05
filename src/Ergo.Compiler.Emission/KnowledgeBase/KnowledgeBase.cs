@@ -3,6 +3,7 @@ using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
+using Ergo.Shared.Types;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
 using Microsoft.VisualBasic;
@@ -40,16 +41,20 @@ public sealed partial class KnowledgeBase
 
     private int _nextBuiltInIdx = 0;
 
-    public int RegisterBuiltInLabel(string name, int arity, Delegate handler)
+    public int RegisterBuiltInLabel(string name, Maybe<int> arity, Delegate handler)
     {
         var c = Bytecode.AddConstant(new Lang.Ast.__string(name));
-        var sig = (Signature)(c, arity);
+        var n = arity.TryGetValue(out var a) ? a : (int)Emission.Signature.VARIADIC;
+        var sig = (Signature)(c, n);
         var idx = _nextBuiltInIdx++;
         Bytecode.Labels[sig] = -(idx + 1);
         while (BuiltInHandlers.Count <= idx) BuiltInHandlers.Add(null!);
         BuiltInHandlers[idx] = handler;
         return idx;
     }
+
+    public int RegisterBuiltInLabel(string name, int arity, Delegate handler)
+        => RegisterBuiltInLabel(name, (Maybe<int>)arity, handler);
 
     public Query Query(string query)
     {

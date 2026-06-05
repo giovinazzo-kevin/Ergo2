@@ -138,7 +138,7 @@ public class Analyzer
                 return [new LateBoundGoal(clause, lateBound)];
             throw new NotSupportedException();
         }
-        if (signature.Functor == Literals.Cut && signature.Arity == 0)
+        if (signature.Functor == Literals.Cut && signature.Arity.TryGetValue(out var cutArity) && cutArity == 0)
             return [new Cut(clause)];
         if (signature.Module.TryGetValue(out var qualification))
         {
