@@ -81,25 +81,18 @@ public class DynamicTests : Tests
 
     #region Retract
     [Theory]
-    [InlineData(3, 0, new[] { "b", "c" })]  // retract first
-    [InlineData(3, 1, new[] { "a", "c" })]  // retract second (TODO: needs unification-based retract)
-    public void Retract_RemovesClause_RemainingCorrect(int total, int retractIndex, string[] expected)
+    [InlineData("a", new[] { "b", "c" })]
+    [InlineData("b", new[] { "a", "c" })]
+    [InlineData("c", new[] { "a", "b" })]
+    public void Retract_RemovesClause_RemainingCorrect(string retract, string[] expected)
     {
-        if (retractIndex > 0)
-        {
-            // Current retract removes first live clause, not by unification
-            // Skip until unification-based retract is implemented
-            return;
-        }
-
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "item", 1);
 
-        var items = Enumerable.Range(0, total).Select(i => ((char)('a' + i)).ToString()).ToArray();
-        foreach (var item in items)
+        foreach (var item in new[] { "a", "b", "c" })
             vm.Run(kb.Query($"assert(item({item}))"));
 
-        vm.Run(kb.Query("retract(item(_))"));
+        vm.Run(kb.Query($"retract(item({retract}))"));
 
         var solutions = RunQuery(vm, kb, "item(X)");
 

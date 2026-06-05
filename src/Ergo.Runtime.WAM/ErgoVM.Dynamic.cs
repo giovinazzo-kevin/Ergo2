@@ -2,6 +2,7 @@ using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Signature = Ergo.Compiler.Emission.Signature;
+using Term = Ergo.Compiler.Emission.Term;
 
 namespace Ergo.Runtime.WAM;
 
@@ -166,26 +167,44 @@ public partial class ErgoVM
     public void RetractClause(int ai = 0)
     {
         var addr = deref(ArgAddr(ai));
-        var term = ReadHeapTerm(addr);
-        var clause = term as Clause;
-        var head = clause?.Functor ?? term;
-        var sig = head.GetSignature().GetOrThrow();
+        var t = (Term)Store[addr];
+        if (t.Tag != Term.__TAG.STR) return;
+        var sig = (Signature)Heap[t.Value];
+        var atom = Constants[sig.F];
+        var packed = (Signature)(_kb!.AddConstant(atom), sig.N);
+        if (!_dynamics.TryGetValue(packed.RawValue, out var dyn)) return;
 
-        var p = _kb.AddConstant(sig.Functor);
-        var packed = (Signature)(p, sig.Arity);
-        if (!_dynamics.TryGetValue(packed.RawValue, out var dyn))
-            return;
-
-        // Find first live clause and mark erased
-        // TODO: proper unification-based matching for retract
-        for (int i = 0; i < dyn.Clauses.Count; i++)
+        var savedTR = TR; var savedH = H;
+        foreach (var clause in dyn.Visible(_globalGen).ToArray())
         {
-            if (dyn.Clauses[i].ErasedGen == int.MaxValue)
+            fail = false;
+            unify(addr, DecompileClauseHead(clause.Code, packed));
+            if (!fail) { clause.ErasedGen = ++_globalGen; return; }
+            unwind_trail(savedTR, TR); TR = savedTR; H = savedH; fail = false;
+        }
+        fail = true;
+    }
+
+    private int DecompileClauseHead(__WORD[] code, Signature sig)
+    {
+        var fAddr = H;
+        Heap[H++] = sig;
+        var args = H;
+        for (int i = 0; i < sig.N; i++, H++) Heap[H] = (Term)(Term.__TAG.REF, H);
+        for (int pc = 0; pc < code.Length;)
+        {
+            switch ((OpCode)code[pc++])
             {
-                dyn.Clauses[i].ErasedGen = ++_globalGen;
-                return;
+                case OpCode.allocate: continue;
+                case OpCode.get_constant: Heap[args + code[pc + 1]] = (Term)(Term.__TAG.CON, code[pc]); pc += 2; continue;
+                case OpCode.get_variable: case OpCode.get_value: case OpCode.get_structure: pc += 2; continue;
+                case OpCode.get_level: pc++; continue;
+                default: goto done;
             }
         }
+        done:
+        Heap[H++] = (Term)(Term.__TAG.STR, fAddr);
+        return H - 1;
     }
 
 
