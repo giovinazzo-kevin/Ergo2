@@ -160,12 +160,7 @@ public class DynamicTests : Tests
             solutions.Add(v.MaterializeSolution());
         }
         vm.SolutionEmitted += handler;
-        vm._lastDynDispatchP = -1;
-        vm._dbgGetConstantCount = 0;
         vm.Run(kb.Query("likes(A, B)"));
-        _out.WriteLine($"TryCallDynamic dispatched to P={vm._lastDynDispatchP}");
-        _out.WriteLine($"GetConstant called {vm._dbgGetConstantCount} times");
-        _out.WriteLine($"Last GetConstant: c={vm._dbgGetConstantLastC} Ai={vm._dbgGetConstantLastAi} tag={vm._dbgGetConstantLastTag} addr={vm._dbgGetConstantLastAddr}");
         vm.SolutionEmitted -= handler;
 
         _out.WriteLine($"Solutions: {solutions.Count}");

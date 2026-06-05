@@ -13,11 +13,14 @@ public partial class ErgoVM
     private int _globalGen;
     private Emitter? _emitter;
     private KnowledgeBaseBytecode? _kb;
+    private KnowledgeBase? _kbFull;
+    private bool _inDynClause;
 
-    public void InitDynamic(Emitter emitter, KnowledgeBaseBytecode kb)
+    public void InitDynamic(Emitter emitter, KnowledgeBase kb)
     {
         _emitter = emitter;
-        _kb = kb;
+        _kb = kb.Bytecode;
+        _kbFull = kb;
     }
 
     public void RegisterDynamic(Signature sig)
@@ -28,18 +31,58 @@ public partial class ErgoVM
     public IReadOnlyDictionary<__WORD, DynamicPredicate> GetDynamicPredicates() => _dynamics;
 
     /// <summary>
-    /// Declares a predicate as dynamic: adds constant + label to KB so queries
-    /// can resolve it, and registers it in the VM for runtime dispatch.
+    /// Declares a predicate as dynamic: registers it as a builtin whose
+    /// handler dispatches through dynamic clause machinery.
     /// Equivalent to :- dynamic F/N.
     /// </summary>
     public void DeclareDynamic(KnowledgeBase kb, string functor, int arity)
     {
         var c = kb.Bytecode.AddConstant(new Lang.Ast.__string(functor));
-        var sig = (Signature)(c, arity);
-        if (!kb.Bytecode.Labels.ContainsKey(sig.RawValue))
-            kb.Bytecode.Labels[sig.RawValue] = int.MinValue; // sentinel, TryCallDynamic intercepts
-        if (!_dynamics.ContainsKey(sig.RawValue))
-            _dynamics[sig.RawValue] = new DynamicPredicate();
+        var raw = ((__WORD)(Signature)(c, arity));
+        if (!_dynamics.ContainsKey(raw))
+            _dynamics[raw] = new DynamicPredicate();
+        if (!kb.Bytecode.Labels.ContainsKey(raw))
+            RegisterBuiltIn(kb, functor, arity, vm => vm.DispatchDynamic(raw));
+    }
+
+    /// <summary>
+    /// Builtin handler for dynamic predicates. Creates choice points
+    /// and sets P to the first visible clause's code offset.
+    /// </summary>
+    private void DispatchDynamic(__WORD sigRaw)
+    {
+        if (!_dynamics.TryGetValue(sigRaw, out var dyn))
+        {
+            fail = true;
+            return;
+        }
+        var goalGen = _globalGen;
+        var visible = dyn.Visible(goalGen).ToArray();
+        if (visible.Length == 0)
+        {
+            fail = true;
+            return;
+        }
+        Signature sig = sigRaw;
+        var n = sig.N;
+        // Create choice point for backtracking through clauses
+        var contIdx = _dynConts.Count;
+        _dynConts.Add(new DynContinuation(sigRaw, 1, goalGen));
+        var newB = (E > B) ? E + envsize() + 2 : B + Store[B] + 8;
+        Store[newB] = n;
+        for (int i = 0; i < n; i++)
+            Store[newB + 1 + i] = A[i];
+        Store[newB + n + 1] = E;
+        Store[newB + n + 2] = CP;
+        Store[newB + n + 3] = B;
+        Store[newB + n + 4] = -(contIdx + 1);
+        Store[newB + n + 5] = TR;
+        Store[newB + n + 6] = H;
+        Store[newB + n + 7] = B0;
+        HB = H;
+        B = newB;
+        P = visible[0].Offset;
+        _inDynClause = true;
     }
 
     /// <summary>
@@ -110,15 +153,9 @@ public partial class ErgoVM
         // Get or create dynamic predicate entry
         var p = _kb.AddConstant(sig.Functor);
         var packed = (Signature)(p, sig.Arity);
-        if (!_dynamics.TryGetValue(packed.RawValue, out var dyn))
-        {
-            dyn = new DynamicPredicate();
-            _dynamics[packed.RawValue] = dyn;
-        }
-
-        // Ensure future queries can resolve this predicate
-        if (!_kb.Labels.ContainsKey(packed.RawValue))
-            _kb.Labels[packed.RawValue] = int.MinValue;
+        if (!_dynamics.ContainsKey(packed.RawValue))
+            DeclareDynamic(_kbFull!, (string)sig.Functor.Value, sig.Arity);
+        var dyn = _dynamics[packed.RawValue];
 
         if (atEnd)
             dyn.Clauses.Add(dynClause);
@@ -151,60 +188,6 @@ public partial class ErgoVM
         }
     }
 
-    public int _lastDynDispatchP = -1; // diagnostic: last P set by TryCallDynamic
-    private bool _inDynClause; // set by TryCallDynamic, cleared by Proceed
-
-    /// <summary>
-    /// Attempts to dispatch a call to a dynamic predicate.
-    /// Returns true if the signature is dynamic, false to fall through to static.
-    /// </summary>
-    private bool TryCallDynamic(Signature sig)
-    {
-        if (!_dynamics.TryGetValue(sig.RawValue, out var dyn))
-            return false;
-
-        var goalGen = _globalGen;
-        var visible = dyn.Visible(goalGen).ToArray();
-
-        if (visible.Length == 0)
-        {
-            fail = true;
-            return true;
-        }
-
-        // Save return info
-        CP = P;
-        N = sig.N;
-        B0 = B;
-
-        // Always create a choice point — even for a single clause.
-        // This prevents body-internal choice points from being
-        // retried after the dynamic clause returns.
-        {
-            var contIdx = _dynConts.Count;
-            _dynConts.Add(new DynContinuation(sig.RawValue, 1, goalGen));
-
-            var n = sig.N;
-            var newB = (E > B) ? E + envsize() + 2 : B + Store[B] + 8;
-            Store[newB] = n;
-            for (int i = 0; i < n; i++)
-                Store[newB + 1 + i] = A[i];
-            Store[newB + n + 1] = E;
-            Store[newB + n + 2] = CP;
-            Store[newB + n + 3] = B;
-            Store[newB + n + 4] = -(contIdx + 1);
-            Store[newB + n + 5] = TR;
-            Store[newB + n + 6] = H;
-            Store[newB + n + 7] = B0;
-            HB = H;
-            B = newB;
-        }
-
-        P = visible[0].Offset;
-        _lastDynDispatchP = P;
-        _inDynClause = true;
-        return true;
-    }
 
     /// <summary>
     /// Handles backtracking into a dynamic predicate's next clause.
@@ -265,7 +248,7 @@ public partial class ErgoVM
     public void RegisterDynamicBuiltIns(KnowledgeBase kb)
     {
         var emitter = new Emitter();
-        InitDynamic(emitter, kb.Bytecode);
+        InitDynamic(emitter, kb);
 
         RegisterBuiltIn(kb, "assert", 1, vm => vm.AssertClause(0, atEnd: true));
         RegisterBuiltIn(kb, "assertz", 1, vm => vm.AssertClause(0, atEnd: true));

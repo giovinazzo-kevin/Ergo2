@@ -50,22 +50,17 @@ public partial class ErgoVM
     public void Call()
     {
         var p = __signature();
-        if (TryCallDynamic(p))
-        {
-            _traceLevel++;
-            _F = p.F;
-            _N = p.N;
-            return;
-        }
         if (defined(p, out var a))
         {
             if (a < 0)
             {
+                var idx = -(a + 1);
                 CP = P;
                 N = p.N;
                 B0 = B;
-                BuiltIns[-(a + 1)](this);
-                if (!fail) P = CP;
+                var savedP = P;
+                BuiltIns[idx](this);
+                if (!fail && P == savedP) P = CP;
                 return;
             }
             _traceLevel++;
@@ -97,16 +92,16 @@ public partial class ErgoVM
     public void Execute()
     {
         var p = __signature();
-        if (TryCallDynamic(p))
-            return;
         if (defined(p, out var a))
         {
             if (a < 0)
             {
+                var idx = -(a + 1);
                 N = p.N;
                 B0 = B;
-                BuiltIns[-(a + 1)](this);
-                if (!fail) P = CP;
+                var savedP = P;
+                BuiltIns[idx](this);
+                if (!fail && P == savedP) P = CP;
                 return;
             }
 #if WAM_TRACE
