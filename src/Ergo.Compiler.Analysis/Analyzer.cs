@@ -16,19 +16,14 @@ public class Analyzer
     public readonly ModuleLocator ModuleLocator;
     public readonly LibraryLocator LibraryLocator;
     public readonly OperatorLookup Operators;
-    public readonly Module? DefaultImport;
+    public readonly string[] DefaultImports;
 
-    public Analyzer(ModuleLocator? moduleLocator, LibraryLocator libraryLocator, OperatorLookup opLookup, string defaultImport = "prologue")
+    public Analyzer(ModuleLocator? moduleLocator, LibraryLocator libraryLocator, OperatorLookup opLookup, params string[] defaultImports)
     {
         ModuleLocator = moduleLocator ?? ModuleLocator.Default;
         LibraryLocator = libraryLocator;
         Operators = opLookup;
-        if(!string.IsNullOrEmpty(defaultImport))
-        {
-            var stream = ModuleLocator.Index.Find(defaultImport).Single();
-            var ergoStream = ErgoFileStream.Open(stream);
-            DefaultImport = LoadModule(ergoStream).Modules[defaultImport];
-        }
+        DefaultImports = defaultImports.Length > 0 ? defaultImports : ["prologue"];
     }
 
 
@@ -68,8 +63,9 @@ public class Analyzer
         var declaration = directives[0];
         if (declaration.Functor != "module" || declaration.Arity != 2)
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
-        if (DefaultImport != null)
-            module.Imports.Add(DefaultImport);
+        module.Imports.AddRange(DefaultImports
+            .Where(name => module.Name != name)
+            .Select(name => LoadModule(graph, name)));
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives)
         {
@@ -159,15 +155,21 @@ public class Analyzer
     public Module LoadModule(CallGraph graph, Either<string, ErgoFileStream> either)
     {
         ErgoFileStream fs;
+        string name;
         if (either is Case<string> { Value: var moduleName })
         {
+            name = moduleName;
             ModuleLocator.Index.Update();
             var fileInfo = ModuleLocator.Index.Find(moduleName).First();
             fs = ErgoFileStream.Open(fileInfo);
         }
-        else fs = either;
-        if (!graph.Modules.TryGetValue(graph.Root, out var module))
-            module = graph.Modules[graph.Root] = new(graph, graph.Root);
+        else
+        {
+            fs = either;
+            name = Path.GetFileNameWithoutExtension(fs.Name);
+        }
+        if (!graph.Modules.TryGetValue(name, out var module))
+            module = graph.Modules[name] = new(graph, name);
         if (module.LoadStage < Module.Stage.Linked)
             module.LoadStage = LoadStage_Link(module);
         if (module.LoadStage < Module.Stage.Opened)
