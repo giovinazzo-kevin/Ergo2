@@ -99,7 +99,6 @@ public partial class ErgoVM
     {
         var Ai = __word();
         A[Ai] = (Term)(LIS, H);
-        H += 1;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(PutList)}: Ai={Ai}");
 #endif
@@ -113,7 +112,6 @@ public partial class ErgoVM
         var c = (Term)(CON, __word());
         var Ai = __word();
         A[Ai] = c;
-        H += 1;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(PutConstant)}: c={c.Value} Ai={Ai}");
         Trace.WriteLine($"[DBG] Constant[{c.Value}] = {Constants[c.Value]}");

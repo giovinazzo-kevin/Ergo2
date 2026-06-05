@@ -58,6 +58,9 @@
 		<None Update="ergo\vm_tests.ergo">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="ergo\list_tests.ergo">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

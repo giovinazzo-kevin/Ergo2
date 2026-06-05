@@ -164,19 +164,10 @@ public partial class ErgoVM
         var bindings = new Binding[_VARS.Count];
         foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index))
         {
-            var term = (Term)A[index];
-            // A may hold REF (normal), CON (after put_unsafe_value), or STR
-            if (term.Tag == REF)
-            {
-                var addr = deref(term.Value);
-                term = (Term)Store[addr];
-            }
-            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → tag={term.Tag}, val={term.Value}");
-            if (term.Tag == CON)
-                bindings[i++] = new(name, Constants[term.Value]);
-            else
-                bindings[i++] = new(name, $"_{term.Value}");
-
+            var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
+            var term = ReadHeapTerm(addr);
+            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → {term.Expl}");
+            bindings[i++] = new(name, term);
         }
         return new(bindings);
     }

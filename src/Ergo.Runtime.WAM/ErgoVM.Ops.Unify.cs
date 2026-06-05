@@ -33,7 +33,7 @@ public partial class ErgoVM
         switch (mode)
         {
             case read:
-                unify(V[Vn], S);
+                unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, S);
                 break;
             case write:
                 Heap[H] = V[Vn];
@@ -53,10 +53,10 @@ public partial class ErgoVM
         switch (mode)
         {
             case read:
-                unify(V[Vn], S);
+                unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, S);
                 break;
             case write:
-                var addr = deref(V[Vn]);
+                var addr = deref(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn);
                 if (addr < H)
                     Heap[H] = Heap[addr];
                 else

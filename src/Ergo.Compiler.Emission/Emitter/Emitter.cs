@@ -245,6 +245,15 @@ public class Emitter
     {
         switch (args[Ai])
         {
+            case List list when list.Head.Any():
+                ctx.Emit(get_list(Ai));
+                foreach (var elem in list.Head)
+                    EmitUnify(ctx, elem);
+                EmitUnify(ctx, list.Tail);
+                break;
+            case List list:
+                ctx.Emit(get_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai));
+                break;
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
@@ -284,6 +293,23 @@ public class Emitter
     {
         switch (args[Ai])
         {
+            case List list when deep:
+            {
+                var elems = list.Head.ToArray();
+                if (elems.Length == 0)
+                { ctx.Emit(put_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai)); break; }
+                int prevV = -1;
+                for (int k = elems.Length - 1; k >= 0; k--)
+                {
+                    int reg = k == 0 ? Ai : Ai + elems.Length - k;
+                    ctx.Emit(put_list(reg));
+                    EmitSet(ctx, elems[k], varsByName);
+                    if (prevV < 0) EmitSet(ctx, list.Tail, varsByName);
+                    else ctx.Emit(set_value(prevV));
+                    if (k > 0) { prevV = ctx.NumVars++; ctx.Emit(get_variable(prevV, reg)); }
+                }
+                break;
+            }
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);

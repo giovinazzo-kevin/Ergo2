@@ -35,7 +35,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] GetValue: {Vn} {Ai}");
 #endif
-        unify(Vn, Ai);
+        unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, HEAP_SIZE + STACK_SIZE + Ai);
         if (fail) 
             backtrack();
     }

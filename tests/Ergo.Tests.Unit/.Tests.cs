@@ -1,8 +1,9 @@
-﻿using Ergo.Compiler.Analysis;
-using Ergo.Compiler.Emission;
+﻿using Ergo.Compiler.Emission;
+using Ergo.Compiler.Analysis;
 using Ergo.IO;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
+using Ergo.Runtime.WAM;
 using System.Text;
 
 namespace Ergo.UnitTests;
@@ -86,5 +87,11 @@ public class Tests
         }
     }
 
+    protected void AssertSolutions(List<ErgoVM.Solution> solutions, string[] expected)
+    {
+        Assert.Equal(expected.Length, solutions.Count);
+        for (int i = 0; i < expected.Length; i++)
+            Assert.Equal(expected[i], solutions[i].ToString());
+    }
 
 }
