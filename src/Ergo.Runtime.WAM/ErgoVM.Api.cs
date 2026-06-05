@@ -9,8 +9,6 @@ using Signature = Ergo.Compiler.Emission.Signature;
 namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
-    public readonly List<__op> BuiltIns = [];
-
     #region Abstract Term Reconstruction
     private readonly Dictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> _reconstructors = [];
 
@@ -68,13 +66,6 @@ public partial class ErgoVM
     }
     #endregion
 
-    public void RegisterBuiltIn(KnowledgeBase kb, string name, int arity, __op handler)
-    {
-        var idx = kb.RegisterBuiltInLabel(name, arity);
-        while (BuiltIns.Count <= idx) BuiltIns.Add(null!);
-        BuiltIns[idx] = handler;
-    }
-
     public event Action<ErgoVM> SolutionEmitted = _ => { };
     private int _traceLevel = 0;
 
@@ -83,6 +74,9 @@ public partial class ErgoVM
         CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
+        _builtInHandlers = query.BuiltInHandlers;
+        if (_kb == null && query.Source != null)
+            InitDynamic(new Emitter(), query.Source);
         // Re-append live dynamic clauses to new query bytecode
         if (_dynamics.Count > 0)
             RehydrateDynamicCode();

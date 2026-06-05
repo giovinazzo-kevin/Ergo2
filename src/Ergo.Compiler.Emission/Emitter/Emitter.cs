@@ -15,16 +15,25 @@ public class Emitter
     public virtual KnowledgeBase KnowledgeBase(CallGraph graph)
     {
         var ctx = new EmitterContext(graph.Analyzer.Operators);
+        var builtIns = new List<BuiltIn>();
         foreach (var module in graph.Modules.Values)
         {
             foreach (var pred in module.Predicates.Values)
-                Predicate(ctx, pred);
+            {
+                if (pred.BuiltIns.Count > 0 && pred.Clauses.Count == 0)
+                    builtIns.AddRange(pred.BuiltIns);
+                else
+                    Predicate(ctx, pred);
+            }
         }
         var code = ctx.ToKnowledgeBase();
+        var kb = new KnowledgeBase((string)graph.Root.Value, code);
+        foreach (var bi in builtIns.Where(b => b.Handler != null))
+            kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler!);
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: false));
 #endif
-        return new KnowledgeBase((string)graph.Root.Value, code);
+        return kb;
     }
 
     public virtual Query Query(Lang.Ast.Term query, KnowledgeBaseBytecode kb)

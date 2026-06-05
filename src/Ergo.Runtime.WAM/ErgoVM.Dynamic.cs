@@ -42,7 +42,7 @@ public partial class ErgoVM
         if (!_dynamics.ContainsKey(raw))
             _dynamics[raw] = new DynamicPredicate();
         if (!kb.Bytecode.Labels.ContainsKey(raw))
-            RegisterBuiltIn(kb, functor, arity, vm => vm.DispatchDynamic(raw));
+            kb.RegisterBuiltInLabel(functor, arity, (ErgoVM.__op)(vm => vm.DispatchDynamic(raw)));
     }
 
     /// <summary>
@@ -240,20 +240,4 @@ public partial class ErgoVM
     }
     #endregion
 
-    #region Dynamic Builtin Registration
-    /// <summary>
-    /// Registers assert/assertz/asserta/retract builtins and initializes
-    /// the dynamic clause compilation infrastructure.
-    /// </summary>
-    public void RegisterDynamicBuiltIns(KnowledgeBase kb)
-    {
-        var emitter = new Emitter();
-        InitDynamic(emitter, kb);
-
-        RegisterBuiltIn(kb, "assert", 1, vm => vm.AssertClause(0, atEnd: true));
-        RegisterBuiltIn(kb, "assertz", 1, vm => vm.AssertClause(0, atEnd: true));
-        RegisterBuiltIn(kb, "asserta", 1, vm => vm.AssertClause(0, atEnd: false));
-        RegisterBuiltIn(kb, "retract", 1, vm => vm.RetractClause(0));
-    }
-    #endregion
 }

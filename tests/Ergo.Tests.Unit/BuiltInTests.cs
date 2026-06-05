@@ -114,13 +114,13 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        vm.RegisterBuiltIn(kb, "write", 1, static (vm) =>
+        kb.RegisterBuiltInLabel("write", 1, (ErgoVM.__op)((vm) =>
         {
             var term = (Term)vm.A[0];
             var text = vm.Pretty(term);
             Trace.WriteLine($"WRITE: {text}");
             // stash in a static? no — use the event pattern
-        });
+        }));
 
         // For now just verify it doesn't crash
         var query = kb.Query("parent(X, mary), write(X)");
@@ -134,7 +134,7 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        vm.RegisterBuiltIn(kb, "my_write", 1, (vm) =>
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) =>
         {
             var raw = vm.A[0];
             var term = (Term)raw;
@@ -142,7 +142,7 @@ public class BuiltInTests : Tests
             var resolved = addr >= 0 ? (Term)vm.Store[addr] : term;
             Trace.WriteLine($"DIAG: raw={raw} tag={term.Tag} val={term.Value} deref={addr} resolved_tag={resolved.Tag} resolved_val={resolved.Value}");
             output.Add(vm.Pretty(term));
-        });
+        }));
 
         var query = kb.Query("parent(X, mary), my_write(X)");
         var solutions = 0;
@@ -160,11 +160,11 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        vm.RegisterBuiltIn(kb, "my_write", 1, (vm) =>
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) =>
         {
             var term = (Term)vm.A[0];
             output.Add(vm.Pretty(term));
-        });
+        }));
 
         // parent(X, Y) has 2 solutions — write should fire for each
         var query = kb.Query("parent(X, Y), my_write(X)");
@@ -182,10 +182,10 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
 
         // A builtin that always fails
-        vm.RegisterBuiltIn(kb, "always_fail", 0, static (vm) =>
+        kb.RegisterBuiltInLabel("always_fail", 0, (ErgoVM.__op)((vm) =>
         {
             vm.fail = true;
-        });
+        }));
 
         var query = kb.Query("fact, always_fail");
         var solutions = 0;

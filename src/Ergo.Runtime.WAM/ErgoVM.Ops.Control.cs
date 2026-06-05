@@ -59,7 +59,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                BuiltIns[idx](this);
+                ((__op)_builtInHandlers![idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }
@@ -100,7 +100,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                BuiltIns[idx](this);
+                ((__op)_builtInHandlers![idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }

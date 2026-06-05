@@ -12,6 +12,7 @@ public partial class ErgoVM
     public __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
     public QueryBytecode _QUERY = null!;
     public Dictionary<string, __VAR> _VARS = null!;
+    private IReadOnlyList<Delegate>? _builtInHandlers;
     private __WORD _F = 0;
     private __WORD _N = 0;
     #endregion

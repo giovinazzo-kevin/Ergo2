@@ -16,6 +16,7 @@ public sealed partial class KnowledgeBase
 {
     public readonly string Name;
     public readonly KnowledgeBaseBytecode Bytecode;
+    public readonly List<Delegate> BuiltInHandlers = [];
 
     public KnowledgeBase(ErgoFileStream file)
         : this(file.Name, ReadFile(file)) { }
@@ -33,12 +34,14 @@ public sealed partial class KnowledgeBase
 
     private int _nextBuiltInIdx = 0;
 
-    public int RegisterBuiltInLabel(string name, int arity)
+    public int RegisterBuiltInLabel(string name, int arity, Delegate handler)
     {
         var c = Bytecode.AddConstant(new Lang.Ast.__string(name));
         var sig = (Signature)(c, arity);
         var idx = _nextBuiltInIdx++;
         Bytecode.Labels[sig] = -(idx + 1);
+        while (BuiltInHandlers.Count <= idx) BuiltInHandlers.Add(null!);
+        BuiltInHandlers[idx] = handler;
         return idx;
     }
 
@@ -50,6 +53,7 @@ public sealed partial class KnowledgeBase
         if (!parser.BinaryExpressionRhs().TryGetValue(out var ast))
             throw new InvalidOperationException();
         var emitter = new Emitter();
-        return emitter.Query(ast, Bytecode);
+        var q = emitter.Query(ast, Bytecode);
+        return q with { BuiltInHandlers = BuiltInHandlers, Source = this };
     }
 }
