@@ -116,8 +116,6 @@ public class Analyzer
     {
         if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
             return [];
-        if (signature.Functor == Literals.Cut && signature.Arity == 0)
-            return [new Cut(clause)];
         if (!signature.Module.HasValue && !referencedModule.Exports.Contains(signature))
             return [];
         var list = new List<Goal>();
@@ -139,6 +137,8 @@ public class Analyzer
                 return [new LateBoundGoal(clause, lateBound)];
             throw new NotSupportedException();
         }
+        if (signature.Functor == Literals.Cut && signature.Arity == 0)
+            return [new Cut(clause)];
         if (signature.Module.TryGetValue(out var qualification))
         {
             if (!graph.Modules.TryGetValue(qualification, out var referencedModule))

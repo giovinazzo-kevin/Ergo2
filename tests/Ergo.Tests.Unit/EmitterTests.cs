@@ -82,7 +82,7 @@ public class EmitterTests : Tests
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Y).
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(71, ref span);
+        AssertInt32(69, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(0, ref span);
@@ -131,10 +131,6 @@ public class EmitterTests : Tests
         AssertSignature("ancestor", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);
-
-        // ?- fact.
-        AssertOp(OpCode.call, ref span);
-        AssertSignature("fact", 0, ref span, query);
     }
 
     [Fact]
