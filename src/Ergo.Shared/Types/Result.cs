@@ -15,6 +15,14 @@ public abstract record Result<T, Err>
         if (this is Error)
             throw new InvalidOperationException(ToString());
     }
+
+    public T GetOrThrow()
+    {
+        if (this is Success<T> { Value: var value })
+            return value;
+        EnsureSuccess();
+        return default!; // unreachable
+    }
 }
 
 public interface Success;

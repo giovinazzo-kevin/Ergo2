@@ -1,10 +1,15 @@
 ﻿using Ergo.Compiler.Emission;
 using Ergo.Compiler.Analysis;
 using Ergo.IO;
+using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
+using Ergo.Pipelines;
+using Ergo.Pipelines.Compiler;
 using Ergo.Runtime.WAM;
 using System.Text;
+using Query = Ergo.Compiler.Emission.Query;
+using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.UnitTests;
 
@@ -14,20 +19,13 @@ public class Tests
 
     protected KnowledgeBase Consult(string moduleName)
     {
-        const string MODULE_PATH = "./ergo/";
-        const string BIN_PATH = "./bin/";
-        var kbLocator = new KnowledgeBaseLocator(BIN_PATH);
-        var compiledKb = kbLocator.Index.Find(moduleName).FirstOrDefault();
-        if (compiledKb != null)
-            return new KnowledgeBase(ErgoFileStream.Open(compiledKb));
-        var moduleLocator = new ModuleLocator(MODULE_PATH);
-        var libraryLocator = new LibraryLocator(Libraries.Standard);
-        var operatorLookup = new OperatorLookup();
-        var analyzer = new Analyzer(moduleLocator, libraryLocator, operatorLookup);
-        var graph = analyzer.LoadModule(moduleName);
-        var emitter = new Emitter();
-        var kb = emitter.KnowledgeBase(graph);
-        return kb;
+        return Pipeline
+            .WithStep(Steps.LoadSource)
+            .WithStep(Steps.Analyze)
+            .WithStep(Steps.Compile, new Compile.Env { SaveToPath = "./bin/" })
+            .WithStep(Steps.Consult)
+            .Run((__string)moduleName)
+            .GetOrThrow();
     }
 
     protected Query AssertQuery(string file, string query, Validator validate)
