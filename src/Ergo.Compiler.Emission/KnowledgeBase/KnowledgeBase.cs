@@ -29,7 +29,13 @@ public sealed partial class KnowledgeBase
 
     static KnowledgeBaseBytecode ReadFile(ErgoFileStream file)
     {
-        return new([]);
+        using var ms = new MemoryStream();
+        file.Stream.CopyTo(ms);
+        var raw = ms.ToArray();
+        var words = new __WORD[raw.Length / sizeof(__WORD)];
+        for (int i = 0; i < words.Length; i++)
+            words[i] = BitConverter.ToInt32(raw, i * 4);
+        return new KnowledgeBaseBytecode(words);
     }
 
     private int _nextBuiltInIdx = 0;
