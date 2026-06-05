@@ -63,6 +63,7 @@ public class Emitter
         }
         if (needsStackFrame)
             ctx.Emit(deallocate);
+        ctx.Emit(halt);
         var code = ctx.ToQuery(kb);
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: true));

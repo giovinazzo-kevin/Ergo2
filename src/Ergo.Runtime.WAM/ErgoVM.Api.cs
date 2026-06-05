@@ -83,9 +83,6 @@ public partial class ErgoVM
         CP = int.MaxValue;
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
-        var queryEnd = _QUERY.QueryEnd >= 0 ? _QUERY.QueryEnd : Code.Length;
-        // Sentinel pad: ensures no dynamic clause offset == queryEnd
-        _QUERY.AppendCode(new __WORD[] { -1 });
         // Re-append live dynamic clauses to new query bytecode
         if (_dynamics.Count > 0)
             RehydrateDynamicCode();
@@ -104,14 +101,6 @@ public partial class ErgoVM
                 if (backtrack())
                     break;
                 continue; // Go to next choice point
-            }
-
-            // Solution found: query code ran to completion
-            if (P == queryEnd)
-            {
-                EmitSolution();
-                fail = true;
-                continue; // Try to backtrack for more solutions
             }
 
             var op = __word();

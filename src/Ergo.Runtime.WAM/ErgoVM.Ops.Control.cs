@@ -152,7 +152,15 @@ public partial class ErgoVM
         }
 #endif
         SolutionEmitted(this);
-        P = Code.Length; // 💥 Prevent re-execution
+    }
+
+    public void Halt()
+    {
+#if WAM_TRACE
+        Trace.WriteLine("[WAM] Halt");
+#endif
+        EmitSolution();
+        fail = true;
     }
 
     public Solution MaterializeSolution()

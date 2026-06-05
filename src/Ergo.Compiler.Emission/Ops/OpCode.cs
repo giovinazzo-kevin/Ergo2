@@ -47,5 +47,7 @@ public enum OpCode : byte
 
     neck_cut,
     get_level,
-    cut
+    cut,
+
+    halt
 }

@@ -16,6 +16,7 @@ public class ModuleLocator
     }
 
     protected virtual IEnumerable<FileInfo> Scan => SearchPaths
+        .Select(p => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, p))
         .Where(Directory.Exists)
         .SelectMany(path => Directory.EnumerateFiles(path, FILTER, SearchOption.AllDirectories)
             .Select(file => new FileInfo(file)));
