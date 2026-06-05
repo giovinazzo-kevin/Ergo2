@@ -1,4 +1,5 @@
-﻿using Ergo.Libs.Math;
+using Ergo.Libs.List;
+using Ergo.Libs.Math;
 using Ergo.Libs.Prologue;
 using System.Reflection;
 
@@ -7,6 +8,7 @@ public static class Libraries
 {
     public static readonly Assembly[] Standard = [
         typeof(LibPrologue).Assembly,
-        typeof(LibMath).Assembly
+        typeof(LibMath).Assembly,
+        typeof(LibList).Assembly
     ];
 }

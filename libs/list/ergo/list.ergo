@@ -1,0 +1,7 @@
+:- module(_, [append/3, member/2]).
+
+append([], L, L).
+append([H|T], L, [H|R]) :- append(T, L, R).
+
+member(X, [X|_]).
+member(X, [_|T]) :- member(X, T).

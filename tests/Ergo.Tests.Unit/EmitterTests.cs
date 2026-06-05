@@ -82,7 +82,7 @@ public class EmitterTests : Tests
         AssertOp(OpCode.proceed, ref span);
         // ancestor(X,Y) :- parent(X,Y).
         AssertOp(OpCode.try_me_else, ref span);
-        AssertInt32(69, ref span);
+        AssertInt32(71, ref span);
         AssertOp(OpCode.allocate, ref span);
         AssertOp(OpCode.get_variable, ref span);
         AssertInt32(0, ref span);
