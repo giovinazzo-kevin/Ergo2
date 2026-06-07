@@ -113,23 +113,20 @@ public class Analyzer
         return Module.Stage.Loaded;
     }
 
-    protected static List<Goal> ResolveQualifiedGoals(CallGraph graph, Module module, Clause clause, Signature signature, __string qualification, Term[] args)
+    protected static IEnumerable<Goal> ResolveQualifiedGoals(CallGraph graph, Module module, Clause clause, Signature signature, __string qualification, Term[] args)
     {
         if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
-            return [];
-        if (!signature.Module.HasValue && !referencedModule.Exports.Contains(signature))
-            return [];
-        var list = new List<Goal>();
+            yield break;
+        var isSelf = referencedModule.Name == module.Name;
+        if (!isSelf && !signature.Module.HasValue && !referencedModule.Exports.Contains(signature))
+            yield break;
         if (referencedModule.Dynamic.Contains(signature.Unqualified))
-            list.Add(new DynamicGoal(clause, signature.Functor, args));
-        else if (!referencedModule.Predicates.TryGetValue(signature.Unqualified, out var callee))
-            throw new AnalyzerException(AnalyzerError.UndefinedPredicate0, signature);
-        else
-            list.Add(new StaticGoal(clause, callee, args));
-        return list;
+            yield return new DynamicGoal(clause, signature.Functor, args);
+        else if (referencedModule.Predicates.TryGetValue(signature.Unqualified, out var callee))
+            yield return new StaticGoal(clause, callee, args);
     }
 
-    protected static List<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
+    protected static IEnumerable<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
         var args = goalDef.GetArguments();
         if (!goalDef.GetSignature().TryGetValue(out var signature))
@@ -146,11 +143,14 @@ public class Analyzer
                 throw new AnalyzerException(AnalyzerError.UndefinedModule0, qualification);
             return ResolveQualifiedGoals(graph, module, clause, signature, qualification, args);
         }
-        return graph.Modules.Keys
+        var resolved = graph.Modules.Keys
             .Except([module.Name])
             .Prepend(module.Name)
             .SelectMany(m => ResolveQualifiedGoals(graph, module, clause, signature, m, args))
             .ToList();
+        if (resolved.Count == 0)
+            throw new AnalyzerException(AnalyzerError.UndefinedPredicate0, signature);
+        return resolved;
     }
     
     public Module LoadModule(CallGraph graph, Either<string, ErgoFileStream> either)

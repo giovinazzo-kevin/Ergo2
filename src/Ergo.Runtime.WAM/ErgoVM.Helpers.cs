@@ -16,7 +16,9 @@ public partial class ErgoVM
 #endif
         if (B == BOTTOM_OF_STACK)
         {
+#if WAM_TRACE
             Trace.WriteLine("[WAM] backtrack: hit bottom of stack → FAIL FINAL");
+#endif
             return fail_and_exit_program();
         }
         B0 = Store[B + Store[B] + 7];
@@ -34,10 +36,12 @@ public partial class ErgoVM
                 return backtrack();
             }
         }
+#if WAM_TRACE
         Trace.WriteLine($"[WAM] Backtrack → P={P}, Code.Length={Code.Length}");
         Trace.WriteLine($"[WAM] Stack Snapshot @ B={B}:");
         for (int i = 0; i < 10; i++)
             Trace.WriteLine($"  Store[{B + i}] = {Store[B + i]}");
+#endif
         return fail;
     }
     public bool fail_and_exit_program()
@@ -103,7 +107,9 @@ public partial class ErgoVM
         {
             var addr = Trail[i];
             Store[addr] = (Term)(REF, addr);
+#if WAM_TRACE
             Trace.WriteLine($"[WAM] UNWIND addr={i}, resetting to REF {i}");
+#endif
         }
     }
     public void tidy_trail()
@@ -352,5 +358,5 @@ public partial class ErgoVM
             return Code[savedCP - 1];
         return Math.Max(N, 16);
     }
-    #endregion
+#endregion
 }

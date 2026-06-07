@@ -87,9 +87,8 @@ public class Tests
 
     protected void AssertSolutions(List<ErgoVM.Solution> solutions, string[] expected)
     {
-        Assert.Equal(expected.Length, solutions.Count);
-        for (int i = 0; i < expected.Length; i++)
-            Assert.Equal(expected[i], solutions[i].ToString());
+        var actual = solutions.Select(s => s.ToString()).ToArray();
+        Assert.Equal(expected, actual);
     }
 
 }

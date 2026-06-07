@@ -1,4 +1,4 @@
-:- module(_, [fact/0, another_fact/0, complex_fact/3, parent/2, ancestor/2]).
+:- module(_, [fact/0, another_fact/0, complex_fact/3, parent/2, ancestor/2, mutual/2, pair/2]).
 
 fact.
 another_fact :- fact.
@@ -17,3 +17,7 @@ ancestor(X, Y) :-
 ancestor(X, Y) :-
   parent(X, Z), 
   ancestor(Z, Y).
+
+pair(a, b).
+pair(b, a).
+mutual(X, Y) :- pair(X, Y), pair(Y, X).

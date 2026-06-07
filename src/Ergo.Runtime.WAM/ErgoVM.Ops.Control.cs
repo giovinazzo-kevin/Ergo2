@@ -128,9 +128,9 @@ public partial class ErgoVM
     {
         _traceLevel--;
         _inDynClause = false;
+#if WAM_TRACE
         Trace.WriteLine($"Exit: ({_traceLevel}) {Constants[_F]}" +
             $"({string.Join(", ", Enumerable.Range(0, _N).Select(i => Pretty(A[i])))})");
-#if WAM_TRACE
         Trace.WriteLine($"[WAM] Proceed: P={P}, CP={CP}, CodeLen={Code.Length}");
 #endif
         P = CP;
@@ -166,7 +166,9 @@ public partial class ErgoVM
         {
             var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
             var term = ReadHeapTerm(addr);
+#if WAM_TRACE
             Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → {term.Expl}");
+#endif
             bindings[i++] = new(name, term);
         }
         return new(bindings);

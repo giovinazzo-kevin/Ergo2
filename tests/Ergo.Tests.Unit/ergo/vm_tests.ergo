@@ -9,5 +9,4 @@ flatten([H|T], Flat) :-
 
 parse(Tree) :-
     Tree = node(left(X), right(Y)),
-    flatten([X, Y], Flat),
-    process(Flat).
+    flatten([X, Y], Flat).

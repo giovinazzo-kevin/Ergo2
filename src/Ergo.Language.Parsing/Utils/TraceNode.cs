@@ -17,8 +17,9 @@ public class TraceNode
         if (!Success && excludeFailures && depth > 1)
             return;
 
+#if PARSER_TRACE
         Trace.WriteLine($"{indent}{(isLast ? "└── " : "├── ")}{this}");
-
+#endif
         var visible = Children
             .Where(c => c.Success || !excludeFailures || depth < 1) // allow failed children at top level
             .ToList();
