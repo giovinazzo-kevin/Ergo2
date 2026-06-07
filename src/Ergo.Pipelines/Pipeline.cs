@@ -1,4 +1,5 @@
-﻿using Ergo.Shared.Types;
+﻿using Ergo.Compiler.Emission;
+using Ergo.Shared.Types;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -6,14 +7,25 @@ namespace Ergo.Pipelines;
 
 public sealed class Pipeline
 {
+    public static readonly Pipeline<SourceInput, KnowledgeBase> Consult =
+        WithStep(Steps.Consult);
+
+    public static Pipeline<SourceInput, KnowledgeBase> Compile =>
+        WithStep(Steps.LoadSource)
+            .WithStep(Steps.Analyze)
+            .WithStep(Steps.Compile, new Compiler.Compile.Env { SaveToPath = "./bin/" });
+
     public static Pipeline<TInput, TOutput> WithStep<TInput, TOutput, TEnv>(IPipeline<TInput, TOutput, TEnv> firstStep, TEnv? env = default)
         where TEnv : class, new()
         => new([firstStep], [env ?? new()]);
 }
 
-public sealed class Pipeline<TInput, TOutput>(IPipeline[] steps, object[] envs)
+public class Pipeline<TInput, TOutput>(IPipeline[] steps, object[] envs)
     : IPipeline<TInput, TOutput, Unit>
 {
+    public Pipeline<TInput, TOutput> Or(Pipeline<TInput, TOutput> fallback)
+        => new OrPipeline<TInput, TOutput>(this, fallback);
+
     private readonly (MethodInfo ExecuteStep, PropertyInfo GetResult)[] MethodTable = steps
         .Select((step, i) => {
             var executeStep = typeof(IPipeline<,,>)
@@ -55,5 +67,5 @@ public sealed class Pipeline<TInput, TOutput>(IPipeline[] steps, object[] envs)
         return ((Success<TOutput>)data!).Value;
     }
 
-    public Result<TOutput, PipelineError> Run(TInput input) => ((IPipeline<TInput, TOutput, Unit>)this).Run(input, default);
+    public virtual Result<TOutput, PipelineError> Run(TInput input) => ((IPipeline<TInput, TOutput, Unit>)this).Run(input, default);
 }

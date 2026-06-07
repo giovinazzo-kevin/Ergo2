@@ -19,11 +19,8 @@ public class Tests
 
     protected KnowledgeBase Consult(string moduleName)
     {
-        return Pipeline
-            .WithStep(Steps.LoadSource)
-            .WithStep(Steps.Analyze)
-            .WithStep(Steps.Compile, new Compile.Env { SaveToPath = "./bin/" })
-            .WithStep(Steps.Consult)
+        return Pipeline.Consult
+            .Or(Pipeline.Compile)
             .Run((__string)moduleName)
             .GetOrThrow();
     }

@@ -18,6 +18,8 @@ public class Emitter
         var builtIns = new List<BuiltIn>();
         foreach (var module in graph.Modules.Values)
         {
+            foreach (var import in module.Imports)
+                ctx.AddImport(import.Name);
             foreach (var pred in module.Predicates.Values)
             {
                 if (pred.BuiltIns.Count > 0 && pred.Clauses.Count == 0)

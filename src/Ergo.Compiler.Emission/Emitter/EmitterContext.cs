@@ -14,6 +14,7 @@ public sealed class EmitterContext
     private Dictionary<object, __WORD> _constantLookup = [];
     private readonly List<Op> _instructions = [];
     private readonly OperatorLookup _operators;
+    private readonly List<string> _imports = [];
 
     public int PC { get; private set; }
     public int NumVars { get; set; } = 0;
@@ -54,6 +55,7 @@ public sealed class EmitterContext
         _instructions.AddRange(other._instructions);
         PC += other.PC;
     }
+    public void AddImport(string moduleName) => _imports.Add(moduleName);
     public void Label(Signature sig, __WORD address)
     {
         _labels[sig] = address;
@@ -111,10 +113,22 @@ public sealed class EmitterContext
 
     public KnowledgeBaseBytecode ToKnowledgeBase()
     {
-        var labelsLength = _labels.Values.Count * 2 ;
+        // Serialize imports as word-packed UTF8 strings
+        var importsWords = new List<__WORD> { _imports.Count };
+        foreach (var imp in _imports)
+        {
+            var bytes = Encoding.UTF8.GetBytes(imp);
+            var lenInWords = (bytes.Length + 3) / 4;
+            importsWords.Add(lenInWords);
+            Array.Resize(ref bytes, lenInWords * 4);
+            for (int i = 0; i < lenInWords; i++)
+                importsWords.Add(BitConverter.ToInt32(bytes, i * 4));
+        }
+
+        var labelsLength = _labels.Values.Count * 2;
         var operatorsLength = _operators.Values.Sum(x => x.Functors.Length + 3);
         var instructionsLength = _instructions.Sum(x => x.Size);
-        var data = new __WORD[instructionsLength + operatorsLength + labelsLength + 2];
+        var data = new __WORD[instructionsLength + operatorsLength + labelsLength + 2 + importsWords.Count];
         var span = data.AsSpan();
         span[0] = _labels.Values.Count; span = span[1..];
         foreach (var label in _labels)
@@ -132,6 +146,11 @@ public sealed class EmitterContext
                 span[3 + i] = Constant(op.Functors[i].Value);
             span = span[(op.Functors.Length + 3)..];
         }
+        // Write imports
+        for (int i = 0; i < importsWords.Count; i++)
+            span[i] = importsWords[i];
+        span = span[importsWords.Count..];
+
         for (int i = 0; i < _instructions.Count; i++)
             _instructions[i].Emit(ref span);
         Array.Resize(ref data, data.Length + _constants.Count + 1);

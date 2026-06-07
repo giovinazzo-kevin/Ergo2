@@ -6,6 +6,7 @@ namespace Ergo.Compiler.Emission;
 public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
 {
     public readonly OperatorLookup Operators = new();
+    public readonly List<string> Imports = [];
 
     public bool TryResolve(Lang.Ast.Signature signature, out Signature reference)
     {
@@ -21,6 +22,7 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
     {
         base.LoadData(ref span);
         LoadOperators(ref span);
+        LoadImports(ref span);
     }
 
     protected virtual void LoadOperators(ref ReadOnlySpan<int> span)
@@ -43,5 +45,25 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
             functors[i] = _consts[span[i]];
         span = span[numOfFunctors..];
         return new Operator(precedence, type, functors);
+    }
+
+    protected virtual void LoadImports(ref ReadOnlySpan<__WORD> span)
+    {
+        if (span.Length == 0) return;
+        var count = span[0]; span = span[1..];
+        for (int i = 0; i < count; i++)
+        {
+            var lenInWords = span[0]; span = span[1..];
+            var bytes = new byte[lenInWords * sizeof(__WORD)];
+            for (int j = 0; j < lenInWords; j++)
+            {
+                bytes[j * 4 + 0] = (byte)(span[j] >> 0);
+                bytes[j * 4 + 1] = (byte)(span[j] >> 8);
+                bytes[j * 4 + 2] = (byte)(span[j] >> 16);
+                bytes[j * 4 + 3] = (byte)(span[j] >> 24);
+            }
+            span = span[lenInWords..];
+            Imports.Add(System.Text.Encoding.UTF8.GetString(bytes).TrimEnd('\0'));
+        }
     }
 }

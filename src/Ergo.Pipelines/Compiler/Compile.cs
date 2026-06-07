@@ -1,7 +1,9 @@
 ﻿using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Emission;
+using Ergo.IO;
 using Ergo.Pipelines.IO;
 using Ergo.Shared.Types;
+using System.Security.Cryptography;
 
 namespace Ergo.Pipelines.Compiler;
 
@@ -14,6 +16,7 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
         /// Otherwise, the knowledge base is only kept in memory.
         /// </summary>
         public string? SaveToPath { get; set; } = null;
+        public ModuleLocator ModuleLocator { get; set; } = ModuleLocator.Default;
     }
 
 
@@ -25,7 +28,18 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
         var emitter = new Emitter();
         var kb = emitter.KnowledgeBase(input);
         if (env.SaveToPath is not null)
-            kb.Bytecode.SaveTo(new(Path.Combine(env.SaveToPath, input.Root + ".kb")));
+        {
+            var binDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, env.SaveToPath);
+            kb.Bytecode.SaveTo(new(Path.Combine(binDir, input.Root + ".kb")));
+            env.ModuleLocator.Index.Update();
+            var sourceFile = env.ModuleLocator.Index.Find(input.Root).FirstOrDefault();
+            if (sourceFile != null)
+            {
+                using var stream = sourceFile.OpenRead();
+                var hash = Convert.ToHexString(SHA256.HashData(stream));
+                File.WriteAllText(Path.Combine(binDir, input.Root + ".kb.hash"), hash);
+            }
+        }
         return kb;
     }
 }
