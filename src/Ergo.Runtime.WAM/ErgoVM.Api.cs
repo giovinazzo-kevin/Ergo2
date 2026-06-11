@@ -94,9 +94,13 @@ public partial class ErgoVM
             {
                 if (backtrack())
                     break;
-                continue; // Go to next choice point
+                continue;
             }
-
+            if (P >= Code.Length) 
+            { 
+                EmitSolution();
+                break; 
+            }
             var op = __word();
             OP_TABLE[op](this);
         }
