@@ -229,7 +229,7 @@ public class Emitter
                 break;
 
             default:
-                throw new NotSupportedException("Nested compound terms not yet supported inside structure heads.");
+                throw new NotSupportedException($"Unsupported term type in unify: {term.GetType().Name}");
         }
     }
 

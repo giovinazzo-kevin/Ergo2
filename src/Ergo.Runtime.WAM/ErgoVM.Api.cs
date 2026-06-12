@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Emission;
+using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
 using static Ergo.Lang.Ast.Operator;
@@ -9,40 +9,7 @@ namespace Ergo.Runtime.WAM;
 public partial class ErgoVM
 {
     #region Abstract Term Reconstruction
-    private readonly Dictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> _reconstructors = [];
-
-    public void RegisterReconstructor(object functor, int arity, Func<Lang.Ast.Term[], Lang.Ast.Term> factory)
-    {
-        _reconstructors[(functor, arity)] = factory;
-    }
-
-    public void RegisterOperator(Operator op)
-    {
-        int arity = op.Fixity_ switch {
-            Fixity.Prefix or Fixity.Postfix => 1,
-            Fixity.Infix => 2,
-            _ => throw new NotSupportedException($"Unknown fixity: {op.Fixity_}")
-        };
-        Func<Lang.Ast.Term[], Lang.Ast.Term> factory = op.Fixity_ switch {
-            Fixity.Infix => args => new BinaryExpression(op, args[0], args[1]),
-            Fixity.Prefix => args => new PrefixExpression(op, args[0]),
-            Fixity.Postfix => args => new PostfixExpression(op, args[0]),
-            _ => throw new NotSupportedException()
-        };
-        foreach (Atom functor in op.Functors)
-            _reconstructors[(functor.Value, arity)] = factory;
-    }
-
-    public void RegisterOperator(Operator op, Func<Lang.Ast.Term[], Lang.Ast.Term> factory)
-    {
-        int arity = op.Fixity_ switch {
-            Fixity.Prefix or Fixity.Postfix => 1,
-            Fixity.Infix => 2,
-            _ => throw new NotSupportedException()
-        };
-        foreach (Atom functor in op.Functors)
-            _reconstructors[(functor.Value, arity)] = factory;
-    }
+    public IReadOnlyDictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> _reconstructors = new Dictionary<(object, int), Func<Lang.Ast.Term[], Lang.Ast.Term>>();
     #endregion
 
     public event Action<ErgoVM> SolutionEmitted = _ => { };
@@ -55,14 +22,7 @@ public partial class ErgoVM
         _VARS = query.Variables;
         _builtInHandlers = query.BuiltInHandlers;
         _abstractTerms = query.AbstractTerms?.ToDictionary(kv => kv.Key, kv => new AbstractTermDispatch(kv.Value));
-        // Register operator reconstructors from the KB
-        if (query.Source != null)
-            foreach (var op in query.Source.Bytecode.Operators.Values)
-                RegisterOperator(op);
-        // Core reconstruction rules (always needed)
-        RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
-        RegisterOperator(Operators.HornUnary, args => new Lang.Ast.Directive(args[0]));
-        RegisterOperator(Operators.Conjunction);
+        _reconstructors = query.Reconstructors;
         if (_kb == null && query.Source != null)
             InitDynamic(new Emitter(), query.Source);
         // Re-append live dynamic clauses to new query bytecode
@@ -92,4 +52,3 @@ public partial class ErgoVM
     }
 
 }
-

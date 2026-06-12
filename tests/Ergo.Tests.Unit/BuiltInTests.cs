@@ -23,9 +23,12 @@ public class BuiltInTests : Tests
         };
 
         var vm = new ErgoVM();
-        vm.RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
-        vm.RegisterOperator(Operators.Conjunction);
+        var reconstructors = new Dictionary<(object, int), Func<Lang.Ast.Term[], Lang.Ast.Term>> {
+            { (Operators.HornBinary.Functors.First().Value, 2), args => new Lang.Ast.Clause(args[0], args[1]) },
+            { (Operators.Conjunction.Functors.First().Value, 2), args => new BinaryExpression(Operators.Conjunction, args[0], args[1]) }
+        };
         vm._QUERY = QueryBytecode.Preloaded([], constants);
+        vm._reconstructors = reconstructors;
 
         // Heap layout for: foo(X) :- bar(X), baz(X)
         //   H[0]: foo/1      H[1]: REF(1) = X

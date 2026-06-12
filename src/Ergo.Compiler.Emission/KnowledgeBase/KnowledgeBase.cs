@@ -1,6 +1,4 @@
 ﻿using Ergo.IO;
-using Ergo.Lang.Lexing;
-using Ergo.Lang.Parsing;
 using Ergo.Shared.Types;
 
 namespace Ergo.Compiler.Emission;
@@ -11,6 +9,7 @@ public sealed partial class KnowledgeBase
     public readonly KnowledgeBaseBytecode Bytecode;
     public readonly List<Delegate> BuiltInHandlers = [];
     public readonly Dictionary<__WORD, Ergo.Compiler.Analysis.AbstractTerm> AbstractTerms = [];
+    public readonly Dictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> Reconstructors = [];
 
     public KnowledgeBase(ErgoFileStream file)
         : this(file.Name, ReadFile(file)) { }
@@ -57,15 +56,4 @@ public sealed partial class KnowledgeBase
         AbstractTerms[packed] = abs;
     }
 
-    public Query Query(string query)
-    {
-        var file = ErgoFileStream.Create(query, nameof(Query));
-        using var lexer = new Lexer(file, Bytecode.Operators);
-        using var parser = new Parser(lexer);
-        if (!parser.BinaryExpressionRhs().TryGetValue(out var ast))
-            throw new InvalidOperationException();
-        var emitter = new Emitter();
-        var q = emitter.Query(ast, Bytecode);
-        return q with { BuiltInHandlers = BuiltInHandlers, AbstractTerms = AbstractTerms, Source = this };
-    }
 }

@@ -1,4 +1,5 @@
 ﻿using Ergo.Compiler.Emission;
+using Ergo.Pipelines.Compiler;
 using Ergo.Shared.Types;
 using System.Reflection;
 
@@ -8,6 +9,8 @@ public sealed class Pipeline
 {
     public static readonly Pipeline<SourceInput, KnowledgeBase> Consult =
         WithStep(Steps.Consult);
+
+    public static readonly CompileQuery CompileQuery = Ergo.Pipelines.Compiler.CompileQuery.Instance;
 
     public static Pipeline<SourceInput, KnowledgeBase> Compile =>
         WithStep(Steps.LoadSource)

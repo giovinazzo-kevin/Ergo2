@@ -62,6 +62,7 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
             kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
         foreach (var abs in libs.SelectMany(lib => lib.ExportedAbstractTerms))
             kb.RegisterAbstractTerm(abs);
+        Compiler.Compile.BuildReconstructors(kb);
 
         return kb;
     }

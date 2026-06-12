@@ -7,19 +7,23 @@ using ParseDelegate = Ergo.Lang.Parsing.WellKnown.Delegates.Parse;
 
 namespace Ergo.Pipelines.Compiler;
 
-public class CompileQuery : IPipeline<(KnowledgeBase KB, string Query), Query, CompileQuery.Env>
+public class CompileQuery : IPipeline<string, Query, CompileQuery.Env>
 {
-    public class Env { }
+    public class Env
+    {
+        public required KnowledgeBase KB { get; init; }
+    }
 
     internal static readonly CompileQuery Instance = new();
     private CompileQuery() { }
 
-    public Result<Query, PipelineError> Run((KnowledgeBase KB, string Query) input, Env env)
+    public Result<Query, PipelineError> Run(string input, Env env)
     {
-        var file = ErgoFileStream.Create(input.Query, nameof(CompileQuery));
-        using var lexer = new Lexer(file, input.KB.Bytecode.Operators);
+        var kb = env.KB;
+        var file = ErgoFileStream.Create(input, nameof(CompileQuery));
+        using var lexer = new Lexer(file, kb.Bytecode.Operators);
         using var parser = new Parser(lexer);
-        foreach (var abs in input.KB.AbstractTerms.Values) {
+        foreach (var abs in kb.AbstractTerms.Values) {
             if (abs.Parse == null) continue;
             var factory = (ParseDelegate)abs.Parse;
             var production = factory(parser);
@@ -29,11 +33,12 @@ public class CompileQuery : IPipeline<(KnowledgeBase KB, string Query), Query, C
         if (!parser.BinaryExpressionRhs().TryGetValue(out var ast))
             return new PipelineError(this, new InvalidOperationException("Failed to parse query"));
         var emitter = new Emitter();
-        var q = emitter.Query(ast, input.KB.Bytecode);
+        var q = emitter.Query(ast, kb.Bytecode);
         return q with {
-            BuiltInHandlers = input.KB.BuiltInHandlers,
-            AbstractTerms = input.KB.AbstractTerms,
-            Source = input.KB
+            BuiltInHandlers = kb.BuiltInHandlers,
+            AbstractTerms = kb.AbstractTerms,
+            Reconstructors = kb.Reconstructors,
+            Source = kb
         };
     }
 }
