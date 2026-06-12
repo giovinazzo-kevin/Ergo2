@@ -13,7 +13,7 @@
 	</PropertyGroup>
 	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);WAM_TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);_WAM_TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

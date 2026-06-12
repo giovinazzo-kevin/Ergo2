@@ -11,7 +11,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>$(DefineConstants);EMITTER_TRACE</DefineConstants>
+		<DefineConstants>$(DefineConstants);_EMITTER_TRACE</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
