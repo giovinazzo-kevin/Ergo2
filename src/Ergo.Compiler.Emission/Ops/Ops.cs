@@ -10,14 +10,14 @@ public static class Ops
     public static readonly Func<__WORD, __WORD, Op> get_value = (__WORD Vn, __WORD Ai) => new Op(OpCode.get_value, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> get_variable = (__WORD Vn, __WORD Ai) => new Op(OpCode.get_variable, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> get_structure = (__WORD Pn, __WORD Xi) => new Op(OpCode.get_structure, () => Pn, () => Xi);
-    public static readonly Func<__WORD, Op> get_list = (__WORD Ai) => new Op(OpCode.get_list, () => Ai);
+    public static readonly Func<__WORD, __WORD, Op> get_abstract = (__WORD sig, __WORD Ai) => new Op(OpCode.get_abstract, () => sig, () => Ai);
 
     public static readonly Func<__WORD, __WORD, Op> put_constant = (__WORD c, __WORD Ai) => new Op(OpCode.put_constant, () => c, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_unsafe_value = (__WORD Yn, __WORD Ai) => new Op(OpCode.put_unsafe_value, () => Yn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_value = (__WORD Vn, __WORD Ai) => new Op(OpCode.put_value, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_variable = (__WORD Vn, __WORD Ai) => new Op(OpCode.put_variable, () => Vn, () => Ai);
     public static readonly Func<__WORD, __WORD, Op> put_structure = (__WORD Pn, __WORD Xi) => new Op(OpCode.put_structure, () => Pn, () => Xi);
-    public static readonly Func<__WORD, Op> put_list = (__WORD Ai) => new Op(OpCode.put_list, () => Ai);
+    public static readonly Func<__WORD, __WORD, Op> put_abstract = (__WORD sig, __WORD Ai) => new Op(OpCode.put_abstract, () => sig, () => Ai);
 
     public static readonly Func<__WORD, Op> unify_variable = (__WORD Vn) => new Op(OpCode.unify_variable, () => Vn);
     public static readonly Func<__WORD, Op> unify_value = (__WORD Vn) => new Op(OpCode.unify_value, () => Vn);

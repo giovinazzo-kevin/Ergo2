@@ -91,16 +91,19 @@ public partial class ErgoVM
 #endif
     }
     /// <summary>
-    /// Set register Ai to contain a LIS cell pointing
-    /// to the current top of the heap.
-    /// Continue execution with the following instruction.
+    /// Set register Ai to contain an ABS cell pointing
+    /// to the current top of the heap. Write the signature
+    /// word to the heap.
     /// </summary>
-    public void PutList()
+    public void PutAbstract()
     {
+        var sig = __word();
         var Ai = __word();
-        A[Ai] = (Term)(LIS, H);
+        Heap[H] = sig;
+        A[Ai] = (Term)(ABS, H);
+        H += 1;
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(PutList)}: Ai={Ai}");
+        Trace.WriteLine($"[WAM] {nameof(PutAbstract)}: sig={sig} Ai={Ai}");
 #endif
     }
     /// <summary>

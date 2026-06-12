@@ -84,15 +84,16 @@ public partial class ErgoVM
     /// <summary>
     /// If the dereferenced value of register Ai is an 
     /// unbound variable, then bind that variable to a
-    /// new LIS pushed on the heap and set mode to write;
-    /// otherwise, if it is a LIS cell, then set register
-    /// S to the heap address it contains and set mode to
-    /// read. If it is not a LIS cell, fail.
-    /// Backtrack on failure, otherwise continue
-    /// execution with the following instruction.
+    /// new ABS cell pushed on the heap with the given
+    /// signature and set mode to write;
+    /// otherwise, if it is an ABS cell with matching
+    /// signature, then set register S to the heap address
+    /// following the signature word and set mode to read.
+    /// If it is not an ABS cell or signature doesn't match, fail.
     /// </summary>
-    public void GetList()
+    public void GetAbstract()
     {
+        var sig = __word();
         var Ai = __word();
         var term = (Term)A[Ai];
         __ADDR addr;
@@ -103,16 +104,19 @@ public partial class ErgoVM
             addr = -1;
         var cell = term;
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] GetList: {cell.Value} {Ai}");
+        Trace.WriteLine($"[WAM] GetAbstract: sig={sig} Ai={Ai}");
 #endif
         if (cell is (REF, _)) {
-            Heap[H] = (Term)(LIS, H + 1);
+            Heap[H] = (Term)(ABS, H + 1);
+            Heap[H + 1] = sig;
             bind(addr, H);
-            H += 1;
+            H += 2;
             mode = write;
-        } else if (cell is (LIS, var a)) {
-            S = a;
-            mode = read;
+        } else if (cell is (ABS, var a)) {
+            if (Heap[a] == sig) {
+                S = a + 1;
+                mode = read;
+            } else fail = true;
         } else fail = true;
         if (fail)
             backtrack();

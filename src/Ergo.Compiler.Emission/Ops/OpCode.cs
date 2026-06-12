@@ -1,4 +1,4 @@
-﻿namespace Ergo.Compiler.Emission;
+namespace Ergo.Compiler.Emission;
 
 public enum OpCode : byte
 {
@@ -7,7 +7,7 @@ public enum OpCode : byte
     put_value,
     put_unsafe_value,
     put_structure,
-    put_list,
+    put_abstract,
     put_constant,
 
     set_variable,
@@ -19,7 +19,7 @@ public enum OpCode : byte
     get_variable,
     get_value,
     get_structure,
-    get_list,
+    get_abstract,
     get_constant,
 
     unify_variable,
@@ -50,4 +50,11 @@ public enum OpCode : byte
     cut,
 
     halt
+}
+
+public static class BytecodeVersion
+{
+    // Bump this whenever opcode layout, encoding, or semantics change.
+    // Mixed into .kb hash to invalidate stale caches.
+    public const int VERSION = 2;
 }

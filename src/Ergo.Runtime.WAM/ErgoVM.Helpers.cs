@@ -159,8 +159,18 @@ public partial class ErgoVM
             case STR:
                 return WalkStructure(x.Value, y.Value, todo);
 
-            case LIS:
-                WalkList(x.Value, y.Value, todo);
+            case ABS:
+                if (_abstractTerms != null) {
+                    var xSig = Heap[x.Value];
+                    var ySig = Heap[y.Value];
+                    if (xSig != ySig) { fail = true; return false; }
+                    if (_abstractTerms.TryGetValue(xSig, out var abs)) {
+                        ((__abs_unify)abs.Unify)(this, x.Value, y.Value, todo);
+                        break;
+                    }
+                }
+                // Fallback: list-style [head, tail] pairs after signature
+                WalkList(x.Value + 1, y.Value + 1, todo);
                 break;
 
             default:
@@ -217,7 +227,7 @@ public partial class ErgoVM
             return term.Tag switch {
                 CON => Constants[term.Value],
                 STR => ReadStructure(term.Value),
-                LIS => ReadList(term.Value),
+                ABS => ReadAbstract(term.Value),
                 _ => throw new NotSupportedException($"Tag {term.Tag} not supported")
             };
         }
@@ -248,21 +258,30 @@ public partial class ErgoVM
                 elements.Add(Read(headTerm));
 
                 if (tailTerm.Tag == REF) {
-                    // Unbound tail – this is a partial list
                     elements.Add(Read(tailTerm));
                     break;
                 }
 
-                if (tailTerm.Tag != LIS) {
-                    // Proper end (e.g., []) or structure
+                if (tailTerm.Tag != ABS) {
                     tail = Read(tailTerm);
                     break;
                 }
 
-                addr = tailTerm.Value;
+                // Skip signature word in next cons cell
+                addr = tailTerm.Value + 1;
             }
 
             return new Lang.Ast.List(elements, tail);
+        }
+
+        Lang.Ast.Term ReadAbstract(__ADDR addr)
+        {
+            var sig = Heap[addr];
+            if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
+                return ((__abs_read)abs.Read)(this, addr);
+            }
+            // Fallback: treat as list (data starts after signature)
+            return ReadList(addr + 1);
         }
     }
 
@@ -277,7 +296,7 @@ public partial class ErgoVM
             CON => quoted ? Constants[t.Value].Expl : Constants[t.Value].Value.ToString()!,
             REF => $"_{t.Value}",
             STR => PrettyStructure(t.Value, quoted),
-            LIS => PrettyList(t.Value, quoted),
+            ABS => PrettyAbstract(t.Value, quoted),
             _ => "<?>"
         };
     }
@@ -302,14 +321,14 @@ public partial class ErgoVM
             elems.Add(Pretty(head, quoted));
             if (tail.Tag == CON && Constants[tail.Value].Value is string s && s == "[]")
                 break;
-            if (tail.Tag == LIS) {
-                addr = tail.Value;
+            if (tail.Tag == ABS) {
+                addr = tail.Value + 1; // skip signature
                 continue;
             }
             if (tail.Tag == REF) {
                 var d = deref(tail.Value);
                 var dt = (Term)Store[d];
-                if (dt.Tag == LIS) { addr = dt.Value; continue; }
+                if (dt.Tag == ABS) { addr = dt.Value + 1; continue; }
                 if (dt.Tag == CON && Constants[dt.Value].Value is string s2 && s2 == "[]") break;
                 elems.Add("|" + Pretty(dt, quoted));
                 break;
@@ -318,6 +337,16 @@ public partial class ErgoVM
             break;
         }
         return $"[{string.Join(",", elems)}]";
+    }
+
+    private string PrettyAbstract(__ADDR addr, bool quoted = false)
+    {
+        var sig = Heap[addr];
+        if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
+            return ((__abs_pretty)abs.Pretty)(this, addr, quoted);
+        }
+        // Fallback: list-style pretty after signature
+        return PrettyList(addr + 1, quoted);
     }
 
     /// <summary>

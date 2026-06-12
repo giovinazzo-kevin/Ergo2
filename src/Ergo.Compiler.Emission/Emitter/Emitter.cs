@@ -10,13 +10,25 @@ namespace Ergo.Compiler.Emission;
 
 public class Emitter
 {
+    private __WORD _listSig = -1;
+    protected __WORD ListSignature(EmitterContext ctx)
+    {
+        if (_listSig != -1) return _listSig;
+        var c = ctx.Constant(Lang.Ast.WellKnown.Functors.List.Value);
+        _listSig = (Signature)(c, 2);
+        return _listSig;
+    }
     public virtual KnowledgeBase KnowledgeBase(CallGraph graph)
     {
         var ctx = new EmitterContext(graph.Analyzer.Operators);
         var builtIns = new List<BuiltIn>();
+        var abstractTerms = new List<AbstractTerm>();
         foreach (var module in graph.Modules.Values) {
             foreach (var import in module.Imports)
                 ctx.AddImport(import.Name);
+            // Collect abstract terms from libraries
+            foreach (var lib in module.Libraries)
+                abstractTerms.AddRange(lib.ExportedAbstractTerms);
             foreach (var pred in module.Predicates.Values) {
                 if (pred.BuiltIns.Count > 0 && pred.Clauses.Count == 0)
                     builtIns.AddRange(pred.BuiltIns);
@@ -28,6 +40,8 @@ public class Emitter
         var kb = new KnowledgeBase((string)graph.Root.Value, code);
         foreach (var bi in builtIns)
             kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
+        foreach (var abs in abstractTerms)
+            kb.RegisterAbstractTerm(abs);
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: false));
 #endif
@@ -228,7 +242,7 @@ public class Emitter
     {
         switch (args[Ai]) {
             case List list when list.Head.Any():
-                ctx.Emit(get_list(Ai));
+                ctx.Emit(get_abstract(ListSignature(ctx), Ai));
                 foreach (var elem in list.Head)
                     EmitUnify(ctx, elem);
                 EmitUnify(ctx, list.Tail);
@@ -277,10 +291,11 @@ public class Emitter
             case List list when deep: {
                     var elems = list.Head.ToArray();
                     if (elems.Length == 0) { ctx.Emit(put_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai)); break; }
+                    var lsig = ListSignature(ctx);
                     int prevV = -1;
                     for (int k = elems.Length - 1; k >= 0; k--) {
                         int reg = k == 0 ? Ai : Ai + elems.Length - k;
-                        ctx.Emit(put_list(reg));
+                        ctx.Emit(put_abstract(lsig, reg));
                         EmitSet(ctx, elems[k], varsByName);
                         if (prevV < 0) EmitSet(ctx, list.Tail, varsByName);
                         else ctx.Emit(set_value(prevV));

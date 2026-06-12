@@ -18,7 +18,7 @@ public partial class ErgoVM
         P = (Term)Store[deref(A[0])] switch {
             (REF, _) => v,
             (CON, _) => c,
-            (LIS, _) => l,
+            (ABS, _) => l,
             (STR, _) => s,
             _ => throw new NotSupportedException()
         };

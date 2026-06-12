@@ -1,19 +1,19 @@
+using Ergo.Compiler.Analysis;
 using Ergo.Lang.Ast;
-using Ergo.Shared.Interfaces;
+using Ergo.Runtime.WAM;
 
 namespace Ergo.Libs;
 
-/// <summary>
-/// An abstract term is a library-defined term type with custom 
-/// compilation, unification, parsing, and printing behavior.
-/// The canonical form on the heap is owned by the implementor.
-/// Registered by signature (e.g. [|]/2 for lists, {|}/2 for dicts).
-/// </summary>
-public abstract class AbstractTerm
+public abstract class AbstractTerm<TAst>(Library parent) : Ergo.Compiler.Analysis.AbstractTerm(parent)
+    where TAst : Lang.Ast.Term
 {
-    public abstract Signature Signature { get; }
-    public abstract void EmitRead(IEmitterContext ctx, int Ai);
-    public abstract void EmitWrite(IEmitterContext ctx, int Ai);
-    public abstract bool Unify(IHeapAccess heap, int addr1, int addr2);
-    public abstract Term Read(IHeapAccess heap, int addr);
+    public abstract void OnUnify(ErgoVM vm, int addr1, int addr2, Stack<(int, int)> todo);
+    public abstract Lang.Ast.Term OnRead(ErgoVM vm, int addr);
+    public abstract int OnWriteHeap(ErgoVM vm, Lang.Ast.Term term);
+    public abstract string OnPretty(ErgoVM vm, int addr, bool quoted);
+
+    public sealed override Delegate Unify => (ErgoVM.__abs_unify)OnUnify;
+    public sealed override Delegate Read => (ErgoVM.__abs_read)OnRead;
+    public sealed override Delegate WriteHeap => (ErgoVM.__abs_write_heap)OnWriteHeap;
+    public sealed override Delegate Pretty => (ErgoVM.__abs_pretty)OnPretty;
 }

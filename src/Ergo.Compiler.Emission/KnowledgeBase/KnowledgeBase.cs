@@ -10,6 +10,7 @@ public sealed partial class KnowledgeBase
     public readonly string Name;
     public readonly KnowledgeBaseBytecode Bytecode;
     public readonly List<Delegate> BuiltInHandlers = [];
+    public readonly Dictionary<__WORD, Ergo.Compiler.Analysis.AbstractTerm> AbstractTerms = [];
 
     public KnowledgeBase(ErgoFileStream file)
         : this(file.Name, ReadFile(file)) { }
@@ -48,6 +49,14 @@ public sealed partial class KnowledgeBase
     public int RegisterBuiltInLabel(string name, int arity, Delegate handler)
         => RegisterBuiltInLabel(name, (Maybe<int>)arity, handler);
 
+    public void RegisterAbstractTerm(Ergo.Compiler.Analysis.AbstractTerm abs)
+    {
+        var c = Bytecode.AddConstant(new Lang.Ast.__string((string)abs.Signature.Functor.Value));
+        var n = abs.Signature.Arity.TryGetValue(out var a) ? a : (int)Emission.Signature.VARIADIC;
+        var packed = (Signature)(c, n);
+        AbstractTerms[packed] = abs;
+    }
+
     public Query Query(string query)
     {
         var file = ErgoFileStream.Create(query, nameof(Query));
@@ -57,6 +66,6 @@ public sealed partial class KnowledgeBase
             throw new InvalidOperationException();
         var emitter = new Emitter();
         var q = emitter.Query(ast, Bytecode);
-        return q with { BuiltInHandlers = BuiltInHandlers, Source = this };
+        return q with { BuiltInHandlers = BuiltInHandlers, AbstractTerms = AbstractTerms, Source = this };
     }
 }

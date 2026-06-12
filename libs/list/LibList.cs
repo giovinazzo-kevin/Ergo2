@@ -6,5 +6,6 @@ public sealed class LibList : Library
 {
     public LibList(Module parent) : base(parent)
     {
+        ExportedAbstractTerms = [new ListTerm(this)];
     }
 }

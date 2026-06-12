@@ -17,7 +17,7 @@ public readonly struct Hook
     {
         var ctx = EmitterContext.From(kb.Bytecode);
         ctx.Emit(call((Signature)sig));
-        Query = new Query(ctx.ToQuery(kb.Bytecode), [], kb.BuiltInHandlers, kb);
+        Query = new Query(ctx.ToQuery(kb.Bytecode), [], kb.BuiltInHandlers, kb.AbstractTerms, kb);
     }
 
     public Lang.Ast.Term? Call(ErgoVM vm, params Lang.Ast.Term[] args)

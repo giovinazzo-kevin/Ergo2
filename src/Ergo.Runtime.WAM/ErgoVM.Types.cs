@@ -8,6 +8,12 @@ namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
+    // Abstract term delegate types — defined here because ErgoVM is the parameter type
+    public delegate void __abs_unify(ErgoVM vm, int addr1, int addr2, Stack<(int, int)> todo);
+    public delegate Lang.Ast.Term __abs_read(ErgoVM vm, int addr);
+    public delegate int __abs_write_heap(ErgoVM vm, Lang.Ast.Term term);
+    public delegate string __abs_pretty(ErgoVM vm, int addr, bool quoted);
+
     #region Types
     public delegate void __op(ErgoVM vm);
     public enum GetMode

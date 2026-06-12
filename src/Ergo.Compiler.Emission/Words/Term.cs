@@ -16,7 +16,7 @@ public readonly ref struct Term
     {
         CON,
         STR,
-        LIS,
+        ABS,
         REF
     }
 

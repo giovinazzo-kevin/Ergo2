@@ -36,7 +36,12 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
         var sourceFile = env.ModuleLocator.Index.Find(name).FirstOrDefault();
         if (sourceFile != null) {
             using var stream = sourceFile.OpenRead();
-            var currentHash = Convert.ToHexString(SHA256.HashData(stream));
+            var sourceBytes = System.Security.Cryptography.SHA256.HashData(stream);
+            var versionBytes = BitConverter.GetBytes(Ergo.Compiler.Emission.BytecodeVersion.VERSION);
+            var combined = new byte[sourceBytes.Length + versionBytes.Length];
+            sourceBytes.CopyTo(combined, 0);
+            versionBytes.CopyTo(combined, sourceBytes.Length);
+            var currentHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(combined));
             var cachedHash = File.ReadAllText(hashFile);
             if (currentHash != cachedHash)
                 return new PipelineError(this, new InvalidOperationException("Source changed"));
@@ -47,14 +52,16 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
         Buffer.BlockCopy(bytes, 0, words, 0, bytes.Length);
         var kb = new KnowledgeBase(name, new KnowledgeBaseBytecode(words));
 
-        // Re-link builtins from serialized imports
-        var builtins = kb.Bytecode.Imports
+        // Re-link builtins and abstract terms from serialized imports
+        var libs = kb.Bytecode.Imports
             .SelectMany(env.LibraryLocator.Find)
             .Select(t => Activator.CreateInstance(t, new Ergo.Compiler.Analysis.Module(new CallGraph(null!, name), name)))
             .OfType<Library>()
-            .SelectMany(lib => lib.ExportedBuiltIns);
-        foreach (var bi in builtins)
+            .ToArray();
+        foreach (var bi in libs.SelectMany(lib => lib.ExportedBuiltIns))
             kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
+        foreach (var abs in libs.SelectMany(lib => lib.ExportedAbstractTerms))
+            kb.RegisterAbstractTerm(abs);
 
         return kb;
     }

@@ -10,6 +10,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Libs\Ergo.Libs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

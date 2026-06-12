@@ -33,7 +33,12 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
             var sourceFile = env.ModuleLocator.Index.Find(input.Root).FirstOrDefault();
             if (sourceFile != null) {
                 using var stream = sourceFile.OpenRead();
-                var hash = Convert.ToHexString(SHA256.HashData(stream));
+                var sourceBytes = SHA256.HashData(stream);
+                var versionBytes = BitConverter.GetBytes(BytecodeVersion.VERSION);
+                var combined = new byte[sourceBytes.Length + versionBytes.Length];
+                sourceBytes.CopyTo(combined, 0);
+                versionBytes.CopyTo(combined, sourceBytes.Length);
+                var hash = Convert.ToHexString(SHA256.HashData(combined));
                 File.WriteAllText(Path.Combine(binDir, input.Root + ".kb.hash"), hash);
             }
         }
