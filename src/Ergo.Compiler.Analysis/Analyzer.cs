@@ -7,7 +7,6 @@ using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
 using Ergo.Shared.Types;
 using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace Ergo.Compiler.Analysis;
 
@@ -36,8 +35,7 @@ public class Analyzer
         module.Libraries.AddRange(libraries);
         foreach (var builtIns in module.Libraries
             .SelectMany(x => x.ExportedBuiltIns)
-            .GroupBy(x => x.Signature))
-        {
+            .GroupBy(x => x.Signature)) {
             if (!module.Predicates.TryGetValue(builtIns.Key, out var pred))
                 module.Predicates[builtIns.Key] = pred = new Predicate(module, builtIns.Key);
             pred.BuiltIns.AddRange(builtIns);
@@ -68,16 +66,14 @@ public class Analyzer
             .Where(name => !graph.Modules.TryGetValue(name, out var m) || m.LoadStage >= Module.Stage.Linked)
             .Select(name => graph.Modules.TryGetValue(name, out var m) ? m : LoadModule(graph, name)));
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
-        foreach (var dir in directives)
-        {
+        foreach (var dir in directives) {
             var signature = dir.Arg.GetSignature().GetOrThrow().Unqualified;
             var resolved = graph.ResolveDirectives(signature, module).ToArray();
             if (resolved.Length == 0)
                 throw new AnalyzerException(AnalyzerError.UnresolvedDirective0, signature);
             resolvedDirectives.AddRange(resolved.Select(r => (dir, r)));
         }
-        foreach (var x in resolvedDirectives.OrderBy(x => x.Node.Precedence))
-        {
+        foreach (var x in resolvedDirectives.OrderBy(x => x.Node.Precedence)) {
             var args = x.Ast.Arg.GetArguments();
             for (int i = 0; i < args.Length; i++)
                 args[i] = args[i].Deref();
@@ -95,13 +91,11 @@ public class Analyzer
         var clauseDefsBySig = clauseDefs
             .ToLookup(c => c.Functor.GetSignature()
                 .GetOrThrow(new AnalyzerException(AnalyzerError.Clause0HeadCanNotBeAVariable, c.Expl)));
-        foreach (var group in clauseDefsBySig)
-        {
+        foreach (var group in clauseDefsBySig) {
             if (!module.Predicates.TryGetValue(group.Key, out var pred))
                 module.Predicates[group.Key] = pred = new Predicate(module, group.Key);
         }
-        foreach (var group in clauseDefsBySig)
-        {
+        foreach (var group in clauseDefsBySig) {
             var predicate = module.Predicates[group.Key];
             predicate.Clauses.AddRange(group
                 .Select(clauseDef => (Def: clauseDef, Clause: new Clause(predicate, clauseDef.Args)))
@@ -129,16 +123,14 @@ public class Analyzer
     protected static IEnumerable<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
         var args = goalDef.GetArguments();
-        if (!goalDef.GetSignature().TryGetValue(out var signature))
-        {
+        if (!goalDef.GetSignature().TryGetValue(out var signature)) {
             if (goalDef is Variable lateBound)
                 return [new LateBoundGoal(clause, lateBound)];
             throw new NotSupportedException();
         }
         if (signature.Functor == Literals.Cut && signature.Arity.TryGetValue(out var cutArity) && cutArity == 0)
             return [new Cut(clause)];
-        if (signature.Module.TryGetValue(out var qualification))
-        {
+        if (signature.Module.TryGetValue(out var qualification)) {
             if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
                 throw new AnalyzerException(AnalyzerError.UndefinedModule0, qualification);
             return ResolveQualifiedGoals(graph, module, clause, signature, qualification, args);
@@ -152,20 +144,17 @@ public class Analyzer
             throw new AnalyzerException(AnalyzerError.UndefinedPredicate0, signature);
         return resolved;
     }
-    
+
     public Module LoadModule(CallGraph graph, Either<string, ErgoFileStream> either)
     {
         ErgoFileStream fs;
         string name;
-        if (either is Case<string> { Value: var moduleName })
-        {
+        if (either is Case<string> { Value: var moduleName }) {
             name = moduleName;
             ModuleLocator.Index.Update();
             var fileInfo = ModuleLocator.Index.Find(moduleName).First();
             fs = ErgoFileStream.Open(fileInfo);
-        }
-        else
-        {
+        } else {
             fs = either;
             name = Path.GetFileNameWithoutExtension(fs.Name);
         }
@@ -175,13 +164,11 @@ public class Analyzer
             module.LoadStage = LoadStage_Link(module);
         if (module.LoadStage < Module.Stage.Opened)
             module.LoadStage = LoadStage_Open(graph, module, fs);
-        if (module.LoadStage < Module.Stage.Preloaded)
-        {
+        if (module.LoadStage < Module.Stage.Preloaded) {
             module.LoadStage = Module.Stage.Preloaded;
             LoadStage_Preload(graph, module);
         }
-        if (module.LoadStage < Module.Stage.Loaded)
-        {
+        if (module.LoadStage < Module.Stage.Loaded) {
             module.LoadStage = Module.Stage.Loaded;
             LoadStage_Load(graph, module);
         }

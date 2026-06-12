@@ -19,8 +19,7 @@ public class CallGraph(Analyzer analyzer, string rootModule)
         if (!visited.Add(context))
             return [];
         if (signature.Module.TryGetValue(out var qualification)
-            && Modules.TryGetValue(qualification, out var module))
-        {
+            && Modules.TryGetValue(qualification, out var module)) {
             return module.Libraries
                 .SelectMany(l => l.ExportedDirectives
                     .Where(d => d.Signature == signature.Unqualified));

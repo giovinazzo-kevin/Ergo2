@@ -13,11 +13,11 @@ public class List : CollectionExpression
     public bool ListTail => Tail is List { } || Tail is Variable { Value: List { } };
     public int Count => Length + (Tail is List { } l ? l.Count : 1);
 
-    public List(IEnumerable<Term> head, Term tail = null!) : base(Fold, Collections.List, Operators.List, Normalize(head, ref tail)) 
+    public List(IEnumerable<Term> head, Term tail = null!) : base(Fold, Collections.List, Operators.List, Normalize(head, ref tail))
     {
         _tail = tail;
     }
-    
+
     public static IEnumerable<Term> ExtractHead(BinaryExpression headTail)
     {
         if (headTail.Lhs is ConsExpression cons)
@@ -28,8 +28,8 @@ public class List : CollectionExpression
         return [headTail.Lhs];
     }
 
-    static List Fold(Term a, Term b) => a is List l 
-        ? new(l.Head.Prepend(b), l.Tail) 
+    static List Fold(Term a, Term b) => a is List l
+        ? new(l.Head.Prepend(b), l.Tail)
         : new([b], a);
 
     static IEnumerable<Term> Normalize(IEnumerable<Term> head, ref Term tail)
@@ -37,14 +37,12 @@ public class List : CollectionExpression
         tail ??= Collections.List.EmptyElement;
         if (Collections.List.EmptyElement.Equals(tail))
             return head.Append(tail);
-        if (tail is List { Complete: true, Contents: var contents })
-        {
+        if (tail is List { Complete: true, Contents: var contents }) {
             tail = Literals.EmptyList;
             return head.Concat(contents);
         }
         var newContents = head;
-        while (tail is List { Contents: var newHead, Tail: var newTail })
-        {
+        while (tail is List { Contents: var newHead, Tail: var newTail }) {
             tail = newTail;
             newContents = newContents.Concat(newHead.SkipLast(1));
         }
@@ -52,13 +50,13 @@ public class List : CollectionExpression
     }
 
     protected readonly string COMMA = (string)Functors.Comma.Value;
-    public override string Expl => 
+    public override string Expl =>
         (Tail is Variable { IsBound: false }
-         ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}|{Tail.Expl}{Collection.ClosingDelim}"
+         ? $"{base.Expl[..^(Collection.ClosingDelim.Length + COMMA.Length + Tail.Expl.Length + 1)]}|{Tail.Expl}{Collection.ClosingDelim}"
         : Complete
-         ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}{Collection.ClosingDelim}"
-        : ListTail 
-         ? $"{base.Expl[..^(Collection.ClosingDelim.Length+ COMMA.Length+Tail.Expl.Length+1)]}{COMMA}{Tail.Expl[Collection.OpeningDelim.Length..^Collection.ClosingDelim.Length]}{Collection.ClosingDelim}"
+         ? $"{base.Expl[..^(Collection.ClosingDelim.Length + COMMA.Length + Tail.Expl.Length + 1)]}{Collection.ClosingDelim}"
+        : ListTail
+         ? $"{base.Expl[..^(Collection.ClosingDelim.Length + COMMA.Length + Tail.Expl.Length + 1)]}{COMMA}{Tail.Expl[Collection.OpeningDelim.Length..^Collection.ClosingDelim.Length]}{Collection.ClosingDelim}"
         : base.Expl).Parenthesized(IsParenthesized);
     public override Term Clone() => new List(Head.Select(t => t.Clone()), Tail.Clone());
 }

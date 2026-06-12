@@ -1,16 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-	  <ImplicitUsings>enable</ImplicitUsings>
-	  <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
-    <ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Libs\Ergo.Libs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@ namespace Ergo.Compiler.Emission;
 
 public readonly record struct __VAR(string Name, int Index);
 public record Query(
-    QueryBytecode Bytecode, 
-    VariableMap Variables, 
+    QueryBytecode Bytecode,
+    VariableMap Variables,
     IReadOnlyList<Delegate>? BuiltInHandlers = null,
     KnowledgeBase? Source = null);

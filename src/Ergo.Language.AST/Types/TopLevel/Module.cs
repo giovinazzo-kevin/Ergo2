@@ -4,7 +4,7 @@ namespace Ergo.Lang.Ast;
 
 public class Module(IEnumerable<Directive> directives, IEnumerable<Clause> clauses) : IExplainable
 {
-    public readonly Directive[] Directives = [..directives];
+    public readonly Directive[] Directives = [.. directives];
     public readonly Clause[] Clauses = [.. clauses];
 
     public string Expl =>

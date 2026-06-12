@@ -16,8 +16,7 @@ public class Trie<TToken, TValue>
     public TValue Insert(IEnumerable<TToken> word, TValue value)
     {
         var node = root;
-        foreach (var c in word)
-        {
+        foreach (var c in word) {
             if (!node.Children.ContainsKey(c))
                 node.Children[c] = new Node();
             node = node.Children[c];
@@ -29,8 +28,7 @@ public class Trie<TToken, TValue>
     public Maybe<TValue> Match(IEnumerable<TToken> input)
     {
         var node = root;
-        foreach (var c in input)
-        {
+        foreach (var c in input) {
             if (!node.Children.TryGetValue(c, out node))
                 return default;
         }

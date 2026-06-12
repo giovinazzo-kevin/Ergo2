@@ -107,14 +107,14 @@ public class LexerTests
     }
 
     [Theory]
-    [InlineData(":- 'a' , B , 3 .", 
+    [InlineData(":- 'a' , B , 3 .",
         Token.Type.Operator, Token.Type.String, Token.Type.Operator, Token.Type.Term, Token.Type.Operator, Token.Type.Integer, Token.Type.Punctuation)]
     [InlineData(":- 3.5 , a .",
         Token.Type.Operator, Token.Type.Decimal, Token.Type.Operator, Token.Type.Term, Token.Type.Punctuation)]
     public void Chain(string input, params Token.Type[] types)
     {
         var inputs = input.Split(' ');
-        foreach(var (type, chunk) in types.Zip(inputs))
+        foreach (var (type, chunk) in types.Zip(inputs))
             Expect(type, chunk);
     }
 }

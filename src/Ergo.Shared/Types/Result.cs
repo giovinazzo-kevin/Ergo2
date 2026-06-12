@@ -5,8 +5,8 @@ namespace Ergo.Shared.Types;
 
 public abstract record Result<T, Err>
 {
-    public static implicit operator Result<T, Err>(T result) =>  new Success<T, Err>(result);
-    public static implicit operator Result<T, Err>(Err result) =>  new Error<T, Err>(result);
+    public static implicit operator Result<T, Err>(T result) => new Success<T, Err>(result);
+    public static implicit operator Result<T, Err>(Err result) => new Error<T, Err>(result);
 
     public void EnsureSuccess()
     {

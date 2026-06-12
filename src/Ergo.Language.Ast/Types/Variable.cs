@@ -2,13 +2,13 @@
 using Ergo.Shared.Extensions;
 
 namespace Ergo.Lang.Ast;
+
 public class Variable : Term
 {
     public readonly string Name;
 
     protected Term _value;
-    public Term Value
-    {
+    public Term Value {
         get => _value ?? this;
         set => _value = value;
     }

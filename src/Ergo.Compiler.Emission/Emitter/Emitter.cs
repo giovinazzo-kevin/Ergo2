@@ -3,8 +3,6 @@ using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
-using System;
-using System.Linq;
 using static Ergo.Compiler.Emission.Ops;
 
 namespace Ergo.Compiler.Emission;
@@ -16,12 +14,10 @@ public class Emitter
     {
         var ctx = new EmitterContext(graph.Analyzer.Operators);
         var builtIns = new List<BuiltIn>();
-        foreach (var module in graph.Modules.Values)
-        {
+        foreach (var module in graph.Modules.Values) {
             foreach (var import in module.Imports)
                 ctx.AddImport(import.Name);
-            foreach (var pred in module.Predicates.Values)
-            {
+            foreach (var pred in module.Predicates.Values) {
                 if (pred.BuiltIns.Count > 0 && pred.Clauses.Count == 0)
                     builtIns.AddRange(pred.BuiltIns);
                 else
@@ -30,8 +26,8 @@ public class Emitter
         }
         var code = ctx.ToKnowledgeBase();
         var kb = new KnowledgeBase((string)graph.Root.Value, code);
-        foreach (var bi in builtIns.Where(b => b.Handler != null))
-            kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler!);
+        foreach (var bi in builtIns)
+            kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: false));
 #endif
@@ -46,15 +42,12 @@ public class Emitter
         var variableMap = new VariableMap();
         var queryArgs = query.GetArguments();
         var vars = query.GetVariables().Distinct().ToArray();
-        for (int i = 0; i < vars.Length; i++)
-        {
+        for (int i = 0; i < vars.Length; i++) {
             vars[i].Value = (__int)i;
             // Find the actual A register index for this variable
             int ai = i; // fallback for conjunctions
-            for (int j = 0; j < queryArgs.Length; j++)
-            {
-                if (queryArgs[j] is Variable v && v.Name == vars[i].Name)
-                {
+            for (int j = 0; j < queryArgs.Length; j++) {
+                if (queryArgs[j] is Variable v && v.Name == vars[i].Name) {
                     ai = j;
                     break;
                 }
@@ -67,8 +60,7 @@ public class Emitter
         // Restore query variable bindings from stack frame to A after call returns
         // (callees with body goals may clobber A registers; V registers may be clobbered by nested calls)
         // put_unsafe_value reads from Store[E + Yn + 2] and globalizes to heap before deallocate
-        foreach (var (name, vIdx) in queryVars)
-        {
+        foreach (var (name, vIdx) in queryVars) {
             if (variableMap.TryGetValue(name, out var entry))
                 ctx.Emit(put_unsafe_value(vIdx, entry.Index));
         }
@@ -83,16 +75,14 @@ public class Emitter
 
         EmitterContext JITGoal(EmitterContext ctx, Lang.Ast.Term term, out bool needsStackFrame, Dictionary<string, int> queryVars)
         {
-            if (term is __string { Value: "!" })
-            {
+            if (term is __string { Value: "!" }) {
                 var cutReg = ctx.NumVars++;
                 ctx.Emit(get_level(cutReg));
                 ctx.Emit(cut(cutReg));
                 needsStackFrame = true;
                 return ctx;
             }
-            if (term is BinaryExpression { IsCons: true } cons && cons.Operator == Operators.Conjunction)
-            {
+            if (term is BinaryExpression { IsCons: true } cons && cons.Operator == Operators.Conjunction) {
                 JITGoal(ctx, cons.Lhs, out var lhsNeedsStackFrame, queryVars);
                 JITGoal(ctx, cons.Rhs, out var rhsNeedsStackFrame, queryVars);
                 needsStackFrame = lhsNeedsStackFrame || rhsNeedsStackFrame;
@@ -104,23 +94,19 @@ public class Emitter
                 ? bin.Rhs : term;
             needsStackFrame = goal.GetVariables().Any();
             var args = goal.GetArguments();
-            for (int i = 0; i < args.Length; ++i)
-            {
+            for (int i = 0; i < args.Length; ++i) {
                 // Use name-based tracking for query variables
                 // (parser may create distinct Variable objects for same name across conjunction)
                 if (args[i] is Variable v && queryVars.TryGetValue(v.Name, out var knownIdx))
                     ctx.Emit(put_value(knownIdx, i));
-                else if (args[i] is Variable v2)
-                {
+                else if (args[i] is Variable v2) {
                     var newIdx = ctx.NumVars;
                     queryVars[v2.Name] = newIdx;
                     ctx.Emit(put_variable(ctx.NumVars++, i));
-                }
-                else
+                } else
                     Write(ctx, args, i, queryVars, deep: true);
             }
-            if (!kb.TryResolve(sign, out var label))
-            {
+            if (!kb.TryResolve(sign, out var label)) {
                 // Check if it's declared dynamic — emit call for runtime resolution
                 var c = ctx.Constant(sign.Functor.Value);
                 var dynSig = (Signature)(c, sign.Arity.TryGetValue(out var dynA) ? dynA : (int)Signature.VARIADIC);
@@ -141,8 +127,7 @@ public class Emitter
         ctx.Label((p, n), ctx.PC);
         var clauseCtxs = new EmitterContext[predicate.Clauses.Count];
 
-        foreach (var (clause, i) in predicate.Clauses.Iterate())
-        {
+        foreach (var (clause, i) in predicate.Clauses.Iterate()) {
             clauseCtxs[i] = ctx.Scope();
 
             if (clause.NeedsStackFrame)
@@ -155,14 +140,12 @@ public class Emitter
             clauseCtxs[i].NumVars = args.OfType<Variable>().Select(v => (int)(__int)v.Value).DefaultIfEmpty(-1).Max() + 1;
 
             int? cutReg = null;
-            if (clause.Goals.Any(g => g is Cut))
-            {
+            if (clause.Goals.Any(g => g is Cut)) {
                 cutReg = clauseCtxs[i].NumVars++;
                 clauseCtxs[i].Emit(get_level((int)cutReg));
             }
 
-            foreach (var goal in clause.Goals)
-            {
+            foreach (var goal in clause.Goals) {
                 for (int k = 0; k < goal.Args.Length; k++)
                     Write(clauseCtxs[i], goal.Args, k);
                 Goal(clauseCtxs[i], goal, cutReg);
@@ -173,10 +156,8 @@ public class Emitter
             clauseCtxs[i].Emit(proceed);
         }
 
-        for (var i = 0; i < predicate.Clauses.Count; i++)
-        {
-            if (predicate.Clauses.Count > 1)
-            {
+        for (var i = 0; i < predicate.Clauses.Count; i++) {
+            if (predicate.Clauses.Count > 1) {
                 if (i == predicate.Clauses.Count - 1)
                     ctx.Emit(trust_me);
                 else if (i > 0)
@@ -191,11 +172,9 @@ public class Emitter
 
     protected virtual void Goal(EmitterContext ctx, Goal g, int? cutReg = null)
     {
-        switch (g)
-        {
+        switch (g) {
             case Cut:
-                if (cutReg is not int reg)
-                {
+                if (cutReg is not int reg) {
                     reg = ctx.NumVars++;
                     ctx.Emit(get_level(reg));
                     cutReg = reg;
@@ -220,8 +199,7 @@ public class Emitter
 
     protected virtual void EmitUnify(EmitterContext ctx, Lang.Ast.Term term)
     {
-        switch (term)
-        {
+        switch (term) {
             case Variable v when v.Value is not __int:
                 v.Value = (__int)ctx.NumVars;
                 ctx.Emit(unify_variable(ctx.NumVars++));
@@ -248,8 +226,7 @@ public class Emitter
 
     protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName)
     {
-        switch (args[Ai])
-        {
+        switch (args[Ai]) {
             case List list when list.Head.Any():
                 ctx.Emit(get_list(Ai));
                 foreach (var elem in list.Head)
@@ -296,53 +273,43 @@ public class Emitter
 
     protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName, bool deep = false)
     {
-        switch (args[Ai])
-        {
-            case List list when deep:
-            {
-                var elems = list.Head.ToArray();
-                if (elems.Length == 0)
-                { ctx.Emit(put_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai)); break; }
-                int prevV = -1;
-                for (int k = elems.Length - 1; k >= 0; k--)
-                {
-                    int reg = k == 0 ? Ai : Ai + elems.Length - k;
-                    ctx.Emit(put_list(reg));
-                    EmitSet(ctx, elems[k], varsByName);
-                    if (prevV < 0) EmitSet(ctx, list.Tail, varsByName);
-                    else ctx.Emit(set_value(prevV));
-                    if (k > 0) { prevV = ctx.NumVars++; ctx.Emit(get_variable(prevV, reg)); }
+        switch (args[Ai]) {
+            case List list when deep: {
+                    var elems = list.Head.ToArray();
+                    if (elems.Length == 0) { ctx.Emit(put_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai)); break; }
+                    int prevV = -1;
+                    for (int k = elems.Length - 1; k >= 0; k--) {
+                        int reg = k == 0 ? Ai : Ai + elems.Length - k;
+                        ctx.Emit(put_list(reg));
+                        EmitSet(ctx, elems[k], varsByName);
+                        if (prevV < 0) EmitSet(ctx, list.Tail, varsByName);
+                        else ctx.Emit(set_value(prevV));
+                        if (k > 0) { prevV = ctx.NumVars++; ctx.Emit(get_variable(prevV, reg)); }
+                    }
+                    break;
                 }
-                break;
-            }
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
-                if (deep)
-                {
+                if (deep) {
                     // Build nested sub-args bottom-up in temp registers
                     int nextTempA = Ai + 1;
                     var subVRegs = new int[@struct.Args.Length];
                     var isNested = new bool[@struct.Args.Length];
-                    for (int k = 0; k < @struct.Args.Length; k++)
-                    {
-                        if (@struct.Args[k] is Complex nested)
-                        {
+                    for (int k = 0; k < @struct.Args.Length; k++) {
+                        if (@struct.Args[k] is Complex nested) {
                             subVRegs[k] = WriteDeepComplex(ctx, nested, ref nextTempA, varsByName);
                             isNested[k] = true;
                         }
                     }
                     ctx.Emit(put_structure(fn, Ai));
-                    for (int k = 0; k < @struct.Args.Length; k++)
-                    {
+                    for (int k = 0; k < @struct.Args.Length; k++) {
                         if (isNested[k])
                             ctx.Emit(set_value(subVRegs[k]));
                         else
                             EmitSet(ctx, @struct.Args[k], varsByName);
                     }
-                }
-                else
-                {
+                } else {
                     ctx.Emit(put_structure(fn, Ai));
                 }
                 break;
@@ -368,8 +335,7 @@ public class Emitter
 
     protected virtual void EmitSet(EmitterContext ctx, Lang.Ast.Term term, Dictionary<string, int>? varsByName = null)
     {
-        switch (term)
-        {
+        switch (term) {
             case Variable v when v.Value is __int i:
                 System.Diagnostics.Trace.WriteLine($"[EMIT] set_value (via Value) for '{v.Name}' → V[{(__WORD)i}]");
                 ctx.Emit(set_value((__WORD)i));
@@ -403,10 +369,8 @@ public class Emitter
         // Recursively build nested Complex sub-args first
         var subVRegs = new int[@struct.Args.Length];
         var isNested = new bool[@struct.Args.Length];
-        for (int k = 0; k < @struct.Args.Length; k++)
-        {
-            if (@struct.Args[k] is Complex nested)
-            {
+        for (int k = 0; k < @struct.Args.Length; k++) {
+            if (@struct.Args[k] is Complex nested) {
                 subVRegs[k] = WriteDeepComplex(ctx, nested, ref nextTempA, varsByName);
                 isNested[k] = true;
             }
@@ -418,8 +382,7 @@ public class Emitter
         var tempA = nextTempA++;
         ctx.Emit(put_structure(fn, tempA));
 
-        for (int k = 0; k < @struct.Args.Length; k++)
-        {
+        for (int k = 0; k < @struct.Args.Length; k++) {
             if (isNested[k])
                 ctx.Emit(set_value(subVRegs[k]));
             else
@@ -457,8 +420,7 @@ public class Emitter
         scope.NumVars = varsByName.Count > 0 ? varsByName.Values.Max() + 1 : 0;
 
         int? cutReg = null;
-        if (goals.Any(g => g is Atom a && a.Value is string s && s == "!"))
-        {
+        if (goals.Any(g => g is Atom a && a.Value is string s && s == "!")) {
             cutReg = scope.NumVars++;
             scope.Emit(Ops.get_level((int)cutReg));
         }
@@ -467,18 +429,15 @@ public class Emitter
 
         void EmitGoals(EmitterContext sc, IEnumerable<Lang.Ast.Term> gs, Dictionary<string, int> vars, int? cr)
         {
-            foreach (var goal in gs)
-            {
+            foreach (var goal in gs) {
                 // Flatten conjunctions into sequential goal calls
                 if (goal is BinaryExpression { IsCons: true } cons
-                    && cons.Operator.Equals(Lang.Ast.WellKnown.Operators.Conjunction))
-                {
+                    && cons.Operator.Equals(Lang.Ast.WellKnown.Operators.Conjunction)) {
                     var flat = new ConsExpression(cons.Operator, cons.Lhs, cons.Rhs).Contents;
                     EmitGoals(sc, flat, vars, cr);
                     continue;
                 }
-                if (goal is Atom a && a.Value is string s && s == "!")
-                {
+                if (goal is Atom a && a.Value is string s && s == "!") {
                     sc.Emit(Ops.cut((int)cr!));
                     continue;
                 }

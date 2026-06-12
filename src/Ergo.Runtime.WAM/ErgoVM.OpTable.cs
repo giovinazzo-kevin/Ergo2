@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region OpTable

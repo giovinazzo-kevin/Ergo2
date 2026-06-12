@@ -14,8 +14,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(backtrack)}");
 #endif
-        if (B == BOTTOM_OF_STACK)
-        {
+        if (B == BOTTOM_OF_STACK) {
 #if WAM_TRACE
             Trace.WriteLine("[WAM] backtrack: hit bottom of stack → FAIL FINAL");
 #endif
@@ -24,11 +23,9 @@ public partial class ErgoVM
         B0 = Store[B + Store[B] + 7];
         P = Store[B + Store[B] + 4];
         // Dynamic predicate retry: negative P encodes a continuation index
-        if (P < 0)
-        {
+        if (P < 0) {
             var contIdx = -(P + 1);
-            if (!RetryDynamic(contIdx))
-            {
+            if (!RetryDynamic(contIdx)) {
                 // No more dynamic clauses — remove choice point and continue
                 var n = Store[B];
                 B = Store[B + n + 3];
@@ -56,8 +53,7 @@ public partial class ErgoVM
     {
         var cell = (Term)Store[addr];
 
-        while (cell.Tag == REF && cell.Value != addr)
-        {
+        while (cell.Tag == REF && cell.Value != addr) {
             addr = cell.Value;
             cell = (Term)Store[addr];
         }
@@ -73,16 +69,13 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] {nameof(bind)}: {a1}={a2}");
 #endif
         var t1 = (Term)Store[a1]; var t2 = (Term)Store[a2];
-        if (t1 is (REF, _) && (t2 is not (REF, _) || a1 < a2))
-        {
+        if (t1 is (REF, _) && (t2 is not (REF, _) || a1 < a2)) {
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(bind)}: Store[a1]=Store[a2] {Store[a1]}={Store[a2]}");
 #endif
             Store[a1] = Store[a2];
             trail(a1);
-        }
-        else
-        {
+        } else {
 #if WAM_TRACE
             Trace.WriteLine($"[WAM] {nameof(bind)}: Store[a2]=Store[a1] {Store[a2]}={Store[a1]}");
 #endif
@@ -103,8 +96,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] unwind_trail a={a} b={b}");
 #endif
-        for (var i = a; i < b; ++i)
-        {
+        for (var i = a; i < b; ++i) {
             var addr = Trail[i];
             Store[addr] = (Term)(REF, addr);
 #if WAM_TRACE
@@ -118,8 +110,7 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] tidy_trail");
 #endif
         var i = Store[B + Store[B] + 5];
-        while (i < TR)
-        {
+        while (i < TR) {
             if (Trail[i] < HB || (H < Trail[i] && Trail[i] < B))
                 ++i;
             else
@@ -134,8 +125,7 @@ public partial class ErgoVM
         Stack<(int, int)> todo = new();
         todo.Push((deref(a1), deref(a2)));
 
-        while (todo.Count > 0)
-        {
+        while (todo.Count > 0) {
             var (u, v) = todo.Pop();
             if (!MatchTerms(u, v, todo)) return;
         }
@@ -148,23 +138,19 @@ public partial class ErgoVM
         var x = (Term)Store[u];
         var y = (Term)Store[v];
 
-        if (x.Tag == REF || y.Tag == REF)
-        {
+        if (x.Tag == REF || y.Tag == REF) {
             bind(u, v);
             return true;
         }
 
-        if (x.Tag != y.Tag)
-        {
+        if (x.Tag != y.Tag) {
             fail = true;
             return false;
         }
 
-        switch (x.Tag)
-        {
+        switch (x.Tag) {
             case CON:
-                if (x.Value != y.Value)
-                {
+                if (x.Value != y.Value) {
                     fail = true;
                     return false;
                 }
@@ -190,8 +176,7 @@ public partial class ErgoVM
         var f1 = Store[xAddr];
         var f2 = Store[yAddr];
 
-        if (!Equals(f1, f2))
-        {
+        if (!Equals(f1, f2)) {
             fail = true;
             return false;
         }
@@ -222,16 +207,14 @@ public partial class ErgoVM
         Lang.Ast.Term Read(Term term)
         {
             // Follow REF chains for bound variables
-            if (term.Tag == REF)
-            {
+            if (term.Tag == REF) {
                 var a = deref(term.Value);
                 var resolved = (Term)Store[a];
                 if (resolved.Tag == REF && resolved.Value == a)
                     return new Lang.Ast.Variable($"_{a}"); // Unbound
                 return Read(resolved);
             }
-            return term.Tag switch
-            {
+            return term.Tag switch {
                 CON => Constants[term.Value],
                 STR => ReadStructure(term.Value),
                 LIS => ReadList(term.Value),
@@ -258,22 +241,19 @@ public partial class ErgoVM
         {
             var elements = new List<Lang.Ast.Term>();
             Lang.Ast.Term tail = Collections.List.EmptyElement;
-            while (true)
-            {
+            while (true) {
                 var headTerm = (Term)Heap[addr];
                 var tailTerm = (Term)Heap[addr + 1];
 
                 elements.Add(Read(headTerm));
 
-                if (tailTerm.Tag == REF)
-                {
+                if (tailTerm.Tag == REF) {
                     // Unbound tail – this is a partial list
                     elements.Add(Read(tailTerm));
                     break;
                 }
 
-                if (tailTerm.Tag != LIS)
-                {
+                if (tailTerm.Tag != LIS) {
                     // Proper end (e.g., []) or structure
                     tail = Read(tailTerm);
                     break;
@@ -288,14 +268,12 @@ public partial class ErgoVM
 
     public string Pretty(Term t, bool quoted = false)
     {
-        if (t.Tag == REF)
-        {
+        if (t.Tag == REF) {
             var addr = deref(t.Value);
             t = (Term)Store[addr];
         }
 
-        return t.Tag switch
-        {
+        return t.Tag switch {
             CON => quoted ? Constants[t.Value].Expl : Constants[t.Value].Value.ToString()!,
             REF => $"_{t.Value}",
             STR => PrettyStructure(t.Value, quoted),
@@ -318,20 +296,17 @@ public partial class ErgoVM
     private string PrettyList(__ADDR addr, bool quoted = false)
     {
         var elems = new List<string>();
-        while (true)
-        {
+        while (true) {
             var head = (Term)Heap[addr];
             var tail = (Term)Heap[addr + 1];
             elems.Add(Pretty(head, quoted));
             if (tail.Tag == CON && Constants[tail.Value].Value is string s && s == "[]")
                 break;
-            if (tail.Tag == LIS)
-            {
+            if (tail.Tag == LIS) {
                 addr = tail.Value;
                 continue;
             }
-            if (tail.Tag == REF)
-            {
+            if (tail.Tag == REF) {
                 var d = deref(tail.Value);
                 var dt = (Term)Store[d];
                 if (dt.Tag == LIS) { addr = dt.Value; continue; }
@@ -358,5 +333,5 @@ public partial class ErgoVM
             return Code[savedCP - 1];
         return Math.Max(N, 16);
     }
-#endregion
+    #endregion
 }

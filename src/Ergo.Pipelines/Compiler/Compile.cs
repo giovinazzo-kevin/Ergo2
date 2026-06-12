@@ -1,7 +1,6 @@
 ﻿using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Emission;
 using Ergo.IO;
-using Ergo.Pipelines.IO;
 using Ergo.Shared.Types;
 using System.Security.Cryptography;
 
@@ -27,14 +26,12 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
     {
         var emitter = new Emitter();
         var kb = emitter.KnowledgeBase(input);
-        if (env.SaveToPath is not null)
-        {
+        if (env.SaveToPath is not null) {
             var binDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, env.SaveToPath);
             kb.Bytecode.SaveTo(new(Path.Combine(binDir, input.Root + ".kb")));
             env.ModuleLocator.Index.Update();
             var sourceFile = env.ModuleLocator.Index.Find(input.Root).FirstOrDefault();
-            if (sourceFile != null)
-            {
+            if (sourceFile != null) {
                 using var stream = sourceFile.OpenRead();
                 var hash = Convert.ToHexString(SHA256.HashData(stream));
                 File.WriteAllText(Path.Combine(binDir, input.Root + ".kb.hash"), hash);

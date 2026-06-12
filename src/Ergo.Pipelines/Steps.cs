@@ -1,9 +1,6 @@
-﻿using Ergo.IO;
-using Ergo.Lang.Ast;
-using Ergo.Pipelines.Analysis;
+﻿using Ergo.Pipelines.Analysis;
 using Ergo.Pipelines.Compiler;
 using Ergo.Pipelines.IO;
-using Ergo.Shared.Types;
 
 namespace Ergo.Pipelines;
 

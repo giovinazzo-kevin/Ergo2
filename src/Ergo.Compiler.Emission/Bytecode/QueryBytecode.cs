@@ -1,10 +1,9 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿namespace Ergo.Compiler.Emission;
 
-namespace Ergo.Compiler.Emission;
 public class QueryBytecode(__WORD[] data, Lang.Ast.Atom[] constants, int queryStart, int queryEnd = -1) : Bytecode(data, constants)
 {
-    public static readonly QueryBytecode EMPTY = new ([0, 0, 0], [], 0);
-    public static QueryBytecode Preloaded(__WORD[] code, Lang.Ast.Atom[]? constants = null) => new ([0, 0, ..code], constants ?? [], 0);
+    public static readonly QueryBytecode EMPTY = new([0, 0, 0], [], 0);
+    public static QueryBytecode Preloaded(__WORD[] code, Lang.Ast.Atom[]? constants = null) => new([0, 0, .. code], constants ?? [], 0);
 
     public readonly int QueryStart = queryStart;
     public readonly int QueryEnd = queryEnd;

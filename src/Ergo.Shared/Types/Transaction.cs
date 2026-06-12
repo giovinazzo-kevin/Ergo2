@@ -7,8 +7,7 @@ public class Transaction<TState>(TState state, Action<TState>? rollback = null, 
     public readonly TState State = state;
     public void Commit()
     {
-        if (!_commit)
-        {
+        if (!_commit) {
             _commit = true;
             commit?.Invoke();
         }
@@ -20,8 +19,7 @@ public class Transaction<TState>(TState state, Action<TState>? rollback = null, 
     }
     public void Dispose()
     {
-        if (!_disposed)
-        {
+        if (!_disposed) {
             _disposed = true;
             if (!_commit)
                 rollback?.Invoke(State);

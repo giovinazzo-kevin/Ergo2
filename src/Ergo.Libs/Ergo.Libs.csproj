@@ -2,17 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-	  <ImplicitUsings>enable</ImplicitUsings>
-	  <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\libs\io\Ergo.Libs.IO.csproj" />
-    <ProjectReference Include="..\..\libs\list\Ergo.Libs.List.csproj" />
-    <ProjectReference Include="..\..\libs\math\Ergo.Libs.Math.csproj" />
-    <ProjectReference Include="..\..\libs\prologue\Ergo.Libs.Prologue.csproj" />
-    <ProjectReference Include="..\..\libs\stdlib\Ergo.Libs.Stdlib.csproj" />
+    <ProjectReference Include="..\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
+    <ProjectReference Include="..\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
   </ItemGroup>
 
 </Project>

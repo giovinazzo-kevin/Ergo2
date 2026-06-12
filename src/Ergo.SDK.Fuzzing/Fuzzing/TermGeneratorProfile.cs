@@ -25,8 +25,7 @@ public readonly record struct TermGeneratorProfile(
         .. "abcdefghijklmnopqrstuvwxyz",
         .. "0123456789"
     ];
-    public static readonly TermGeneratorProfile Default = new()
-    {
+    public static readonly TermGeneratorProfile Default = new() {
         Name = nameof(Default),
         MaxIdentifierLength = 8,
         MaxComplexArgLength = 3,
@@ -42,8 +41,7 @@ public readonly record struct TermGeneratorProfile(
         NumberPrecision = 6,
         IncludeQuotedStrings = true
     };
-    public static readonly TermGeneratorProfile Minimal = Default with
-    {
+    public static readonly TermGeneratorProfile Minimal = Default with {
         Name = nameof(Minimal),
         MaxIdentifierLength = 1,
         MaxComplexArgLength = 1,
@@ -59,8 +57,7 @@ public readonly record struct TermGeneratorProfile(
         NumberPrecision = 0,
         IncludeQuotedStrings = false
     };
-    public static readonly TermGeneratorProfile StressTest = Default with
-    {
+    public static readonly TermGeneratorProfile StressTest = Default with {
         Name = nameof(StressTest),
         MaxIdentifierLength = 4,
         MaxComplexArgLength = 3,
@@ -76,8 +73,7 @@ public readonly record struct TermGeneratorProfile(
         NumberPrecision = 0,
         IncludeQuotedStrings = false
     };
-    public static readonly TermGeneratorProfile Debug = Default with
-    {
+    public static readonly TermGeneratorProfile Debug = Default with {
         Name = nameof(Debug)
     };
 }

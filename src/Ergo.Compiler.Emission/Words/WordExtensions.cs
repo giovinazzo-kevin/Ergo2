@@ -13,8 +13,7 @@ public static class WordExtensions
     public static byte CountBits(this __WORD value)
     {
         byte count = 0;
-        while (value != 0)
-        {
+        while (value != 0) {
             count++;
             value &= value - 1;
         }

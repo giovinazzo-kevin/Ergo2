@@ -1,12 +1,11 @@
 ﻿using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
-using System.Diagnostics;
 using static Ergo.Lang.Ast.Operator;
 using Query = Ergo.Compiler.Emission.Query;
-using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Abstract Term Reconstruction
@@ -19,14 +18,12 @@ public partial class ErgoVM
 
     public void RegisterOperator(Operator op)
     {
-        int arity = op.Fixity_ switch
-        {
+        int arity = op.Fixity_ switch {
             Fixity.Prefix or Fixity.Postfix => 1,
             Fixity.Infix => 2,
             _ => throw new NotSupportedException($"Unknown fixity: {op.Fixity_}")
         };
-        Func<Lang.Ast.Term[], Lang.Ast.Term> factory = op.Fixity_ switch
-        {
+        Func<Lang.Ast.Term[], Lang.Ast.Term> factory = op.Fixity_ switch {
             Fixity.Infix => args => new BinaryExpression(op, args[0], args[1]),
             Fixity.Prefix => args => new PrefixExpression(op, args[0]),
             Fixity.Postfix => args => new PostfixExpression(op, args[0]),
@@ -38,8 +35,7 @@ public partial class ErgoVM
 
     public void RegisterOperator(Operator op, Func<Lang.Ast.Term[], Lang.Ast.Term> factory)
     {
-        int arity = op.Fixity_ switch
-        {
+        int arity = op.Fixity_ switch {
             Fixity.Prefix or Fixity.Postfix => 1,
             Fixity.Infix => 2,
             _ => throw new NotSupportedException()
@@ -88,18 +84,15 @@ public partial class ErgoVM
         H = 0;
         TR = 0;
         exit = fail = false;
-        while (!exit)
-        {
-            if (fail)
-            {
+        while (!exit) {
+            if (fail) {
                 if (backtrack())
                     break;
                 continue;
             }
-            if (P >= Code.Length) 
-            { 
+            if (P >= Code.Length) {
                 EmitSolution();
-                break; 
+                break;
             }
             var op = __word();
             OP_TABLE[op](this);

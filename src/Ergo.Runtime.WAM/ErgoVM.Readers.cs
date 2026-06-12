@@ -1,6 +1,7 @@
 ﻿using Ergo.Compiler.Emission;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Type Readers

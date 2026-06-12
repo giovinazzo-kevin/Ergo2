@@ -6,6 +6,7 @@ using Ergo.Libs.Stdlib;
 using System.Reflection;
 
 namespace Ergo.Libs;
+
 public static class Libraries
 {
     public static readonly Assembly[] Standard = [

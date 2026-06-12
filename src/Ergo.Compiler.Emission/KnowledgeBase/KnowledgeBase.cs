@@ -1,15 +1,7 @@
-﻿using Ergo.Compiler.Analysis;
-using Ergo.IO;
-using Ergo.Lang.Ast;
-using Ergo.Lang.Ast.Extensions;
-using Ergo.Lang.Ast.WellKnown;
-using Ergo.Shared.Types;
+﻿using Ergo.IO;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
-using Microsoft.VisualBasic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text;
+using Ergo.Shared.Types;
 
 namespace Ergo.Compiler.Emission;
 

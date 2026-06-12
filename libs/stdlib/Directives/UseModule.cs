@@ -7,14 +7,12 @@ public sealed class UseModule(Library parent) : Compiler.Analysis.Directive(pare
 {
     public override void Execute(Compiler.Analysis.Module module, ReadOnlySpan<Term> args)
     {
-        var imports = args[0] switch
-        {
+        var imports = args[0] switch {
             __string s => [s],
             List l => l.Contents,
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(__string), Signature, args[0])
         };
-        foreach (var imp in imports)
-        {
+        foreach (var imp in imports) {
             if (imp is not __string s)
                 throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(__string), Signature, imp);
             if (module.Parent.Modules.TryGetValue(s, out var importedModule))

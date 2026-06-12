@@ -1,7 +1,7 @@
 ﻿using Ergo.Compiler.Emission;
 using System.Diagnostics;
-using static Ergo.Compiler.Emission.Term.__TAG;
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Indexing Instructions
@@ -15,8 +15,7 @@ public partial class ErgoVM
     protected void SwitchOnTerm()
     {
         var (v, c, l, s) = (__addr(), __addr(), __addr(), __addr());
-        P = (Term)Store[deref(A[0])] switch
-        {
+        P = (Term)Store[deref(A[0])] switch {
             (REF, _) => v,
             (CON, _) => c,
             (LIS, _) => l,

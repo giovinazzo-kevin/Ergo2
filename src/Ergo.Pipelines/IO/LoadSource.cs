@@ -18,13 +18,12 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
     }
     public readonly record struct File(string Name, string Contents);
 
-    internal static readonly LoadSource Instance = new ();
+    internal static readonly LoadSource Instance = new();
     private LoadSource() { }
 
     public Result<ErgoFileStream, PipelineError> Run(Either<__string, FileInfo, FileStream, File> input, Env env)
     {
-        return input switch
-        {
+        return input switch {
             Case<File> { Value: var file } => Create(file, env),
             Case<FileInfo> { Value: var file } => Open(file, env),
             Case<FileStream> { Value: var stream } => Open(stream, env),
@@ -34,7 +33,8 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
     }
 
     static ErgoFileStream Locate(__string input, Env env)
-    {;
+    {
+        ;
         env.ModuleLocator.Index.Update();
         var fileInfo = env.ModuleLocator.Index.Find(input).First();
         return Open(fileInfo, env);
@@ -42,8 +42,7 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
 
     static ErgoFileStream Create(File input, Env env)
     {
-        if (env.SaveToPath is not null)
-        {
+        if (env.SaveToPath is not null) {
             var directoryInfo = new DirectoryInfo(env.SaveToPath);
             if (!directoryInfo.Exists)
                 directoryInfo.Create();

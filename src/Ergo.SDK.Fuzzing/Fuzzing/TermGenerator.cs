@@ -25,16 +25,16 @@ public class TermGenerator
     }
 
 
-    public Func<__string> __string => () => 
+    public Func<__string> __string => () =>
         new(String(
-            shouldStartWithDiscard: 
-                Profile.IncludeQuotedStrings 
+            shouldStartWithDiscard:
+                Profile.IncludeQuotedStrings
                 && Chance(1, Math.Log2(Profile.MaxIdentifierLength) / Profile.MaxIdentifierLength),
-            shouldStartWithUppercase: 
-                Profile.IncludeQuotedStrings 
+            shouldStartWithUppercase:
+                Profile.IncludeQuotedStrings
                 && Chance(1, 5),
-            mayContainSpaces: 
-                Profile.IncludeQuotedStrings 
+            mayContainSpaces:
+                Profile.IncludeQuotedStrings
                 && Chance(1, 2),
             minLength: 1,
             maxLength: Profile.MaxIdentifierLength
@@ -63,15 +63,16 @@ public class TermGenerator
             minLength: 1,
             maxLength: Profile.MaxIdentifierLength
         ));
-    public Func<Complex> Complex => () =>
-    {
+    public Func<Complex> Complex => () => {
         using var _ = Transact(Profile with { MaxComplexDepth = Profile.MaxComplexDepth - 1 });
-        var functor = Get(() => (__string)String(), Profile with { 
-            MaxIdentifierLength = Profile.MaxComplexFunctorLength });
+        var functor = Get(() => (__string)String(), Profile with {
+            MaxIdentifierLength = Profile.MaxComplexFunctorLength
+        });
         if (Profile.MaxComplexDepth <= 0)
             return new Complex(functor, [Literals.False]);
-        var args = Get(() => Many(1, Profile.MaxComplexArity, Term), Profile with { 
-            MaxIdentifierLength = Profile.MaxComplexArgLength });
+        var args = Get(() => Many(1, Profile.MaxComplexArity, Term), Profile with {
+            MaxIdentifierLength = Profile.MaxComplexArgLength
+        });
         return new Complex(functor, args);
     };
     public Func<Term> Term => () =>
@@ -89,16 +90,14 @@ public class TermGenerator
             PrefixExpression,
             PostfixExpression
         ]);
-    public Func<BinaryExpression> BinaryExpression => () =>
-    {
+    public Func<BinaryExpression> BinaryExpression => () => {
         using var _ = Transact(Profile with { MaxExpressionDepth = Profile.MaxExpressionDepth - 1 });
         if (Profile.MaxExpressionDepth <= 0)
             return new(Choose(_infixOps), Term(), Term());
         return Lang.Ast.BinaryExpression.AddNecessaryParentheses(
             new(Choose(_infixOps), ExpressionOrTerm(), ExpressionOrTerm()));
     };
-    public Func<ConsExpression> ConsExpression => () =>
-    {
+    public Func<ConsExpression> ConsExpression => () => {
         var cons = new ConsExpression(Operators.Conjunction, Choose<Term>([ConsExpression, ExpressionOrTerm]), ExpressionOrTerm());
         var exp = Lang.Ast.BinaryExpression.AddNecessaryParentheses(cons);
         cons = new ConsExpression(exp.Operator, exp.Lhs, exp.Rhs);
@@ -114,24 +113,20 @@ public class TermGenerator
             Expression,
             Term
         ]);
-    public Func<Fact> Fact => () =>
-    {
+    public Func<Fact> Fact => () => {
         var expr = UnaryExpression();
         return new Fact(expr.Arg);
     };
-    public Func<Clause> Clause => () =>
-    {
+    public Func<Clause> Clause => () => {
         var expr = BinaryExpression();
         return new Clause(expr.Lhs, expr.Rhs);
     };
     public Func<Clause> FactOrClause => () =>
         Choose<Clause>([Clause, Fact]);
-    public Func<Directive> Directive => () =>
-    {
+    public Func<Directive> Directive => () => {
         return new Directive(Complex());
     };
-    public Func<Module> Module => () =>
-    {
+    public Func<Module> Module => () => {
         var module = new Directive(new Complex("module", __string(), Literals.EmptyList));
         var numDirectives = _rng.Next(Profile.MinProgramDirectives, Profile.MaxProgramDirectives + 1);
         var numClauses = _rng.Next(Profile.MinProgramClauses, Profile.MaxProgramClauses + 1);
@@ -156,8 +151,7 @@ public class TermGenerator
             return "";
         var sb = new StringBuilder();
         var length = _rng.Next(minLength, maxLength);
-        for (int i = 0; i < length; i++)
-        {
+        for (int i = 0; i < length; i++) {
             var addSpace = i > 0
                 && mayContainSpaces
                 && Chance(1, 10);
@@ -166,25 +160,23 @@ public class TermGenerator
                 : Choose(TermGeneratorProfile.IdentifierChars));
         }
         sb.Insert(0, Choose(TermGeneratorProfile.StartIdentifierChars));
-        if (shouldStartWithUppercase)
-        {
+        if (shouldStartWithUppercase) {
             sb.Remove(0, 1);
             sb.Insert(0, char.ToUpper(Choose(TermGeneratorProfile.StartIdentifierChars)));
         }
-        if (shouldStartWithDiscard)
-        {
+        if (shouldStartWithDiscard) {
             sb.Remove(0, 1);
             sb.Insert(0, '_');
         }
         return sb.ToString();
     }
-    public bool Chance(double numerator, double denominator) => 
+    public bool Chance(double numerator, double denominator) =>
         _rng.NextDouble() > numerator / denominator;
     public T Choose<T>(Func<object>[] choices) =>
         (T)_rng.GetItems(choices, choices.Length)[0]();
     public T Choose<T>(T[] choices) =>
         _rng.GetItems(choices, choices.Length)[0];
-    public T[] Many<T>(int min , int max, Func<T> one) =>
+    public T[] Many<T>(int min, int max, Func<T> one) =>
          Enumerable.Range(0, _rng.Next(min, max + 1))
         .Select(_ => one())
         .ToArray();

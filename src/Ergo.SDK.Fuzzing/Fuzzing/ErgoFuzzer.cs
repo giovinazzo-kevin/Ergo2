@@ -15,7 +15,7 @@ public class ErgoFuzzer(TermGeneratorProfile profile, OperatorLookup ops)
     public event Action<FuzzerState[]> BatchCompleted = _ => { };
 
     public async IAsyncEnumerable<string> FindInvalidInputs<T>(
-        Func<TermGenerator, Func<T>> g, 
+        Func<TermGenerator, Func<T>> g,
         Func<Parser, Func<Maybe<T>>> p,
         int maxEpochs = 0,
         int workersPerEpoch = 4,
@@ -24,8 +24,7 @@ public class ErgoFuzzer(TermGeneratorProfile profile, OperatorLookup ops)
     {
         var states = new FuzzerState[workersPerEpoch];
         var workers = new Task<Maybe<string>>[workersPerEpoch];
-        for (int i = 0; maxEpochs <= 0 || i < maxEpochs; i++)
-        {
+        for (int i = 0; maxEpochs <= 0 || i < maxEpochs; i++) {
             if (ct.IsCancellationRequested)
                 yield break;
             for (int j = 0; j < workersPerEpoch; j++)

@@ -2,6 +2,7 @@
 using Ergo.Shared.Types;
 
 namespace Ergo.Lang.Ast.Extensions;
+
 public static class TermExtensions
 {
     public static Term Deref(this Term term)
@@ -32,13 +33,12 @@ public static class TermExtensions
             return c.Args;
         return [];
     }
-    public static Maybe<Signature> GetSignature(this Term term) => term switch
-    {
-        Atom a 
+    public static Maybe<Signature> GetSignature(this Term term) => term switch {
+        Atom a
             => new Signature(default, a, 0),
-        BinaryExpression exp when exp.Operator == Operators.Module && exp.Lhs is __string module 
+        BinaryExpression exp when exp.Operator == Operators.Module && exp.Lhs is __string module
             => exp.Rhs.GetSignature().Select(x => x with { Module = module }),
-        Complex c 
+        Complex c
             => new Signature(default, c.Functor, c.Arity),
         _ => default
     };

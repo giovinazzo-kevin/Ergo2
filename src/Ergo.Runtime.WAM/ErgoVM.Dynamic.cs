@@ -52,15 +52,13 @@ public partial class ErgoVM
     /// </summary>
     private void DispatchDynamic(__WORD sigRaw)
     {
-        if (!_dynamics.TryGetValue(sigRaw, out var dyn))
-        {
+        if (!_dynamics.TryGetValue(sigRaw, out var dyn)) {
             fail = true;
             return;
         }
         var goalGen = _globalGen;
         var visible = dyn.Visible(goalGen).ToArray();
-        if (visible.Length == 0)
-        {
+        if (visible.Length == 0) {
             fail = true;
             return;
         }
@@ -97,12 +95,9 @@ public partial class ErgoVM
     /// </summary>
     private void RehydrateDynamicCode()
     {
-        foreach (var dyn in _dynamics.Values)
-        {
-            foreach (var clause in dyn.Clauses)
-            {
-                if (clause.ErasedGen == int.MaxValue)
-                {
+        foreach (var dyn in _dynamics.Values) {
+            foreach (var clause in dyn.Clauses) {
+                if (clause.ErasedGen == int.MaxValue) {
                     // Sync constants
                     foreach (var c in clause.NewConstants)
                         _QUERY.AddConstant(c);
@@ -138,8 +133,7 @@ public partial class ErgoVM
             .ToArray();
 
         // Sync constants to KB and current query
-        foreach (var c in newConstants)
-        {
+        foreach (var c in newConstants) {
             _kb.AddConstant(c);
             _QUERY.AddConstant(c);
         }
@@ -176,8 +170,7 @@ public partial class ErgoVM
         if (!_dynamics.TryGetValue(packed.RawValue, out var dyn)) return;
 
         var savedTR = TR; var savedH = H;
-        foreach (var clause in dyn.Visible(_globalGen).ToArray())
-        {
+        foreach (var clause in dyn.Visible(_globalGen).ToArray()) {
             fail = false;
             unify(addr, DecompileClauseHead(clause.Code, packed));
             if (!fail) { clause.ErasedGen = ++_globalGen; return; }
@@ -192,10 +185,8 @@ public partial class ErgoVM
         Heap[H++] = sig;
         var args = H;
         for (int i = 0; i < sig.N; i++, H++) Heap[H] = (Term)(Term.__TAG.REF, H);
-        for (int pc = 0; pc < code.Length;)
-        {
-            switch ((OpCode)code[pc++])
-            {
+        for (int pc = 0; pc < code.Length;) {
+            switch ((OpCode)code[pc++]) {
                 case OpCode.allocate: continue;
                 case OpCode.get_constant: Heap[args + code[pc + 1]] = (Term)(Term.__TAG.CON, code[pc]); pc += 2; continue;
                 case OpCode.get_variable: case OpCode.get_value: case OpCode.get_structure: pc += 2; continue;
@@ -203,7 +194,7 @@ public partial class ErgoVM
                 default: goto done;
             }
         }
-        done:
+    done:
         Heap[H++] = (Term)(Term.__TAG.STR, fAddr);
         return H - 1;
     }
@@ -241,14 +232,11 @@ public partial class ErgoVM
         H = Store[B + n + 6];
         HB = H;
 
-        if (cont.ClauseIndex == visible.Length - 1)
-        {
+        if (cont.ClauseIndex == visible.Length - 1) {
             // Last clause — trust: remove choice point
             B = Store[B + n + 3];
             HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
-        }
-        else
-        {
+        } else {
             // More clauses — update continuation
             _dynConts[contIdx] = cont with { ClauseIndex = cont.ClauseIndex + 1 };
         }

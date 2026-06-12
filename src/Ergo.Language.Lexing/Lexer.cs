@@ -12,7 +12,7 @@ public class Lexer : IDisposable
     public readonly OperatorLookup Lookup;
     protected bool Eof => File.Eof;
     private LexerState _state = LexerState.Start;
-    public LexerState State => _state = _state with { 
+    public LexerState State => _state = _state with {
         StreamPos = File.Stream.Position
     };
     public Lexer(ErgoFileStream file, OperatorLookup? lookup = null)
@@ -102,8 +102,7 @@ public class Lexer : IDisposable
     }
     public void SkipComments()
     {
-        while (!Eof && IsSingleLineCommentStart(Peek()))
-        {
+        while (!Eof && IsSingleLineCommentStart(Peek())) {
             using var tx = Transact();
             _ = Read();
             var c = Read();
@@ -122,25 +121,20 @@ public class Lexer : IDisposable
         var sb = new StringBuilder();
         var escapeSb = new StringBuilder();
         Read(); // Skip opening quotes
-        while (!Eof)
-        {
+        while (!Eof) {
             var escaping = false;
-            if (Peek() == '\\')
-            {
+            if (Peek() == '\\') {
                 escaping = true;
                 escapeSb.Append('\\');
                 Read();
             }
             if (Eof)
                 break;
-            if (Peek() != delim || escaping)
-            {
+            if (Peek() != delim || escaping) {
                 escapeSb.Append(Read());
                 sb.Append(LexerUtils.Unescape(escapeSb.ToString()));
                 escapeSb.Clear();
-            }
-            else
-            {
+            } else {
                 Read();
                 break;
             }
@@ -153,18 +147,14 @@ public class Lexer : IDisposable
         var c = Peek();
         if (IsSign(c))
             sign = Read() == '+';
-        for (var i = 0; IsNumberPiece(c = Peek()); ++i)
-        {
-            if (IsDigit(c))
-            {
+        for (var i = 0; IsNumberPiece(c = Peek()); ++i) {
+            if (IsDigit(c)) {
                 var digit = int.Parse(Read().ToString());
                 if (integralPlaces == -1)
                     number = number * 10 + digit;
                 else
                     number += digit / Math.Pow(10, i - integralPlaces);
-            }
-            else if (IsDecimalDelimiter(c))
-            {
+            } else if (IsDecimalDelimiter(c)) {
                 if (integralPlaces != -1) break;
                 using var tx = Transact();
                 Read();
@@ -203,8 +193,7 @@ public class Lexer : IDisposable
         var c = '\0';
         var sb = new StringBuilder();
         var lines = new List<string>();
-        while (!Eof && IsDocumentationCommentStart(c = Peek()))
-        {
+        while (!Eof && IsDocumentationCommentStart(c = Peek())) {
             sb.Clear();
             Read(); // Discard %
             Read(); // Discard :
@@ -220,25 +209,20 @@ public class Lexer : IDisposable
     {
         using var tx = Transact();
         var (set, i) = (Symbols.Punctuation.ToList(), 0);
-        while (IsPunctuationPiece(Peek()))
-        {
+        while (IsPunctuationPiece(Peek())) {
             var ch = Read();
-            for (var o = set.Count - 1; o >= 0; o--)
-            {
+            for (var o = set.Count - 1; o >= 0; o--) {
                 if (set[o].Length <= i || set[o][i] != ch)
                     set.RemoveAt(o);
             }
-            if (set.Count >= 1)
-            {
+            if (set.Count >= 1) {
                 i++;
-                if (set.Count == 1)
-                {
-                    while (!Eof && i++ < set[0].Length) 
+                if (set.Count == 1) {
+                    while (!Eof && i++ < set[0].Length)
                         Read();
                     break;
                 }
-            }
-            else
+            } else
                 throw new LexerException(LexerError.UnrecognizedPunctuation, State);
         }
         tx.Commit();
@@ -250,8 +234,7 @@ public class Lexer : IDisposable
         using var tx = Transact();
         List<string> set = [.. Lookup.Functors];
         var (peek, i) = (Peek(), 0);
-        while (IsOperatorPiece(peek, i) && set.SelectMany(x => x).Contains(peek))
-        {
+        while (IsOperatorPiece(peek, i) && set.SelectMany(x => x).Contains(peek)) {
             var ch = Read();
             for (var o = set.Count - 1; o >= 0; o--)
                 if (set[o].Length <= i || set[o][i] != ch)
@@ -259,10 +242,8 @@ public class Lexer : IDisposable
             if (set.Count < 1)
                 return default;
             i++;
-            if (set.Count == 1)
-            {
-                while (i++ < set[0].Length)
-                {
+            if (set.Count == 1) {
+                while (i++ < set[0].Length) {
                     if (Eof || Read() != set[0][i - 1])
                         return default;
                 }
@@ -278,61 +259,59 @@ public class Lexer : IDisposable
     #endregion
 
     #region Predicates
-    protected bool IsSingleLineCommentStart(char c) => 
+    protected bool IsSingleLineCommentStart(char c) =>
          Symbols.Comment
         .Any(StartsWith);
-    protected bool IsDocumentationCommentStart(char c) => 
+    protected bool IsDocumentationCommentStart(char c) =>
          Symbols.DocComment
         .Any(StartsWith);
-    protected static bool IsStringDelimiter(char c) => 
+    protected static bool IsStringDelimiter(char c) =>
          Symbols.StringDelimiter
         .Contains(c);
-    protected static bool IsKeyword(string s) => 
+    protected static bool IsKeyword(string s) =>
          Symbols.Keyword
         .Contains(s);
-    protected static bool IsPunctuationPiece(char c) => 
+    protected static bool IsPunctuationPiece(char c) =>
          Symbols.Punctuation
         .SelectMany(p => p).Contains(c);
     protected static bool IsIdentifierStart(char c) =>
         char.IsLetter(c)
         || Symbols.IdentifierStart
           .Contains(c);
-    protected static bool IsIdentifierPiece(char c) => 
-        IsIdentifierStart(c) 
+    protected static bool IsIdentifierPiece(char c) =>
+        IsIdentifierStart(c)
         || IsDigit(c);
-    protected static bool IsCarriageReturn(char c) => 
+    protected static bool IsCarriageReturn(char c) =>
         c == '\r';
-    protected static bool IsNewline(char c) => 
+    protected static bool IsNewline(char c) =>
         c == '\n';
-    protected static bool IsDigit(char c) => 
+    protected static bool IsDigit(char c) =>
         char.IsDigit(c);
-    protected bool IsSign(char c, int p = 0) => 
-        (c == '-' || c == '+') 
-        && PeekAhead(p + 1) is var d 
+    protected bool IsSign(char c, int p = 0) =>
+        (c == '-' || c == '+')
+        && PeekAhead(p + 1) is var d
         && IsNumberPiece(d, p + 1);
-    protected bool IsNumberStart(char c) => 
-        IsSign(c) 
+    protected bool IsNumberStart(char c) =>
+        IsSign(c)
         || IsNumberPiece(c);
-    protected bool IsNumberPiece(char c, int p = 0) => 
-        IsDecimalDelimiter(c, p) 
+    protected bool IsNumberPiece(char c, int p = 0) =>
+        IsDecimalDelimiter(c, p)
         || IsDigit(c);
-    protected bool IsDecimalDelimiter(char c, int p = 0) => 
-        c == '.' 
-        && PeekAhead(p + 1) is var d 
+    protected bool IsDecimalDelimiter(char c, int p = 0) =>
+        c == '.'
+        && PeekAhead(p + 1) is var d
         && IsDigit(d);
     protected bool IsOperatorPiece(char c, int index)
     {
-        if (c == '\\') 
+        if (c == '\\')
             return true;
         if (!(PeekAhead(1) is var next))
             return false;
         var symbols = Lookup.GetNthSymbols(index)
             .ToHashSet();
-        if (symbols.Contains(c))
-        {
+        if (symbols.Contains(c)) {
             // Disambiguate between . as an operator for dict dereferencing, and . as a clause terminator or decimal separator
-            if (c == '.' && index == 0)
-            {
+            if (c == '.' && index == 0) {
                 if (IsPunctuationPiece(next))
                     return false;
                 if (char.IsWhiteSpace(next) || IsSingleLineCommentStart(next) || IsDocumentationCommentStart(next))

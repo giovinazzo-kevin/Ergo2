@@ -22,13 +22,11 @@ public class OperatorLookup
 
     public void AddRange(params IEnumerable<Operator> ops)
     {
-        foreach (var op in ops)
-        {
+        foreach (var op in ops) {
             if (operators.Contains(op))
                 continue;
             operators.Add(op);
-            foreach (__string fun in op.Functors)
-            {
+            foreach (__string fun in op.Functors) {
                 var funStr = (string)fun.Value;
                 if (!functors.Contains(funStr))
                     functors.Add(funStr);

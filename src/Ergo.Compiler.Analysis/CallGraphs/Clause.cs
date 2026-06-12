@@ -25,8 +25,7 @@ public class Clause(Predicate parent, Term[] args) : CallGraph.Node<Predicate>
 
     public bool TryGetVariable(Variable v, out byte i)
     {
-        for (i = 0; i < Args.Length; i++)
-        {
+        for (i = 0; i < Args.Length; i++) {
             if (Args[i] == v)
                 return true;
         }

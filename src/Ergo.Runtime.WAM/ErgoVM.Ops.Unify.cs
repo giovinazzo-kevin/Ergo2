@@ -1,7 +1,6 @@
 ﻿namespace Ergo.Runtime.WAM;
 
 using Ergo.Compiler.Emission;
-using System.Runtime.ExceptionServices;
 using static ErgoVM.GetMode;
 public partial class ErgoVM
 {
@@ -12,8 +11,7 @@ public partial class ErgoVM
     protected void UnifyVariable()
     {
         var Vn = __word();
-        switch (mode)
-        {
+        switch (mode) {
             case read:
                 V[Vn] = Heap[S];
                 break;
@@ -30,8 +28,7 @@ public partial class ErgoVM
     protected void UnifyValue()
     {
         var Vn = __word();
-        switch (mode)
-        {
+        switch (mode) {
             case read:
                 unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, S);
                 break;
@@ -50,8 +47,7 @@ public partial class ErgoVM
     protected void UnifyLocalValue()
     {
         var Vn = __word();
-        switch (mode)
-        {
+        switch (mode) {
             case read:
                 unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, S);
                 break;
@@ -59,8 +55,7 @@ public partial class ErgoVM
                 var addr = deref(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn);
                 if (addr < H)
                     Heap[H] = Heap[addr];
-                else
-                {
+                else {
                     Heap[H] = (Term)(REF, H);
                     bind(addr, H);
                 }
@@ -77,17 +72,14 @@ public partial class ErgoVM
     protected void UnifyConstant()
     {
         var c = __word();
-        switch (mode)
-        {
+        switch (mode) {
             case read:
                 var addr = deref(S);
                 var cell = (Term)Store[addr];
-                if (cell is (REF, _))
-                {
+                if (cell is (REF, _)) {
                     Store[addr] = (Term)(CON, c);
                     trail(addr);
-                }
-                else fail = cell is not (CON, var c1) || c != c1;
+                } else fail = cell is not (CON, var c1) || c != c1;
                 break;
             case write:
                 Heap[H] = (Term)(CON, c);
@@ -103,8 +95,7 @@ public partial class ErgoVM
     protected void UnifyVoid()
     {
         var n = __word();
-        switch (mode)
-        {
+        switch (mode) {
             case read:
                 S += n;
                 break;

@@ -34,8 +34,7 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
 
         env.ModuleLocator.Index.Update();
         var sourceFile = env.ModuleLocator.Index.Find(name).FirstOrDefault();
-        if (sourceFile != null)
-        {
+        if (sourceFile != null) {
             using var stream = sourceFile.OpenRead();
             var currentHash = Convert.ToHexString(SHA256.HashData(stream));
             var cachedHash = File.ReadAllText(hashFile);
@@ -53,10 +52,9 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
             .SelectMany(env.LibraryLocator.Find)
             .Select(t => Activator.CreateInstance(t, new Ergo.Compiler.Analysis.Module(new CallGraph(null!, name), name)))
             .OfType<Library>()
-            .SelectMany(lib => lib.ExportedBuiltIns)
-            .Where(bi => bi.Handler != null);
+            .SelectMany(lib => lib.ExportedBuiltIns);
         foreach (var bi in builtins)
-            kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler!);
+            kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
 
         return kb;
     }

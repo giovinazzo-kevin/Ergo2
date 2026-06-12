@@ -13,7 +13,7 @@ public abstract class Atom : Term
         Value = value;
     }
     public override string Expl => Value.ToString()!.Parenthesized(IsParenthesized).AddQuotesIfNecessary();
-    public override bool Equals(object? obj) 
+    public override bool Equals(object? obj)
         => obj is Atom { Type: var type, Value: var value } && Equals(type, Type) && Equals(value, Value)
         || obj is Variable { Value: Atom other } && Equals(other);
     public override int GetHashCode() => Value.GetHashCode();
@@ -32,8 +32,7 @@ public abstract class Atom : Term
     public static bool IsAtomIdentifier(string s) => !Variable.IsVariableIdentifier(s);
     public static Atom FromObject(object value)
     {
-        return value switch
-        {
+        return value switch {
             string s => (__string)s,
             bool b => (__bool)b,
             int i => (__int)i,

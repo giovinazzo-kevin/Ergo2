@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Cut Instructions
@@ -44,8 +45,7 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] CUT! n={n} Yn={Yn} B={B}");
 #endif
 
-        if (B > Yn)
-        {
+        if (B > Yn) {
             B = Yn;
             tidy_trail();
         }

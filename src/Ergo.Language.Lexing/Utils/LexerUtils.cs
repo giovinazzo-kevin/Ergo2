@@ -11,33 +11,21 @@ internal static partial class LexerUtils
         var sb = new StringBuilder();
         var mc = UnescapeRegex.Matches(s, 0);
 
-        foreach (Match m in mc)
-        {
-            if (m.Length == 1)
-            {
+        foreach (Match m in mc) {
+            if (m.Length == 1) {
                 sb.Append(m.Value);
-            }
-            else
-            {
-                if (m.Value[1] is >= '0' and <= '7')
-                {
+            } else {
+                if (m.Value[1] is >= '0' and <= '7') {
                     var i = Convert.ToInt32(m.Value[1..], 8);
                     sb.Append((char)i);
-                }
-                else if (m.Value[1] == 'u')
-                {
+                } else if (m.Value[1] == 'u') {
                     var i = Convert.ToInt32(m.Value[2..], 16);
                     sb.Append((char)i);
-                }
-                else if (m.Value[1] == 'U')
-                {
+                } else if (m.Value[1] == 'U') {
                     var i = Convert.ToInt32(m.Value[2..], 16);
                     sb.Append(char.ConvertFromUtf32(i));
-                }
-                else
-                {
-                    switch (m.Value[1])
-                    {
+                } else {
+                    switch (m.Value[1]) {
                         case 'a':
                             sb.Append('\a');
                             break;

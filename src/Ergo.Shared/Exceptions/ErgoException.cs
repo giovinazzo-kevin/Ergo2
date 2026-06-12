@@ -1,6 +1,7 @@
 ﻿using Ergo.Shared.Extensions;
 
 namespace Ergo.Shared.Exceptions;
+
 public abstract class ErgoException<TError> : Exception
     where TError : Enum
 {

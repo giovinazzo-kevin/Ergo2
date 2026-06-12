@@ -1,11 +1,10 @@
-﻿using Ergo.Compiler.Emission;
-using Ergo.Compiler.Analysis;
+﻿using Ergo.Compiler.Analysis;
+using Ergo.Compiler.Emission;
 using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
 using Ergo.Pipelines;
-using Ergo.Pipelines.Compiler;
 using Ergo.Runtime.WAM;
 using System.Text;
 using Query = Ergo.Compiler.Emission.Query;
@@ -75,8 +74,7 @@ public class Tests
     {
         var bytes = Encoding.UTF8.GetBytes(value);
         AssertInt32(bytes.Length, ref span);
-        for (int i = 0; i < bytes.Length; i++)
-        {
+        for (int i = 0; i < bytes.Length; i++) {
             Assert.Equal(bytes[i], span[0]);
             span = span[1..];
         }

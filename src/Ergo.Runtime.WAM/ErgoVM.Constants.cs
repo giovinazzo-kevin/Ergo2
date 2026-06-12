@@ -1,4 +1,5 @@
 ﻿namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Constants

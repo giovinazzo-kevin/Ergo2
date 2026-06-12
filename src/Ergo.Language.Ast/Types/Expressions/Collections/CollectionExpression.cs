@@ -2,7 +2,7 @@
 
 namespace Ergo.Lang.Ast;
 
-public abstract class CollectionExpression(Func<Term, Term, CollectionExpression> fold, Collection col, Operator op, params IEnumerable<Term> items) 
+public abstract class CollectionExpression(Func<Term, Term, CollectionExpression> fold, Collection col, Operator op, params IEnumerable<Term> items)
     : ConsExpression(fold, op, items)
 {
     public readonly Collection Collection = col;

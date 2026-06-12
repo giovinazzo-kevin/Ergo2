@@ -1,10 +1,11 @@
 ﻿
 global using static Ergo.Compiler.Emission.Term.__TAG;
-global using __WORD = int;
 global using __ADDR = int;
+global using __WORD = int;
 using Ergo.Lang.Ast;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Types

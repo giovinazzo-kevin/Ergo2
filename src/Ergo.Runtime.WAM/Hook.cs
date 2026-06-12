@@ -1,7 +1,7 @@
 using Ergo.Compiler.Emission;
 using static Ergo.Compiler.Emission.Ops;
-using Signature = Ergo.Compiler.Emission.Signature;
 using Query = Ergo.Compiler.Emission.Query;
+using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.Runtime.WAM;
 

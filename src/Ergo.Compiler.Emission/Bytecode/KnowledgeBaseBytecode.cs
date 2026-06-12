@@ -51,12 +51,10 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
     {
         if (span.Length == 0) return;
         var count = span[0]; span = span[1..];
-        for (int i = 0; i < count; i++)
-        {
+        for (int i = 0; i < count; i++) {
             var lenInWords = span[0]; span = span[1..];
             var bytes = new byte[lenInWords * sizeof(__WORD)];
-            for (int j = 0; j < lenInWords; j++)
-            {
+            for (int j = 0; j < lenInWords; j++) {
                 bytes[j * 4 + 0] = (byte)(span[j] >> 0);
                 bytes[j * 4 + 1] = (byte)(span[j] >> 8);
                 bytes[j * 4 + 2] = (byte)(span[j] >> 16);

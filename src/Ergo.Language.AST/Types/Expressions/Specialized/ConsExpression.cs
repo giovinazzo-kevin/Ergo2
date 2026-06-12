@@ -20,8 +20,7 @@ public class ConsExpression : BinaryExpression
     {
         var contents = new List<Term>() { lhs };
         while (rhs is BinaryExpression { Operator: var oop, Lhs: var item, Rhs: var next }
-            && oop.Equals(op))
-        {
+            && oop.Equals(op)) {
             contents.Add(item);
             rhs = next;
         }
@@ -32,8 +31,7 @@ public class ConsExpression : BinaryExpression
     static Term FoldAndCount(Func<Term, Term, ConsExpression> fold, Operator op, IEnumerable<Term> args, out int length)
     {
         var l = 0;
-        var ret = args.Reverse().Aggregate((a, b) =>
-        {
+        var ret = args.Reverse().Aggregate((a, b) => {
             l++;
             return fold(a, b);
         });

@@ -1,12 +1,5 @@
-﻿using Ergo.Compiler.Analysis;
-using Ergo.Compiler.Emission;
-using Ergo.IO;
-using Ergo.Lang.Ast.Extensions;
-using Ergo.Lang.Lexing;
-using Ergo.Libs;
+﻿using Ergo.Compiler.Emission;
 using Ergo.Runtime.WAM;
-using System.ComponentModel;
-using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__TAG;
 

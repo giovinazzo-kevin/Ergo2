@@ -119,7 +119,7 @@ public class EmitterTests : Tests
         AssertOp(OpCode.put_variable, ref span);
         AssertInt32(2, ref span); // Z
         AssertInt32(1, ref span); // A1
-        AssertOp(OpCode.call, ref span); 
+        AssertOp(OpCode.call, ref span);
         AssertSignature("parent", 2, ref span, query);
         AssertOp(OpCode.put_value, ref span);
         AssertInt32(2, ref span); // Z
@@ -127,7 +127,7 @@ public class EmitterTests : Tests
         AssertOp(OpCode.put_value, ref span);
         AssertInt32(1, ref span); // Y
         AssertInt32(1, ref span); // A1
-        AssertOp(OpCode.call, ref span); 
+        AssertOp(OpCode.call, ref span);
         AssertSignature("ancestor", 2, ref span, query);
         AssertOp(OpCode.deallocate, ref span);
         AssertOp(OpCode.proceed, ref span);

@@ -6,10 +6,10 @@ using Ergo.Lang.Lexing.WellKnown;
 using Ergo.Lang.Parsing.Extensions;
 using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Ergo.Lang.Parsing;
+
 using static Operator.Fixity;
 
 public class Parser : IDisposable
@@ -30,7 +30,7 @@ public class Parser : IDisposable
          Expect<double>(Token.Type.Decimal)
         .Select<__double>(x => x)
     ]);
-    public Func<Maybe<__bool>> __bool => Transact([() => 
+    public Func<Maybe<__bool>> __bool => Transact([() =>
          Expect<string>(Token.Type.Keyword, Symbols.Boolean.Contains)
         .Select<__bool>(x => Symbols.True.Contains(x))
     ]);
@@ -137,7 +137,7 @@ public class Parser : IDisposable
         .Select(_ => Literals.EmptyList)
     ]);
     public Func<Maybe<List>> List => Transact([
-        ListHeadTail, 
+        ListHeadTail,
         ListNoTail,
         ListSingleton
     ]);
@@ -157,7 +157,7 @@ public class Parser : IDisposable
         .Select(x => new Fact(x))
     ], isBlock: true);
     public Func<Maybe<Clause>> ClauseOrFact => () => Maybe.Or(
-        Clause, 
+        Clause,
         Fact.Cast<Fact, Clause>
     );
     public Func<Maybe<Directive[]>> DirectiveDefinitions => () => ParseUntilFail(
@@ -175,8 +175,7 @@ public class Parser : IDisposable
     public Func<Maybe<T>> Transact<T>(IEnumerable<Func<Maybe<T>>> parsers, bool isBlock = false, [CallerMemberName] string method = "")
         where T : IExplainable
     {
-        return () =>
-        {
+        return () => {
             if (Context.IsFailureMemoized(Lexer.State, method))
                 return default;
             using var tx = Lexer.Transact();
@@ -185,7 +184,7 @@ public class Parser : IDisposable
             Context.EnterParse();
             return Maybe.Or(parsers)
                 .Do(tx.Commit, tx.Rollback)
-                .Do(x  => Context.AnnotateLastNode(method, x.Expl, success: true),
+                .Do(x => Context.AnnotateLastNode(method, x.Expl, success: true),
                     () => Context.AnnotateLastNode(method, "", success: false))
                 .DoAlways(() => {
                     if (isBlock)
@@ -208,15 +207,15 @@ public class Parser : IDisposable
             return pred(t);
         }
     }
-    public Maybe<Operator> ExpectOperator(Func<Operator, bool> match) => 
+    public Maybe<Operator> ExpectOperator(Func<Operator, bool> match) =>
          Lexer.ReadNextOperator(match);
-    public Maybe<Operator> ExpectOperator(Operator.Fixity fixity, Func<Operator, bool>? match = null) => 
+    public Maybe<Operator> ExpectOperator(Operator.Fixity fixity, Func<Operator, bool>? match = null) =>
          ExpectOperator(x => x.Fixity_ == fixity && (match?.Invoke(x) ?? true));
-    public Maybe<string> ExpectDelimiter(Func<string, bool> condition) => 
+    public Maybe<string> ExpectDelimiter(Func<string, bool> condition) =>
          Expect([Token.Type.Punctuation], condition);
-    public Maybe<T> Expect<T>(Token.Type type, Func<T, bool> cond) => 
+    public Maybe<T> Expect<T>(Token.Type type, Func<T, bool> cond) =>
          Expect([type], cond);
-    public Maybe<T> Expect<T>(Token.Type type) => 
+    public Maybe<T> Expect<T>(Token.Type type) =>
          Expect<T>(type, _ => true);
     public Maybe<T> Expect<T>(IEnumerable<Token.Type> types) =>
          Expect<T>(types, _ => true);
@@ -227,15 +226,14 @@ public class Parser : IDisposable
         using var tx = Lexer.Transact();
         if (!Expect<string>(Token.Type.Punctuation, str => str.Equals(opening)).HasValue
             || !tryParse().TryGetValue(out var ret)
-            || !Expect<string>(Token.Type.Punctuation, str => str.Equals(closing)).HasValue)
-        {
+            || !Expect<string>(Token.Type.Punctuation, str => str.Equals(closing)).HasValue) {
             tx.Rollback();
             return default;
         }
         tx.Commit();
         return ret;
     }
-    public Maybe<T> Parenthesized<T>(Func<Maybe<T>> tryParse) where T : Term => 
+    public Maybe<T> Parenthesized<T>(Func<Maybe<T>> tryParse) where T : Term =>
          Parenthesized(Collections.Tuple, tryParse)
         .Select(x => (T)x.Parenthesized());
     public Maybe<T> Parenthesized<T>(Collection collection, Func<Maybe<T>> tryParse) where T : Term =>
@@ -244,7 +242,7 @@ public class Parser : IDisposable
         Parse(parser)
             .Where(_ => ExpectDefinitionTerminator().HasValue)
     ], method: method);
-    public T Parse<T>(Func<T> parser) => 
+    public T Parse<T>(Func<T> parser) =>
         parser();
     public Maybe<T[]> ParseUntilFail<T>(Func<Maybe<T>> parser)
     {
@@ -260,7 +258,7 @@ public class Parser : IDisposable
         while (parser().TryGetValue(out var item))
             yield return item;
     }
-#endregion
+    #endregion
     public Parser(Lexing.Lexer lexer, ParserContext? context = null)
     {
         Lexer = lexer;

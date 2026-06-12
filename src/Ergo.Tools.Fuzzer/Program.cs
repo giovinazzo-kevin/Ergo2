@@ -15,7 +15,7 @@ var opLookup = new OperatorLookup([
 var fuzzer = new ErgoFuzzer(TermGeneratorProfile.StressTest, opLookup);
 fuzzer.BatchCompleted += Fuzzer_BatchCompleted;
 var query = fuzzer.FindInvalidInputs(
-    g => g.Module, 
+    g => g.Module,
     p => p.Module,
     maxEpochs: 0,
     workersPerEpoch: 16);

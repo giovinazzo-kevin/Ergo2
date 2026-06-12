@@ -12,7 +12,6 @@ using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using static Ergo.Lang.Ast.Operator;
 
 namespace Ergo.UnitTests;
 
@@ -25,21 +24,20 @@ public class ParserTestGenerator<T> : IEnumerable<object[]>
     const int NUM_SAMPLES = 0;
 #endif
     private readonly TermGenerator _generator = new(
-        ops: new(ParserTests.TestOperators), 
+        ops: new(ParserTests.TestOperators),
         rng:
 #if DETERMINISTIC_TESTGEN
             new Random(0)
 #else
             new Random()
 #endif
-    )
-    {
+    ) {
         Profile = TermGeneratorProfile.Debug
     };
     private static readonly PropertyInfo _field = typeof(TermGenerator)
         .GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Single(x => x.PropertyType == typeof(Func<T>) && x.Name == typeof(T).Name);
-    private IEnumerable<object[]> Generate() => 
+    private IEnumerable<object[]> Generate() =>
          Enumerable.Range(0, NUM_SAMPLES)
         .Select(GenerateCase);
     object[] GenerateCase(int i)
@@ -74,8 +72,8 @@ public class ParserTests
         opLookup.AddRange(TestOperators);
         var lexer = new Lexer(stream, opLookup);
         var parser = new Parser(lexer);
-        var result = parenthesized 
-            ? parser.Parenthesized("(", ")", parserFunc(parser)) 
+        var result = parenthesized
+            ? parser.Parenthesized("(", ")", parserFunc(parser))
             : parserFunc(parser)();
         //parser.Context.ParseRoot.Print(excludeFailures: false);
         parser.Context.ParseRoot.Print(excludeFailures: true);
@@ -243,11 +241,11 @@ public class ParserTests
     [InlineData("[a, b, c, D, E, F, 7, 8, 9, !]", 10)]
     [InlineData("[a, b, c|Rest]", 3)]
     [InlineData("[[a], b]", 2)]
-    [InlineData("[[a, b], c]",2)]
-    [InlineData("[[a, b], [c]]",2)]
-    [InlineData("[a, [b]]",2)]
-    [InlineData("[a, (b), [b, c]]",3)]
-    [InlineData("[a, b, [b, c|Rest]]",3)]
+    [InlineData("[[a, b], c]", 2)]
+    [InlineData("[[a, b], [c]]", 2)]
+    [InlineData("[a, [b]]", 2)]
+    [InlineData("[a, (b), [b, c]]", 3)]
+    [InlineData("[a, b, [b, c|Rest]]", 3)]
     [InlineData("[a, b|[c]]", 3, "[a, b, c]")]
     [InlineData("[a, b|[c, d]]", 4, "[a, b, c, d]")]
     [InlineData("[a, b|[c, d|[e, f]]]", 6, "[a, b, c, d, e, f]")]
@@ -323,8 +321,7 @@ clause(Y) :-
     public void SameDirectiveVariablesMustHaveReferenceEquality(string input)
     {
         var result = Expect(input, p => p.DirectiveDefinitions);
-        foreach (var directive in result)
-        {
+        foreach (var directive in result) {
             var variables = directive.GetVariables().ToHashSet();
             Assert.All(variables.GroupBy(x => x.Name), g => Assert.Single(g));
         }
@@ -336,12 +333,10 @@ clause(Y) :-
     public void SameClauseVariablesMustHaveReferenceEquality(string input)
     {
         var result = Expect(input, p => p.ClauseOrFactDefinitions);
-        foreach (var clause in result)
-        {
+        foreach (var clause in result) {
             var variables = clause.GetVariables();
             var groups = variables.GroupBy(x => x.Name);
-            foreach (var group in groups)
-            {
+            foreach (var group in groups) {
                 var exemplar = group.First();
                 Assert.All(group, x => Assert.True(ReferenceEquals(exemplar, x)));
                 exemplar.Value = 1;
@@ -355,8 +350,7 @@ clause(Y) :-
     {
         var result1 = Expect(input1, p => p.ClauseOrFactDefinitions);
         var result2 = Expect(input2, p => p.ClauseOrFactDefinitions);
-        foreach (var (clause1, clause2) in result1.Zip(result2))
-        {
+        foreach (var (clause1, clause2) in result1.Zip(result2)) {
             var variables1 = clause1.GetVariables();
             var variables2 = clause2.GetVariables();
             var names = variables1.Select(x => x.Name)
@@ -364,8 +358,7 @@ clause(Y) :-
                 .Distinct();
             var lookup1 = variables1.ToLookup(x => x.Name);
             var lookup2 = variables2.ToLookup(x => x.Name);
-            foreach (var name in names)
-            {
+            foreach (var name in names) {
                 var exemplar1 = lookup1[name].First();
                 var exemplar2 = lookup2[name].First();
                 Assert.All(lookup1[name], x => Assert.True(ReferenceEquals(exemplar1, x)));

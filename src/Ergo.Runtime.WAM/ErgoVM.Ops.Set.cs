@@ -30,8 +30,7 @@ public partial class ErgoVM
         var addr = deref(V[Vn]);
         if (addr < H)
             Heap[H] = Heap[addr];
-        else
-        {
+        else {
             Heap[H] = (Term)(REF, H);
             bind(addr, H);
         }

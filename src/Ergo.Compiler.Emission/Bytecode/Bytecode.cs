@@ -1,7 +1,5 @@
-﻿using Ergo.IO;
-using Ergo.Lang.Ast;
+﻿using Ergo.Lang.Ast;
 using Ergo.Shared.Extensions;
-using System;
 using System.Text;
 using static Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__CONST_TAG;
@@ -101,8 +99,7 @@ public abstract class Bytecode
             file.Directory.Create();
         using var fs = file.OpenWrite();
         var bytes = new byte[sizeof(__WORD)].AsSpan();
-        for (int i = 0; i < _bytes.Length; i++)
-        {
+        for (int i = 0; i < _bytes.Length; i++) {
             bytes[0] = (byte)(_bytes[i] >> 0);
             bytes[1] = (byte)(_bytes[i] >> 8);
             bytes[2] = (byte)(_bytes[i] >> 16);
@@ -117,8 +114,7 @@ public abstract class Bytecode
         var numOfConstants = span[0]; span = span[1..];
         var i = _consts.Length;
         Array.Resize(ref _consts, _consts.Length + numOfConstants);
-        for (; i < _consts.Length; i++)
-        {
+        for (; i < _consts.Length; i++) {
             _consts[i] = DeserializeConstant(ref span);
             ConstantsLookup[_consts[i].Value] = i;
         }
@@ -134,8 +130,7 @@ public abstract class Bytecode
     {
         var numOfLabels = span[0]; span = span[1..];
         var ops = new List<Operator>();
-        for (int i = 0; i < numOfLabels; i++)
-        {
+        for (int i = 0; i < numOfLabels; i++) {
             Labels[span[0]] = span[1];
             span = span[2..];
         }
@@ -181,8 +176,7 @@ public abstract class Bytecode
         var words = span.Slice(2, lenInWords);
         var bytes = new byte[lenInWords * sizeof(__WORD)];
 
-        for (int i = 0; i < lenInWords; ++i)
-        {
+        for (int i = 0; i < lenInWords; ++i) {
             bytes[i * 4 + 0] = (byte)(words[i] >> 0);
             bytes[i * 4 + 1] = (byte)(words[i] >> 8);
             bytes[i * 4 + 2] = (byte)(words[i] >> 16);

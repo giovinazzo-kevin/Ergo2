@@ -1,11 +1,10 @@
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
-using Ergo.Lang.Ast.WellKnown;
 using Ergo.Runtime.WAM;
 using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term.__TAG;
-using Term = Ergo.Compiler.Emission.Term;
 using Signature = Ergo.Compiler.Emission.Signature;
+using Term = Ergo.Compiler.Emission.Term;
 
 namespace Ergo.UnitTests;
 
@@ -114,8 +113,7 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        kb.RegisterBuiltInLabel("write", 1, (ErgoVM.__op)((vm) =>
-        {
+        kb.RegisterBuiltInLabel("write", 1, (ErgoVM.__op)((vm) => {
             var term = (Term)vm.A[0];
             var text = vm.Pretty(term);
             Trace.WriteLine($"WRITE: {text}");
@@ -134,8 +132,7 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) =>
-        {
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) => {
             var raw = vm.A[0];
             var term = (Term)raw;
             var addr = term.Tag == Term.__TAG.REF ? vm.deref(term.Value) : -1;
@@ -160,8 +157,7 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
         var output = new List<string>();
 
-        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) =>
-        {
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) => {
             var term = (Term)vm.A[0];
             output.Add(vm.Pretty(term));
         }));
@@ -182,8 +178,7 @@ public class BuiltInTests : Tests
         var vm = new ErgoVM();
 
         // A builtin that always fails
-        kb.RegisterBuiltInLabel("always_fail", 0, (ErgoVM.__op)((vm) =>
-        {
+        kb.RegisterBuiltInLabel("always_fail", 0, (ErgoVM.__op)((vm) => {
             vm.fail = true;
         }));
 

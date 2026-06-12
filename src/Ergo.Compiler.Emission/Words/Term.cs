@@ -1,6 +1,5 @@
 ﻿
 using Ergo.Lang.Ast;
-using System;
 
 namespace Ergo.Compiler.Emission;
 
@@ -55,8 +54,7 @@ public readonly ref struct Term
 
     public static __CONST_TAG TagOf(Atom atom)
     {
-        return atom switch
-        {
+        return atom switch {
             __string => __CONST_TAG.STRING,
             __int => __CONST_TAG.INT,
             __bool => __CONST_TAG.BOOL,

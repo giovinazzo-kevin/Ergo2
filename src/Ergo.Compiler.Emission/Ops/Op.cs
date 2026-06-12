@@ -1,7 +1,4 @@
-﻿using Ergo.Lang.Ast;
-using System.Text;
-
-namespace Ergo.Compiler.Emission;
+﻿namespace Ergo.Compiler.Emission;
 
 public record Op(OpCode Code, params Func<__WORD>[] Args)
 {

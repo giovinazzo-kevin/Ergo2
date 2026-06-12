@@ -1,9 +1,6 @@
 ﻿using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
-using Microsoft.VisualBasic;
-using System.Diagnostics;
 using System.Text;
-using static Ergo.Compiler.Emission.Term;
 
 namespace Ergo.Compiler.Emission;
 
@@ -19,13 +16,12 @@ public sealed class EmitterContext
     public int PC { get; private set; }
     public int NumVars { get; set; } = 0;
 
-    internal EmitterContext(OperatorLookup? operators = null) => _operators = operators ?? new ();
+    internal EmitterContext(OperatorLookup? operators = null) => _operators = operators ?? new();
 
     public static EmitterContext From(KnowledgeBaseBytecode kb)
     {
         var buf = new __WORD[64];
-        var ctx = new EmitterContext(kb.Operators)
-        {
+        var ctx = new EmitterContext(kb.Operators) {
             _constants = [.. kb.Constants.ToArray().SelectMany(atom =>
             {
                 var tag = Term.TagOf(atom);
@@ -39,8 +35,7 @@ public sealed class EmitterContext
     }
 
 
-    public EmitterContext Scope() => new(_operators)
-    {
+    public EmitterContext Scope() => new(_operators) {
         _constants = _constants,
         _constantLookup = _constantLookup,
         _labels = _labels
@@ -81,8 +76,7 @@ public sealed class EmitterContext
     /// </summary>
     public IEnumerable<(object Value, int Index)> NewConstants(Bytecode target)
     {
-        foreach (var (value, index) in _constantLookup)
-        {
+        foreach (var (value, index) in _constantLookup) {
             if (!target.ConstantsLookup.ContainsKey(value))
                 yield return (value, index);
         }
@@ -115,8 +109,7 @@ public sealed class EmitterContext
     {
         // Serialize imports as word-packed UTF8 strings
         var importsWords = new List<__WORD> { _imports.Count };
-        foreach (var imp in _imports)
-        {
+        foreach (var imp in _imports) {
             var bytes = Encoding.UTF8.GetBytes(imp);
             var lenInWords = (bytes.Length + 3) / 4;
             importsWords.Add(lenInWords);
@@ -131,14 +124,12 @@ public sealed class EmitterContext
         var data = new __WORD[instructionsLength + operatorsLength + labelsLength + 2 + importsWords.Count];
         var span = data.AsSpan();
         span[0] = _labels.Values.Count; span = span[1..];
-        foreach (var label in _labels)
-        {
+        foreach (var label in _labels) {
             (span[0], span[1]) = (label.Key, label.Value);
             span = span[2..];
         }
         span[0] = _operators.Values.Count; span = span[1..];
-        foreach (var op in _operators.Values)
-        {
+        foreach (var op in _operators.Values) {
             span[0] = op.Functors.Length;
             span[1] = op.Precedence;
             span[2] = (__WORD)op.Type_;
@@ -166,13 +157,12 @@ public sealed class EmitterContext
         var data = new __WORD[kb.Labels.Count * 2 + 1 + kb.Code.Length + instructionsLength];
         var span = data.AsSpan();
         span[0] = kb.Labels.Count; span = span[1..];
-        foreach(var label in kb.Labels)
-        {
+        foreach (var label in kb.Labels) {
             span[0] = label.Key;
             span[1] = label.Value;
             span = span[2..];
         }
-        kb.Code.CopyTo(span); 
+        kb.Code.CopyTo(span);
         span = span[kb.Code.Length..];
         for (int i = 0; i < _instructions.Count; i++)
             _instructions[i].Emit(ref span);
@@ -190,15 +180,12 @@ public sealed class EmitterContext
         var sb = new StringBuilder();
         var labels = _labels.ToDictionary(x => x.Value, x => x.Key);
         var constants = _constantLookup.ToDictionary(x => x.Value, x => x.Key);
-        if (query)
-        {
+        if (query) {
             sb.Append("Query:");
             sb.AppendLine();
         }
-        foreach (var op in _instructions)
-        {
-            if (!query && labels.TryGetValue(pc, out var label))
-            {
+        foreach (var op in _instructions) {
+            if (!query && labels.TryGetValue(pc, out var label)) {
                 var sig = (Signature)label;
                 sb.Append(constants[sig.F]);
                 sb.Append('/');
@@ -208,8 +195,7 @@ public sealed class EmitterContext
             }
             sb.Append($"{pc:D4}: {op.Code.ToString().PadRight(20)}");
             var args = op.Args.Select(a => a().ToString()).ToArray();
-            if (op.Code == OpCode.call)
-            {
+            if (op.Code == OpCode.call) {
                 var sig = ((Signature)op.Args[0]());
                 args[0] = $"{constants[sig.F]}/{sig.N}";
             }

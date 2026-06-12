@@ -7,6 +7,6 @@ namespace Ergo.Libs.Prologue.BuiltIns;
 
 public sealed class Retract(Library parent) : BuiltIn(parent)
 {
-    public override Signature Signature { get; } = new(new __string("retract"), 1);
-    public override Delegate Handler => (ErgoVM.__op)(vm => vm.RetractClause(0));
+    public override Signature Signature { get; } = new((__string)"retract", 1);
+    public override ErgoVM.__op Handle => vm => vm.RetractClause(0);
 }

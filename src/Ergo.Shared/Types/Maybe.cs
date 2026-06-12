@@ -26,7 +26,7 @@ public static class Maybe
             return Some(nullable);
         return Maybe<T>.None;
     }
-    public static Maybe<T> Or<T>(params IEnumerable<Func<Maybe<T>>> parsers) 
+    public static Maybe<T> Or<T>(params IEnumerable<Func<Maybe<T>>> parsers)
         => parsers.Aggregate(Maybe<T>.None, (a, b) => a.Or(b));
 }
 
@@ -37,13 +37,11 @@ public readonly struct Maybe<T>
 
     public Maybe<U> Map<U>(Func<T, Maybe<U>> some, Func<Maybe<U>>? none = null)
     {
-        if (HasValue)
-        {
+        if (HasValue) {
             return some(Value);
         }
 
-        if (none != null)
-        {
+        if (none != null) {
             return none();
         }
 
@@ -55,13 +53,11 @@ public readonly struct Maybe<T>
 
     public Maybe<U> Select<U>(Func<T, U> some, Func<U>? none = null)
     {
-        if (HasValue)
-        {
+        if (HasValue) {
             return some(Value);
         }
 
-        if (none != null)
-        {
+        if (none != null) {
             return none();
         }
 
@@ -70,8 +66,7 @@ public readonly struct Maybe<T>
 
     public U Reduce<U>(Func<T, U> some, Func<U> none)
     {
-        if (HasValue)
-        {
+        if (HasValue) {
             return some(Value);
         }
         return none();

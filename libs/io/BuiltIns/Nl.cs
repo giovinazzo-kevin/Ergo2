@@ -7,9 +7,8 @@ namespace Ergo.Libs.IO.BuiltIns;
 
 public sealed class Nl(Library parent) : BuiltIn(parent)
 {
-    public override Signature Signature { get; } = new(new __string("nl"), 0);
-    public override Delegate Handler => (ErgoVM.__op)(vm =>
-    {
+    public override Signature Signature { get; } = new((__string)"nl", 0);
+    public override ErgoVM.__op Handle => vm => {
         vm.Out.WriteLine();
-    });
+    };
 }

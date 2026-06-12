@@ -63,8 +63,8 @@ public class PerformanceTests
     [InlineData(1000, 100, nameof(TermGeneratorProfile.Debug))]
     public void BinaryExpression(double TARGET_MS, int NUM_SAMPLES, string PROFILE) =>
         TestCase<BinaryExpression>(
-            g => () => g.BinaryExpression().Parenthesized(), 
-            p => () => p.Parenthesized(p.BinaryExpression), 
+            g => () => g.BinaryExpression().Parenthesized(),
+            p => () => p.Parenthesized(p.BinaryExpression),
             TARGET_MS, NUM_SAMPLES, PROFILE);
     [Theory]
     [InlineData(0.65, 10000, nameof(TermGeneratorProfile.Minimal))]
@@ -129,8 +129,7 @@ public class PerformanceTests
         if (Directory.Exists(TEST_CASES_DIR))
             Directory.Delete(TEST_CASES_DIR);
     }
-    static Maybe<TermGeneratorProfile> GetProfile(string name) => name switch
-    {
+    static Maybe<TermGeneratorProfile> GetProfile(string name) => name switch {
 #if PROFILE_DEBUG
         nameof(TermGeneratorProfile.Debug) => TermGeneratorProfile.Debug,
 #endif
@@ -146,9 +145,9 @@ public class PerformanceTests
         _ => Maybe<TermGeneratorProfile>.None
     };
     static ErgoFileStream SetupTestCase(
-        Func<TermGenerator, Func<IExplainable>> generator, 
-        TermGeneratorProfile profile, 
-        int numSamples, 
+        Func<TermGenerator, Func<IExplainable>> generator,
+        TermGeneratorProfile profile,
+        int numSamples,
         out OperatorLookup ops,
         Func<string, string>? transform = null,
         [CallerMemberName] string name = "")
@@ -173,8 +172,7 @@ public class PerformanceTests
             using var fw = new StreamWriter(fs);
             var lines = Enumerable.Range(0, numSamples)
                 .Select(_ => generator(gen)());
-            foreach (var line in lines)
-            {
+            foreach (var line in lines) {
                 fw.WriteLine(transform(line.Expl));
 #if DEBUG
                 fw.Flush();

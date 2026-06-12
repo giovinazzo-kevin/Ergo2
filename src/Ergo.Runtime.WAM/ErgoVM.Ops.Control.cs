@@ -1,8 +1,8 @@
 ﻿using Ergo.Compiler.Emission;
 using System.Diagnostics;
-using static Ergo.Runtime.WAM.ErgoVM;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Control Instructions
@@ -50,10 +50,8 @@ public partial class ErgoVM
     public void Call()
     {
         var p = __signature();
-        if (defined(p, out var a))
-        {
-            if (a < 0)
-            {
+        if (defined(p, out var a)) {
+            if (a < 0) {
                 var idx = -(a + 1);
                 CP = P;
                 N = p.N;
@@ -73,9 +71,7 @@ public partial class ErgoVM
             N = p.N;
             B0 = B;
             P = a;
-        }
-        else
-        {
+        } else {
 #if DEBUG
             throw new Exception($"Undefined predicate: {Constants[p.F]}/{p.N}");
 #else
@@ -92,10 +88,8 @@ public partial class ErgoVM
     public void Execute()
     {
         var p = __signature();
-        if (defined(p, out var a))
-        {
-            if (a < 0)
-            {
+        if (defined(p, out var a)) {
+            if (a < 0) {
                 var idx = -(a + 1);
                 N = p.N;
                 B0 = B;
@@ -110,9 +104,7 @@ public partial class ErgoVM
             N = p.N;
             B0 = B;
             P = a;
-        }
-        else
-        {
+        } else {
 #if DEBUG
             throw new Exception($"Undefined predicate: {Constants[p.F]}/{p.N}");
 #else
@@ -141,8 +133,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine("[WAM] EmitSolution");
         Trace.WriteLine($"[WAM] EmitSolution: fail={fail}, P={P}, B={B}, B0={B0}");
-        for (int i = 0; i < _VARS.Count; i++)
-        {
+        for (int i = 0; i < _VARS.Count; i++) {
             Trace.WriteLine($"[WAM] A[{i}] = {A[i]}, deref = {deref(((Term)A[i]).Value)}, Store = {Store[deref(((Term)A[i]).Value)]}");
         }
 #endif
@@ -162,8 +153,7 @@ public partial class ErgoVM
     {
         int i = 0;
         var bindings = new Binding[_VARS.Count];
-        foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index))
-        {
+        foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index)) {
             var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
             var term = ReadHeapTerm(addr);
 #if WAM_TRACE

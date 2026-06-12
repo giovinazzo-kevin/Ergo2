@@ -58,8 +58,7 @@ public partial class ErgoVM
     }
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)
     {
-        for (__WORD i = 0; i < n; i++)
-        {
+        for (__WORD i = 0; i < n; i++) {
             var k = table + i * 2;
             var key = Code[k];
             var value = Code[k + 1];

@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Types\Abstract\" />
+  </ItemGroup>
+
 </Project>

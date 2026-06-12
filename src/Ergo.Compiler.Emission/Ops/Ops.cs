@@ -1,7 +1,5 @@
-﻿using Ergo.Lang.Ast;
-using System.Text;
+﻿namespace Ergo.Compiler.Emission;
 
-namespace Ergo.Compiler.Emission;
 public static class Ops
 {
     #region Types
@@ -33,18 +31,18 @@ public static class Ops
     public static readonly Func<__WORD, Op> set_constant = (__WORD c) => new Op(OpCode.set_constant, () => c);
     public static readonly Func<__WORD, Op> set_void = (__WORD n) => new Op(OpCode.set_void, () => n);
 
-    public static readonly Op allocate = new (OpCode.allocate);
-    public static readonly Op deallocate = new (OpCode.deallocate);
-    public static readonly Op proceed = new (OpCode.proceed);
+    public static readonly Op allocate = new(OpCode.allocate);
+    public static readonly Op deallocate = new(OpCode.deallocate);
+    public static readonly Op proceed = new(OpCode.proceed);
     public static readonly Func<__WORD, Op> call = (__WORD P) => new Op(OpCode.call, () => P);
     public static readonly Func<__WORD, Op> cut = (__WORD L) => new Op(OpCode.cut, () => L);
     public static readonly Func<__WORD, Op> get_level = (__WORD L) => new Op(OpCode.get_level, () => L);
 
-    public static readonly Op halt = new (OpCode.halt);
+    public static readonly Op halt = new(OpCode.halt);
 
     public static readonly Func<__WORD, Op> try_me_else = (__WORD L) => new Op(OpCode.try_me_else, () => L);
     public static readonly Func<__WORD, Op> retry_me_else = (__WORD L) => new Op(OpCode.retry_me_else, () => L);
-    public static readonly Op trust_me = new (OpCode.trust_me);
+    public static readonly Op trust_me = new(OpCode.trust_me);
     #endregion
 }
 

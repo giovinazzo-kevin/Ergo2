@@ -2,6 +2,7 @@
 using System.Diagnostics;
 
 namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Put Instructions
@@ -62,8 +63,7 @@ public partial class ErgoVM
         var addr = deref(E + Yn + 2);
         if (addr < E)
             A[Ai] = (Term)(REF, addr);
-        else
-        {
+        else {
             Heap[H] = (Term)(REF, H);
             bind(addr, H);
             A[Ai] = Heap[H];

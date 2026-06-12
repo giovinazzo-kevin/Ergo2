@@ -52,13 +52,10 @@ public class ParserContext
     public void EnterParse()
     {
         var node = new TraceNode { Method = "", Value = "" };
-        if (_traceStack.TryPeek(out var parent))
-        {
+        if (_traceStack.TryPeek(out var parent)) {
             node.Parent = parent;
             parent.Children.Add(node);
-        }
-        else
-        {
+        } else {
             ParseRoot.Children.Add(node);
             node.Parent = ParseRoot;
         }
@@ -74,8 +71,7 @@ public class ParserContext
     [Conditional("PARSER_TRACE")]
     public void AnnotateLastNode(string method, string value, bool success = true)
     {
-        if (_traceStack.TryPeek(out var node))
-        {
+        if (_traceStack.TryPeek(out var node)) {
             node.Method = method;
             node.Value = value;
             node.Success = success;

@@ -5,7 +5,7 @@ namespace Ergo.Lang.Ast;
 
 [DebuggerDisplay("{Expl}")]
 public abstract class Term : IExplainable
-{ 
+{
     public bool IsParenthesized { get; set; }
     public abstract bool IsGround { get; }
     public abstract string Expl { get; }

@@ -1,11 +1,9 @@
-﻿using System.Reflection.Emit;
-
-namespace Ergo.Runtime.WAM;
+﻿namespace Ergo.Runtime.WAM;
 
 using Ergo.Compiler.Emission;
-using static ErgoVM.GetMode;
-using static Compiler.Emission.Term.__TAG;
 using System.Diagnostics;
+using static Compiler.Emission.Term.__TAG;
+using static ErgoVM.GetMode;
 
 public partial class ErgoVM
 {
@@ -36,7 +34,7 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] GetValue: {Vn} {Ai}");
 #endif
         unify(HEAP_SIZE + STACK_SIZE + MAX_ARGS + Vn, HEAP_SIZE + STACK_SIZE + Ai);
-        if (fail) 
+        if (fail)
             backtrack();
     }
     /// <summary>
@@ -59,35 +57,28 @@ public partial class ErgoVM
         var Ai = __addr();
         var term = (Term)A[Ai];
         __ADDR addr;
-        if (term.Tag == REF)
-        {
+        if (term.Tag == REF) {
             addr = deref(term.Value);
             term = (Term)Store[addr];
-        }
-        else
+        } else
             addr = -1; // not used for non-REF
         Term cell = term;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] GetStructure: {cell.Value} {Ai}");
 #endif
-        if (cell is (REF, _))
-        {
+        if (cell is (REF, _)) {
             Heap[H] = (Term)(STR, H + 1);
             Heap[H + 1] = f;
             bind(addr, H);
             H += 2;
             mode = write;
-        }
-        else if (cell is (STR, var a))
-        {
+        } else if (cell is (STR, var a)) {
             if (Heap[a].Equals(f)) {
                 S = a + 1;
                 mode = read;
-            }
-            else fail = true;
-        }
-        else fail = true;
-        if (fail) 
+            } else fail = true;
+        } else fail = true;
+        if (fail)
             backtrack();
     }
     /// <summary>
@@ -105,30 +96,24 @@ public partial class ErgoVM
         var Ai = __word();
         var term = (Term)A[Ai];
         __ADDR addr;
-        if (term.Tag == REF)
-        {
+        if (term.Tag == REF) {
             addr = deref(term.Value);
             term = (Term)Store[addr];
-        }
-        else
+        } else
             addr = -1;
         var cell = term;
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] GetList: {cell.Value} {Ai}");
 #endif
-        if (cell is (REF, _))
-        {
+        if (cell is (REF, _)) {
             Heap[H] = (Term)(LIS, H + 1);
             bind(addr, H);
             H += 1;
             mode = write;
-        }
-        else if (cell is (LIS, var a ))
-        {
+        } else if (cell is (LIS, var a)) {
             S = a;
             mode = read;
-        }
-        else fail = true;
+        } else fail = true;
         if (fail)
             backtrack();
     }
@@ -148,32 +133,22 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(GetConstant)}: c={c} Ai={Ai}");
 #endif
-        if (term.Tag == CON)
-        {
+        if (term.Tag == CON) {
             fail = term.Value != c;
-        }
-        else if (term.Tag == REF)
-        {
+        } else if (term.Tag == REF) {
             var addr = deref(term.Value);
             var resolved = (Term)Store[addr];
-            if (resolved.Tag == REF && resolved.Value == addr)
-            {
+            if (resolved.Tag == REF && resolved.Value == addr) {
                 // Unbound — bind to constant
                 Store[addr] = (Term)(CON, c);
                 trail(addr);
-            }
-            else if (resolved.Tag == CON)
-            {
+            } else if (resolved.Tag == CON) {
                 // Already bound — check equality
                 fail = resolved.Value != c;
-            }
-            else
-            {
+            } else {
                 fail = true;
             }
-        }
-        else
-        {
+        } else {
             var addr = deref(term.Value);
             var cell = (Term)Store[addr];
             fail = cell is not (CON, var c1) || c1 != c;
