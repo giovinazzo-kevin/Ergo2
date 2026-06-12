@@ -26,8 +26,8 @@ public class Tests
 
     protected Query CompileQuery(KnowledgeBase kb, string query)
     {
-        return Ergo.Pipelines.Pipeline.CompileQuery
-            .Run(query, new() { KB = kb })
+        return Ergo.Pipelines.Pipeline.CompileQuery(kb)
+            .Run(query)
             .GetOrThrow();
     }
 

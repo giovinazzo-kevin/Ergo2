@@ -11,7 +11,7 @@ public class CompileQuery : IPipeline<string, Query, CompileQuery.Env>
 {
     public class Env
     {
-        public required KnowledgeBase KB { get; init; }
+        public KnowledgeBase KB { get; init; } = null!;
     }
 
     internal static readonly CompileQuery Instance = new();

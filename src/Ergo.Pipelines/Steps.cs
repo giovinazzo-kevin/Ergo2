@@ -10,4 +10,5 @@ public static class Steps
     public static readonly Analyze Analyze = Analyze.Instance;
     public static readonly Compile Compile = Compile.Instance;
     public static readonly Consult Consult = Consult.Instance;
+    public static readonly CompileQuery CompileQuery = CompileQuery.Instance;
 }

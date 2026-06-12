@@ -10,7 +10,8 @@ public sealed class Pipeline
     public static readonly Pipeline<SourceInput, KnowledgeBase> Consult =
         WithStep(Steps.Consult);
 
-    public static readonly CompileQuery CompileQuery = Ergo.Pipelines.Compiler.CompileQuery.Instance;
+    public static Pipeline<string, Query> CompileQuery(KnowledgeBase kb) =>
+        WithStep(Steps.CompileQuery, new Compiler.CompileQuery.Env { KB = kb });
 
     public static Pipeline<SourceInput, KnowledgeBase> Compile =>
         WithStep(Steps.LoadSource)
