@@ -13,7 +13,7 @@ public sealed class List(Library parent) : Ergo.Libs.AbstractTerm<Lang.Ast.List>
 {
     public override Signature Signature => Functors.List / 2;
 
-    public override Func<Maybe<Lang.Ast.Term>>? OnParse(Parser parser)
+    public override Func<Maybe<Lang.Ast.Term>> OnParse(Parser parser)
     {
         Func<Maybe<Lang.Ast.Term>> emptyList = parser.Transact<Lang.Ast.Term>([() =>
             parser.Parenthesized(Collections.List, () => Maybe.Some<Atom>(null!))

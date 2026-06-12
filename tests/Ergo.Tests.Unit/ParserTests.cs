@@ -71,10 +71,7 @@ public class ParserTests
         var module = new Ergo.Compiler.Analysis.Module(null!, "test");
         var lib = new Ergo.Libs.List.LibList(module);
         foreach (var abs in lib.ExportedAbstractTerms) {
-            if (abs.Parse == null) continue;
-            var production = ((ParseDelegate)abs.Parse)(parser);
-            if (production != null)
-                parser.AddAbstractParser(production);
+            parser.AddAbstractParser(((ParseDelegate)abs.Parse)(parser));
         }
     }
 

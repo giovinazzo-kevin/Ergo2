@@ -126,11 +126,8 @@ public class PerformanceTests
         var module = new Ergo.Compiler.Analysis.Module(null!, "perf");
         var lib = new Ergo.Libs.List.LibList(module);
         foreach (var abs in lib.ExportedAbstractTerms) {
-            if (abs.Parse == null) continue;
             var factory = (Ergo.Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse;
-            var production = factory(parser);
-            if (production != null)
-                parser.AddAbstractParser(production);
+            parser.AddAbstractParser(factory(parser));
         }
         return parser;
     }

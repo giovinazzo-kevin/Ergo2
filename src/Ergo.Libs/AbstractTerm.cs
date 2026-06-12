@@ -14,13 +14,13 @@ namespace Ergo.Libs;
 public abstract class AbstractTerm<TAst>(Library parent) : Ergo.Compiler.Analysis.AbstractTerm(parent)
     where TAst : Lang.Ast.Term
 {
-    public virtual Func<Maybe<Term>>? OnParse(Parser parser) => null;
+    public abstract Func<Maybe<Term>> OnParse(Parser parser);
     public abstract void OnUnify(ErgoVM vm, int addr1, int addr2, Stack<(int, int)> todo);
     public abstract Term OnRead(ErgoVM vm, int addr);
     public abstract int OnWriteHeap(ErgoVM vm, Term term);
     public abstract string OnPretty(ErgoVM vm, int addr, bool quoted);
 
-    public sealed override Delegate? Parse => (ParseDelegate)(p => OnParse(p)!);
+    public sealed override Delegate Parse => (ParseDelegate)(p => OnParse(p)!);
     public sealed override Delegate Unify => (UnifyDelegate)OnUnify;
     public sealed override Delegate Read => (ReadDelegate)OnRead;
     public sealed override Delegate WriteHeap => (WriteHeapDelegate)OnWriteHeap;
