@@ -4,7 +4,7 @@ namespace Ergo.Compiler.Analysis.Exceptions;
 
 public enum AnalyzerError
 {
-    [Description("module `{0}` must begin with a module/2 directive")]
+    [Description("module `{0}` must begin with a module/1 or module/2 directive")]
     Module0MustStartWithModuleDirective,
     [Description("module `{0}` must be named `{1}`")]
     Module0MustBeNamed1, // non-standard but needed due to how libraries are linked

@@ -9,6 +9,7 @@ public sealed class LibStdlib : Library
     {
         ExportedDirectives = [
             new DeclareModule(this),
+            new DeclareModuleSimple(this),
             new UseModule(this),
             new DeclareOperator(this),
             new DeclareDynamic(this)

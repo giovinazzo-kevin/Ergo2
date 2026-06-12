@@ -59,7 +59,7 @@ public class Analyzer
         if (directives.Length == 0)
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         var declaration = directives[0];
-        if (declaration.Functor != "module" || declaration.Arity != 2)
+        if (declaration.Functor != "module" || (declaration.Arity != 1 && declaration.Arity != 2))
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         module.Imports.AddRange(DefaultImports
             .Where(name => module.Name != name)
