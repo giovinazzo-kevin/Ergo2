@@ -47,7 +47,6 @@ public class Parser : IDisposable
     ]);
     public Func<Maybe<Atom>> Atom => Transact([
         Cut.Cast<__string, Atom>,
-        EmptyList.Cast<__string, Atom>,
         __string.Cast<__string, Atom>,
         __double.Cast<__double, Atom>,
         __int.Cast<__int, Atom>,
@@ -69,7 +68,6 @@ public class Parser : IDisposable
         () => Parenthesized(Expression.Cast<Expression, Term>),
         () => Parenthesized(Term),
         .. _abstractParsers,
-        List.Cast<List, Term>,
         Variable.Cast<Variable, Term>,
         Complex.Cast<Complex, Term>,
         Atom.Cast<Atom, Term>
@@ -124,27 +122,7 @@ public class Parser : IDisposable
         .Where(x => x.Operator.Equals(Operators.Pipe))
         .Where(x => x.IsHeadTail)
     ]);
-    public Func<Maybe<List>> ListHeadTail => Transact([() =>
-         Parenthesized(Collections.List, HeadTailExpression)
-        .Select(x => new List(Ast.List.ExtractHead(x), x.Rhs))
-    ]);
-    public Func<Maybe<List>> ListNoTail => Transact([() =>
-         Parenthesized(Collections.List, ConsExpression(Operators.Conjunction))
-        .Select(x => new List(x.Contents))
-    ]);
-    public Func<Maybe<List>> ListSingleton => Transact([() =>
-         Parenthesized(Collections.List, BinaryExpressionRhs)
-        .Select(x => new List([x]))
-    ]);
-    public Func<Maybe<__string>> EmptyList => Transact([() =>
-         Parenthesized(Collections.List, () => Maybe.Some<Atom>(null!))
-        .Select(_ => Literals.EmptyList)
-    ]);
-    public Func<Maybe<List>> List => Transact([
-        ListHeadTail,
-        ListNoTail,
-        ListSingleton
-    ]);
+
     public Func<Maybe<Directive>> Directive => Transact([() =>
         PrefixExpression()
         .Where(x => x.Operator.Equals(Operators.HornUnary))

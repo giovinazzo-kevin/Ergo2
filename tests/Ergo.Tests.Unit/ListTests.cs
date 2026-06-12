@@ -10,7 +10,7 @@ public class ListTests : Tests
         var vm = new ErgoVM();
         var solutions = new List<ErgoVM.Solution>();
         vm.SolutionEmitted += _ => solutions.Add(vm.MaterializeSolution());
-        vm.Run(kb.Query(query));
+        vm.Run(CompileQuery(kb, query));
         return solutions;
     }
 

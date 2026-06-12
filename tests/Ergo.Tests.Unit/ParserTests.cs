@@ -12,6 +12,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using ParseDelegate = Ergo.Lang.Parsing.WellKnown.Delegates.Parse;
 
 namespace Ergo.UnitTests;
 
@@ -65,6 +66,18 @@ public class ParserTests
         new(800, Operator.Type.yf, "-#"),
     ];
 
+    protected static void RegisterListParser(Parser parser)
+    {
+        var module = new Ergo.Compiler.Analysis.Module(null!, "test");
+        var lib = new Ergo.Libs.List.LibList(module);
+        foreach (var abs in lib.ExportedAbstractTerms) {
+            if (abs.Parse == null) continue;
+            var production = ((ParseDelegate)abs.Parse)(parser);
+            if (production != null)
+                parser.AddAbstractParser(production);
+        }
+    }
+
     protected T Expect<T>(string input, Func<Parser, Func<Maybe<T>>> parserFunc, bool parenthesized = false, [CallerMemberName] string caller = null!)
     {
         var stream = ErgoFileStream.Create(input, caller + ".test.ergo");
@@ -72,6 +85,7 @@ public class ParserTests
         opLookup.AddRange(TestOperators);
         var lexer = new Lexer(stream, opLookup);
         var parser = new Parser(lexer);
+        RegisterListParser(parser);
         var result = parenthesized
             ? parser.Parenthesized("(", ")", parserFunc(parser))
             : parserFunc(parser)();
@@ -254,16 +268,14 @@ public class ParserTests
     [InlineData("[a, b|[c, d|[e, f|[]]]]", 6, "[a, b, c, d, e, f]")]
     public void List(string input, int len, string? expected = null)
     {
-        var result = Expect(input, p => p.List);
+        var result = (Lang.Ast.List)Expect<Term>(input, p => p.Term);
         Assert.Equal(expected ?? input, result.Expl);
         Assert.Equal(len, result.Count);
     }
     [Fact]
     public void EmptyList()
     {
-        Expect("[]", p => p.Atom);
         Expect("[]", p => p.Term);
-        Expect("[]", p => p.EmptyList);
     }
     [Theory]
     [InlineData(":- no_args")]
@@ -387,6 +399,7 @@ clause(Y) :-
         var lookup = new OperatorLookup([Operators.Unification]);
         var lexer = new Lexer(ErgoFileStream.Open(new FileInfo($"./ergo/vm_tests.ergo")), lookup);
         var parser = new Parser(lexer);
+        RegisterListParser(parser);
         var module = parser.Parse(parser.Module).GetOrThrow();
 
 

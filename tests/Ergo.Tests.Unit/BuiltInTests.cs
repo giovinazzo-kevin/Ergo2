@@ -121,7 +121,7 @@ public class BuiltInTests : Tests
         }));
 
         // For now just verify it doesn't crash
-        var query = kb.Query("parent(X, mary), write(X)");
+        var query = CompileQuery(kb, "parent(X, mary), write(X)");
         vm.Run(query);
     }
 
@@ -141,7 +141,7 @@ public class BuiltInTests : Tests
             output.Add(vm.Pretty(term));
         }));
 
-        var query = kb.Query("parent(X, mary), my_write(X)");
+        var query = CompileQuery(kb, "parent(X, mary), my_write(X)");
         var solutions = 0;
         vm.SolutionEmitted += _ => solutions++;
         vm.Run(query);
@@ -163,7 +163,7 @@ public class BuiltInTests : Tests
         }));
 
         // parent(X, Y) has 2 solutions — write should fire for each
-        var query = kb.Query("parent(X, Y), my_write(X)");
+        var query = CompileQuery(kb, "parent(X, Y), my_write(X)");
         vm.Run(query);
 
         Assert.Equal(2, output.Count);
@@ -182,7 +182,7 @@ public class BuiltInTests : Tests
             vm.fail = true;
         }));
 
-        var query = kb.Query("fact, always_fail");
+        var query = CompileQuery(kb, "fact, always_fail");
         var solutions = 0;
         vm.SolutionEmitted += _ => solutions++;
         vm.Run(query);

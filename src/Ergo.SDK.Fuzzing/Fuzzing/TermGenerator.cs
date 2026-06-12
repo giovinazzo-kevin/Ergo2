@@ -50,7 +50,6 @@ public class TermGenerator
     public Func<Atom> Atom => () =>
          Choose<Atom>([
              Cut,
-             EmptyList,
              __string,
              __double,
              __bool,

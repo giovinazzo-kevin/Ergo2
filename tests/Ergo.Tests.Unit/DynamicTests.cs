@@ -18,7 +18,7 @@ public class DynamicTests : Tests
         var solutions = new List<ErgoVM.Solution>();
         void handler(ErgoVM v) => solutions.Add(v.MaterializeSolution());
         vm.SolutionEmitted += handler;
-        vm.Run(kb.Query(query));
+        vm.Run(CompileQuery(kb, query));
         vm.SolutionEmitted -= handler;
         return solutions;
     }
@@ -32,7 +32,7 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, functor, args.Length);
-        vm.Run(kb.Query($"assert({functor}({string.Join(", ", args)}))"));
+        vm.Run(CompileQuery(kb, $"assert({functor}({string.Join(", ", args)}))"));
         AssertSolutions(RunQuery(vm, kb, query), expected);
     }
 
@@ -44,7 +44,7 @@ public class DynamicTests : Tests
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, functor, 1);
         foreach (var v in values)
-            vm.Run(kb.Query($"assert({functor}({v}))"));
+            vm.Run(CompileQuery(kb, $"assert({functor}({v}))"));
         var solutions = RunQuery(vm, kb, $"{functor}(X)");
         Assert.Equal(values.Length, solutions.Count);
         for (int i = 0; i < values.Length; i++)
@@ -60,8 +60,8 @@ public class DynamicTests : Tests
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "item", 1);
         foreach (var item in new[] { "a", "b", "c" })
-            vm.Run(kb.Query($"assert(item({item}))"));
-        vm.Run(kb.Query($"retract(item({retract}))"));
+            vm.Run(CompileQuery(kb, $"assert(item({item}))"));
+        vm.Run(CompileQuery(kb, $"retract(item({retract}))"));
         var solutions = RunQuery(vm, kb, "item(X)");
         Assert.Equal(expected.Length, solutions.Count);
         for (int i = 0; i < expected.Length; i++)
@@ -83,7 +83,7 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "grandparent", 2);
-        vm.Run(kb.Query(assertQuery));
+        vm.Run(CompileQuery(kb, assertQuery));
         AssertSolutions(RunQuery(vm, kb, query), expected);
     }
 

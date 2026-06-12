@@ -71,13 +71,7 @@ public class Analyzer
     protected Module.Stage LoadStage_Preload(CallGraph graph, Module module)
     {
         Trace.WriteLine($"{nameof(LoadStage_Preload)}: {module.Name}");
-        var directives = module._parser!.DirectiveDefinitions()
-            .GetOr([]);
-        if (directives.Length == 0)
-            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
-        var declaration = directives[0];
-        if (declaration.Functor != "module" || (declaration.Arity != 1 && declaration.Arity != 2))
-            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
+        // Load default imports FIRST so their parsers are available for directive parsing
         module.Imports.AddRange(DefaultImports
             .Where(name => module.Name != name)
             .Where(name => !graph.Modules.TryGetValue(name, out var m) || m.LoadStage >= Module.Stage.Linked)
@@ -96,6 +90,14 @@ public class Analyzer
         }
         foreach (var import in module.Imports)
             InheritParsers(import);
+        // NOW parse directives (list syntax available from imports)
+        var directives = module._parser!.DirectiveDefinitions()
+            .GetOr([]);
+        if (directives.Length == 0)
+            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
+        var declaration = directives[0];
+        if (declaration.Functor != "module" || (declaration.Arity != 1 && declaration.Arity != 2))
+            throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives) {
             var signature = dir.Arg.GetSignature().GetOrThrow().Unqualified;

@@ -24,10 +24,17 @@ public class Tests
             .GetOrThrow();
     }
 
+    protected Query CompileQuery(KnowledgeBase kb, string query)
+    {
+        return Ergo.Pipelines.Steps.CompileQuery
+            .Run((kb, query), new())
+            .GetOrThrow();
+    }
+
     protected Query AssertQuery(string file, string query, Validator validate)
     {
         var kb = Consult(file);
-        var q = kb.Query(query);
+        var q = CompileQuery(kb, query);
         validate(q.Bytecode);
         return q;
     }

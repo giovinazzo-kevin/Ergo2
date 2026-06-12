@@ -30,6 +30,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
+		<ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
+		<ProjectReference Include="..\..\libs\list\Ergo.Libs.List.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

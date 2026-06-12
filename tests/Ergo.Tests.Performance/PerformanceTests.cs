@@ -122,12 +122,17 @@ public class PerformanceTests
     static Parser BuildParser(OperatorLookup ops, ErgoFileStream file)
     {
         var lexer = new Lexer(file, ops);
-        return new Parser(lexer);
-    }
-    static void DeleteCachedTestCases()
-    {
-        if (Directory.Exists(TEST_CASES_DIR))
-            Directory.Delete(TEST_CASES_DIR);
+        var parser = new Parser(lexer);
+        var module = new Ergo.Compiler.Analysis.Module(null!, "perf");
+        var lib = new Ergo.Libs.List.LibList(module);
+        foreach (var abs in lib.ExportedAbstractTerms) {
+            if (abs.Parse == null) continue;
+            var factory = (Ergo.Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse;
+            var production = factory(parser);
+            if (production != null)
+                parser.AddAbstractParser(production);
+        }
+        return parser;
     }
     static Maybe<TermGeneratorProfile> GetProfile(string name) => name switch {
 #if PROFILE_DEBUG

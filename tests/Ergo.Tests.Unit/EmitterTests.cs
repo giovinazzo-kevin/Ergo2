@@ -26,7 +26,7 @@ public class EmitterTests : Tests
     {
         var module = nameof(emitter_tests);
         Emit(module, out var graph, out var kb);
-        var query = kb.Query("fact").Bytecode;
+        var query = CompileQuery(kb, "fact").Bytecode;
         var span = query.Code;
         // fact/0
         AssertOp(OpCode.proceed, ref span);

@@ -62,7 +62,7 @@ public class VMTests : Tests
     public void Query(string module, string query, string[] expected)
     {
         var kb = Consult(module);
-        var q = kb.Query(query);
+        var q = CompileQuery(kb, query);
         var vm = new ErgoVM();
         var solutions = new List<ErgoVM.Solution>();
         vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
@@ -74,7 +74,7 @@ public class VMTests : Tests
     public void UndefinedPredicateThrows()
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
-        Assert.Throws<InvalidOperationException>(() => kb.Query("undefined_predicate"));
+        Assert.Throws<InvalidOperationException>(() => CompileQuery(kb, "undefined_predicate"));
     }
 
     [Fact]
