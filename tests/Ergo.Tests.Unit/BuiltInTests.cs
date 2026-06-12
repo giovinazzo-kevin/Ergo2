@@ -1,3 +1,4 @@
+using Ergo.Lang.Ast.WellKnown;
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Runtime.WAM;
@@ -22,7 +23,8 @@ public class BuiltInTests : Tests
         };
 
         var vm = new ErgoVM();
-        vm.RegisterWellKnownOperators();
+        vm.RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
+        vm.RegisterOperator(Operators.Conjunction);
         vm._QUERY = QueryBytecode.Preloaded([], constants);
 
         // Heap layout for: foo(X) :- bar(X), baz(X)
@@ -82,7 +84,6 @@ public class BuiltInTests : Tests
         };
 
         var vm = new ErgoVM();
-        vm.RegisterWellKnownOperators();
         vm._QUERY = QueryBytecode.Preloaded([], constants);
 
         // Heap: parent(john, mary)

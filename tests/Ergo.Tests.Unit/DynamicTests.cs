@@ -9,7 +9,6 @@ public class DynamicTests : Tests
     {
         var kb = Consult(nameof(EmitterTests.emitter_tests));
         var vm = new ErgoVM();
-        vm.RegisterWellKnownOperators();
         return (kb, vm);
     }
 

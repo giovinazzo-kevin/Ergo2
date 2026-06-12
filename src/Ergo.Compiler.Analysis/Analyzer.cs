@@ -40,6 +40,7 @@ public class Analyzer
                 module.Predicates[builtIns.Key] = pred = new Predicate(module, builtIns.Key);
             pred.BuiltIns.AddRange(builtIns);
         }
+        Operators.AddRange(module.Libraries.SelectMany(x => x.ExportedOperators).ToArray());
         return Module.Stage.Linked;
     }
 

@@ -11,7 +11,6 @@ public class MarshalTests : Tests
     private ErgoVM SetupVM()
     {
         var vm = new ErgoVM();
-        vm.RegisterWellKnownOperators();
         vm._QUERY = QueryBytecode.Preloaded([]);
         return vm;
     }

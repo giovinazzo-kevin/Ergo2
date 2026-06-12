@@ -43,23 +43,6 @@ public partial class ErgoVM
         foreach (Atom functor in op.Functors)
             _reconstructors[(functor.Value, arity)] = factory;
     }
-
-    public void RegisterWellKnownOperators()
-    {
-        // General operator reconstruction
-        RegisterOperator(Operators.Conjunction);
-        RegisterOperator(Operators.Disjunction);
-        RegisterOperator(Operators.Unification);
-        RegisterOperator(Operators.Addition);
-        RegisterOperator(Operators.Subtraction);
-        RegisterOperator(Operators.Multiplication);
-        RegisterOperator(Operators.Division);
-        RegisterOperator(Operators.Pipe);
-
-        // Special cases: :-/2 → Clause, :-/1 → Directive
-        RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
-        RegisterOperator(Operators.HornUnary, args => new Lang.Ast.Directive(args[0]));
-    }
     #endregion
 
     public event Action<ErgoVM> SolutionEmitted = _ => { };
@@ -72,6 +55,14 @@ public partial class ErgoVM
         _VARS = query.Variables;
         _builtInHandlers = query.BuiltInHandlers;
         _abstractTerms = query.AbstractTerms?.ToDictionary(kv => kv.Key, kv => new AbstractTermDispatch(kv.Value));
+        // Register operator reconstructors from the KB
+        if (query.Source != null)
+            foreach (var op in query.Source.Bytecode.Operators.Values)
+                RegisterOperator(op);
+        // Core reconstruction rules (always needed)
+        RegisterOperator(Operators.HornBinary, args => new Lang.Ast.Clause(args[0], args[1]));
+        RegisterOperator(Operators.HornUnary, args => new Lang.Ast.Directive(args[0]));
+        RegisterOperator(Operators.Conjunction);
         if (_kb == null && query.Source != null)
             InitDynamic(new Emitter(), query.Source);
         // Re-append live dynamic clauses to new query bytecode

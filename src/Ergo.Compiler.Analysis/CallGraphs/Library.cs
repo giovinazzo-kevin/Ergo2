@@ -6,4 +6,5 @@ public abstract class Library(Module parent) : CallGraph.Node<Module>
     public IEnumerable<Directive> ExportedDirectives { get; init; } = [];
     public IEnumerable<BuiltIn> ExportedBuiltIns { get; init; } = [];
     public IEnumerable<AbstractTerm> ExportedAbstractTerms { get; init; } = [];
+    public IEnumerable<Lang.Ast.Operator> ExportedOperators { get; init; } = [];
 }
