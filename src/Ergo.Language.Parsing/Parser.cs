@@ -16,6 +16,9 @@ public class Parser : IDisposable
 {
     public readonly Lexing.Lexer Lexer;
     public readonly ParserContext Context;
+    private readonly List<Func<Maybe<Term>>> _abstractParsers = [];
+
+    public void AddAbstractParser(Func<Maybe<Term>> parser) => _abstractParsers.Add(parser);
 
     #region AST
     public Func<Maybe<__string>> __string => Transact([() =>
@@ -65,6 +68,7 @@ public class Parser : IDisposable
     public Func<Maybe<Term>> Term => Transact([
         () => Parenthesized(Expression.Cast<Expression, Term>),
         () => Parenthesized(Term),
+        .. _abstractParsers,
         List.Cast<List, Term>,
         Variable.Cast<Variable, Term>,
         Complex.Cast<Complex, Term>,

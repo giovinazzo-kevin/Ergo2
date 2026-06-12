@@ -16,7 +16,7 @@ public partial class ErgoVM
     public QueryBytecode _QUERY = null!;
     public Dictionary<string, __VAR> _VARS = null!;
     private IReadOnlyList<Delegate>? _builtInHandlers;
-    private IReadOnlyDictionary<__WORD, Ergo.Compiler.Analysis.AbstractTerm>? _abstractTerms;
+    private IReadOnlyDictionary<__WORD, AbstractTermDispatch>? _abstractTerms;
     private __WORD _F = 0;
     private __WORD _N = 0;
     #endregion

@@ -165,7 +165,7 @@ public partial class ErgoVM
                     var ySig = Heap[y.Value];
                     if (xSig != ySig) { fail = true; return false; }
                     if (_abstractTerms.TryGetValue(xSig, out var abs)) {
-                        ((__abs_unify)abs.Unify)(this, x.Value, y.Value, todo);
+                        abs.Unify(this, x.Value, y.Value, todo);
                         break;
                     }
                 }
@@ -278,7 +278,7 @@ public partial class ErgoVM
         {
             var sig = Heap[addr];
             if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
-                return ((__abs_read)abs.Read)(this, addr);
+                return abs.Read(this, addr);
             }
             // Fallback: treat as list (data starts after signature)
             return ReadList(addr + 1);
@@ -343,7 +343,7 @@ public partial class ErgoVM
     {
         var sig = Heap[addr];
         if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
-            return ((__abs_pretty)abs.Pretty)(this, addr, quoted);
+        return abs.Pretty(this, addr, quoted);
         }
         // Fallback: list-style pretty after signature
         return PrettyList(addr + 1, quoted);

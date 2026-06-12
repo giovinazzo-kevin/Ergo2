@@ -43,11 +43,28 @@ public class Analyzer
         return Module.Stage.Linked;
     }
 
+    protected Module.Stage LoadStage_Import(Module module)
+    {
+        Trace.WriteLine($"{nameof(LoadStage_Import)}: {module.Name}");
+        module.AbstractParsers.AddRange(
+            module.Libraries
+                .SelectMany(lib => lib.ExportedAbstractTerms)
+                .Where(abs => abs.Parse != null)
+                .Select(abs => (Ergo.Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse!));
+        return Module.Stage.Imported;
+    }
+
     protected Module.Stage LoadStage_Open(CallGraph graph, Module module, ErgoFileStream stream)
     {
         Trace.WriteLine($"{nameof(LoadStage_Open)}: {module.Name}");
         var lexer = new Lexer(stream, Operators);
         module._parser = new Parser(lexer);
+        if (module.AbstractParsers.Count > 0)
+            foreach (var factory in module.AbstractParsers) {
+                var production = factory(module._parser);
+                if (production != null)
+                    module._parser.AddAbstractParser(production);
+            }
         return Module.Stage.Opened;
     }
 
@@ -65,6 +82,20 @@ public class Analyzer
             .Where(name => module.Name != name)
             .Where(name => !graph.Modules.TryGetValue(name, out var m) || m.LoadStage >= Module.Stage.Linked)
             .Select(name => graph.Modules.TryGetValue(name, out var m) ? m : LoadModule(graph, name)));
+        // Inherit abstract term parsers from imports (transitive)
+        var visited = new HashSet<__string>();
+        void InheritParsers(Module m) {
+            if (!visited.Add(m.Name)) return;
+            foreach (var factory in m.AbstractParsers) {
+                var production = factory(module._parser!);
+                if (production != null)
+                    module._parser!.AddAbstractParser(production);
+            }
+            foreach (var sub in m.Imports)
+                InheritParsers(sub);
+        }
+        foreach (var import in module.Imports)
+            InheritParsers(import);
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives) {
             var signature = dir.Arg.GetSignature().GetOrThrow().Unqualified;
@@ -162,6 +193,8 @@ public class Analyzer
             module = graph.Modules[name] = new(graph, name);
         if (module.LoadStage < Module.Stage.Linked)
             module.LoadStage = LoadStage_Link(module);
+        if (module.LoadStage < Module.Stage.Imported)
+            module.LoadStage = LoadStage_Import(module);
         if (module.LoadStage < Module.Stage.Opened)
             module.LoadStage = LoadStage_Open(graph, module, fs);
         if (module.LoadStage < Module.Stage.Preloaded) {

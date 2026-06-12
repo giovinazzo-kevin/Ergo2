@@ -71,7 +71,7 @@ public partial class ErgoVM
         _QUERY = query.Bytecode;
         _VARS = query.Variables;
         _builtInHandlers = query.BuiltInHandlers;
-        _abstractTerms = query.AbstractTerms;
+        _abstractTerms = query.AbstractTerms?.ToDictionary(kv => kv.Key, kv => new AbstractTermDispatch(kv.Value));
         if (_kb == null && query.Source != null)
             InitDynamic(new Emitter(), query.Source);
         // Re-append live dynamic clauses to new query bytecode

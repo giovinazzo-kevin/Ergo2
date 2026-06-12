@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
+    <ProjectReference Include="..\Ergo.Language.Parsing\Ergo.Lang.Parsing.csproj" />
     <ProjectReference Include="..\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
   </ItemGroup>
 

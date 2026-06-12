@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Analysis.Exceptions;
+using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Parsing;
 using Ergo.Shared.Types;
@@ -11,9 +11,10 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
     {
         Unloaded = 0,
         Linked = 1,
-        Opened = 2,
-        Preloaded = 3,
-        Loaded = 4
+        Imported = 2,
+        Opened = 3,
+        Preloaded = 4,
+        Loaded = 5
     }
 
     private __string _name = name;
@@ -32,22 +33,9 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
     public readonly Dictionary<Signature, Predicate> Predicates = [];
     public readonly HashSet<Signature> Exports = [];
     public readonly HashSet<Signature> Dynamic = [];
-    private readonly Dictionary<string, object> _data = [];
-
+    public readonly List<Ergo.Lang.Parsing.WellKnown.Delegates.Parse> AbstractParsers = [];
 
     public Stage LoadStage { get; internal set; }
     public bool IsLoading { get; internal set; }
     internal Parser? _parser { get; set; } = null;
-
-    public Maybe<T> Get<T>(string name)
-    {
-        if (_data.TryGetValue(name, out var obj) && obj is T value)
-            return value;
-        return default;
-    }
-
-    public void Set<T>(string name, T value)
-    {
-        _data[name] = value!;
-    }
 }
