@@ -14,4 +14,6 @@ public readonly record struct Signature(Maybe<__string> Module, Atom Functor, Ma
     public override string ToString() => Expl;
 
     public Signature Unqualified => Module.HasValue ? this with { Module = default } : this;
+
+    public static implicit operator Signature(string functor) => new((__string)functor, Maybe<int>.None);
 }

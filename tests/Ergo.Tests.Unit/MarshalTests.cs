@@ -183,9 +183,7 @@ public class MarshalTests : Tests
     {
         var kb = Consult(module);
         var vm = new ErgoVM();
-        var sig = new Lang.Ast.Signature(functor, 2);
-        kb.Bytecode.TryResolve(sig, out var resolved);
-        var hook = new Hook(kb, resolved);
+        var hook = kb.Hook((__string)functor / 2).GetOrThrow();
         Assert.Equal(expected, hook.Fire(vm, (__string)a, (__string)b));
     }
 
@@ -196,9 +194,7 @@ public class MarshalTests : Tests
     {
         var kb = Consult(module);
         var vm = new ErgoVM();
-        var sig = new Lang.Ast.Signature(functor, 2);
-        kb.Bytecode.TryResolve(sig, out var resolved);
-        var hook = new Hook(kb, resolved);
+        var hook = kb.Hook((__string)functor / 2).GetOrThrow();
         var result = hook.Call(vm, (__string)arg);
         Assert.NotNull(result);
         Assert.Equal(expectedResult, (string)((Atom)result).Value);
@@ -211,9 +207,7 @@ public class MarshalTests : Tests
     {
         var kb = Consult(module);
         var vm = new ErgoVM();
-        var sig = new Lang.Ast.Signature(functor, 2);
-        kb.Bytecode.TryResolve(sig, out var resolved);
-        var hook = new Hook(kb, resolved);
+        var hook = kb.Hook((__string)functor / 2).GetOrThrow();
         var result = hook.Call(vm, (__string)arg);
         Assert.Null(result);
     }
