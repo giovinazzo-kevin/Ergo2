@@ -2,7 +2,6 @@ using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
-using Ergo.Libs.Lists.Ast;
 namespace Ergo.Libs.Stdlib.Directives;
 
 public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(parent, new("module", 2), -1)
@@ -17,8 +16,8 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
         };
         var exports = args[1] switch {
             Atom a when a == Literals.EmptyList => [],
-            List l => l.Head,
-            _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(List), Signature, args[1])
+            CollectionExpression l => l.Contents.SkipLast(1),
+            _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(CollectionExpression), Signature, args[1])
         };
         foreach (var exp in exports) {
             if (exp is not SignatureExpression { Functor: var functor, Arity: var arity })
@@ -27,5 +26,3 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
         }
     }
 }
-
-

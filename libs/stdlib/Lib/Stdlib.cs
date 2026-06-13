@@ -1,11 +1,11 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Libs.Stdlib.Directives;
 
-namespace Ergo.Libs.Stdlib;
+namespace Ergo.Libs.Stdlib.Lib;
 
-public sealed class LibStdlib : Library
+public sealed class Stdlib : Library
 {
-    public LibStdlib(Module parent) : base(parent)
+    public Stdlib(Module parent) : base(parent)
     {
         ExportedDirectives = [
             new DeclareModule(this),

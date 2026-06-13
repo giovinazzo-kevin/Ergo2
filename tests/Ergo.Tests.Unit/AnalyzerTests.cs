@@ -2,8 +2,6 @@ using Ergo.Compiler.Analysis;
 using Ergo.IO;
 using Ergo.Lang.Lexing;
 using Ergo.Libs;
-using Ergo.Libs.Math;
-using Ergo.Libs.Prologue;
 using Ergo.Shared.Extensions;
 
 namespace Ergo.UnitTests;
@@ -29,7 +27,7 @@ public class AnalyzerTests
     [Fact]
     public void Prologue()
     {
-        var module = Load<LibPrologue>();
+        var module = Load<Libs.Prologue.Lib.Prologue>();
         Assert.Equal(7, module.Predicates.Count);
         Assert.True(module.Predicates.TryGetValue(new("=", 2), out var unif_2));
         Assert.Equal(1, unif_2.Clauses.Count);
@@ -48,7 +46,6 @@ public class AnalyzerTests
     [Fact]
     public void Math()
     {
-        var module = Load<LibMath>();
+        var module = Load<Libs.Math.Lib.Math>();
     }
 }
-

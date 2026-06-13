@@ -11,9 +11,9 @@ using Signature = Ergo.Compiler.Emission.Signature;
 using static Ergo.Compiler.Emission.Term.__TAG;
 using __WORD = int;
 
-namespace Ergo.Libs.Lists;
+namespace Ergo.Libs.List.Abs;
 
-public sealed class List(Library parent) : AbstractTerm<Ergo.Libs.Lists.Ast.List>(parent)
+public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
 {
     public override Lang.Ast.Signature Signature => Functors.List / 2;
 
@@ -85,7 +85,7 @@ public sealed class List(Library parent) : AbstractTerm<Ergo.Libs.Lists.Ast.List
 
     public override Lang.Ast.Term OnGet(Runtime.WAM.ErgoVM vm, int addr)
     {
-        var elements = new List<Lang.Ast.Term>();
+        var elements = new System.Collections.Generic.List<Lang.Ast.Term>();
         Lang.Ast.Term tail = Collections.List.EmptyElement;
         var dataAddr = addr + 1;
         while (true) {
@@ -135,7 +135,7 @@ public sealed class List(Library parent) : AbstractTerm<Ergo.Libs.Lists.Ast.List
 
     public override string OnPretty(Runtime.WAM.ErgoVM vm, int addr, bool quoted)
     {
-        var elems = new List<string>();
+        var elems = new System.Collections.Generic.List<string>();
         var dataAddr = addr + 1;
         while (true) {
             var head = (Term)vm.Heap[dataAddr];
@@ -161,9 +161,3 @@ public sealed class List(Library parent) : AbstractTerm<Ergo.Libs.Lists.Ast.List
         return $"[{string.Join(",", elems)}]";
     }
 }
-
-
-
-
-
-

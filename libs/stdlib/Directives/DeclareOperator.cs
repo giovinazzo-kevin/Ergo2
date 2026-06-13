@@ -1,7 +1,6 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
-using Ergo.Libs.Lists.Ast;
 namespace Ergo.Libs.Stdlib.Directives;
 
 public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directive(parent, new("op", 3), 10)
@@ -13,7 +12,7 @@ public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directiv
         if (args[1] is not __string strType || !Enum.TryParse<Operator.Type>(strType, out var type))
             throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, "Operator.Type", Signature, args[1]);
         var synonyms = args[2] switch {
-            List l => l.Contents,
+            CollectionExpression l => l.Contents.SkipLast(1),
             _ => [args[2]]
         };
         foreach (var syn in synonyms.Where(x => x is not Atom))
@@ -22,5 +21,3 @@ public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directiv
         lookup.AddRange(new Operator(precedence, type, [.. synonyms.Cast<Atom>()]));
     }
 }
-
-

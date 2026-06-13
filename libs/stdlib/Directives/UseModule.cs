@@ -1,7 +1,6 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
-using Ergo.Libs.Lists.Ast;
 namespace Ergo.Libs.Stdlib.Directives;
 
 public sealed class UseModule(Library parent) : Compiler.Analysis.Directive(parent, new("use_module", 1), 0)
@@ -10,7 +9,7 @@ public sealed class UseModule(Library parent) : Compiler.Analysis.Directive(pare
     {
         var imports = args[0] switch {
             __string s => [s],
-            List l => l.Contents,
+            CollectionExpression l => l.Contents.SkipLast(1),
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(__string), Signature, args[0])
         };
         foreach (var imp in imports) {
@@ -23,5 +22,3 @@ public sealed class UseModule(Library parent) : Compiler.Analysis.Directive(pare
         }
     }
 }
-
-

@@ -1,11 +1,11 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Libs.IO.BuiltIns;
 
-namespace Ergo.Libs.IO;
+namespace Ergo.Libs.IO.Lib;
 
-public sealed class LibIO : Library
+public sealed class IO : Library
 {
-    public LibIO(Module parent) : base(parent)
+    public IO(Module parent) : base(parent)
     {
         ExportedBuiltIns = [
             new Write(this),

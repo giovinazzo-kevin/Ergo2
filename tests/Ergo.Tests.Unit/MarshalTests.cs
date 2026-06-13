@@ -1,7 +1,7 @@
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
-using Ergo.Libs.Lists.Ast;
+using Ergo.Libs.List.Ast;
 using Ergo.Runtime.WAM;
 using Term = Ergo.Compiler.Emission.Term;
 

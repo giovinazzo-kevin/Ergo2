@@ -1,11 +1,11 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Libs.Prologue.BuiltIns;
 
-namespace Ergo.Libs.Prologue;
+namespace Ergo.Libs.Prologue.Lib;
 
-public sealed class LibPrologue : Library
+public sealed class Prologue : Library
 {
-    public LibPrologue(Module parent) : base(parent)
+    public Prologue(Module parent) : base(parent)
     {
         ExportedBuiltIns = [
             new Assert(this),

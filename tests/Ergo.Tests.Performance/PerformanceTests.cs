@@ -124,7 +124,7 @@ public class PerformanceTests
         var lexer = new Lexer(file, ops);
         var parser = new Parser(lexer);
         var module = new Compiler.Analysis.Module(null!, "perf");
-        var lib = new Libs.Lists.LibList(module);
+        var lib = new Libs.List.Lib.List(module);
         foreach (var abs in lib.ExportedAbstractTerms) {
             var factory = (Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse;
             parser.AddAbstractParser(factory(parser));

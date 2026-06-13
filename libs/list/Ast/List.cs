@@ -2,7 +2,7 @@ using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
 
-namespace Ergo.Libs.Lists.Ast;
+namespace Ergo.Libs.List.Ast;
 
 public class List : CollectionExpression
 {

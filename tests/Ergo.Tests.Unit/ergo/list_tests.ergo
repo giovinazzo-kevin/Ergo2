@@ -1,2 +1,2 @@
 :- module(_, []).
-:- use_module(lists).
+:- use_module(list).
