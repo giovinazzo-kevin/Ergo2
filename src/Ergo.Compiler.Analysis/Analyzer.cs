@@ -79,7 +79,8 @@ public class Analyzer
             .Select(name => graph.Modules.TryGetValue(name, out var m) ? m : LoadModule(graph, name)));
         // Inherit abstract term parsers from imports (transitive)
         var visited = new HashSet<__string>();
-        void InheritParsers(Module m) {
+        void InheritParsers(Module m)
+        {
             if (!visited.Add(m.Name)) return;
             foreach (var factory in m.AbstractParsers) {
                 var production = factory(module._parser!);

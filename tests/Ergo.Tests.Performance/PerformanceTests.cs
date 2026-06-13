@@ -13,7 +13,7 @@ namespace Ergo.PerformanceTests;
 
 public class PerformanceTests
 {
-    static readonly string TEST_CASES_DIR = Path.Combine(Directory.GetCurrentDirectory(), @".\profiles");
+    private static readonly string TEST_CASES_DIR = Path.Combine(Directory.GetCurrentDirectory(), @".\profiles");
     [Theory]
     [InlineData(0.05, 10000, nameof(TermGeneratorProfile.Minimal))]
     [InlineData(0.05, 10000, nameof(TermGeneratorProfile.Default))]
@@ -109,7 +109,7 @@ public class PerformanceTests
 #endif
         return measure;
     }
-    static Measure MeasureParser<T>(Parser parser, Func<Maybe<T>> p)
+    private static Measure MeasureParser<T>(Parser parser, Func<Maybe<T>> p)
     {
         var sw = new Stopwatch();
         int count = 0;
@@ -119,7 +119,7 @@ public class PerformanceTests
         sw.Stop();
         return new(count, sw.Elapsed);
     }
-    static Parser BuildParser(OperatorLookup ops, ErgoFileStream file)
+    private static Parser BuildParser(OperatorLookup ops, ErgoFileStream file)
     {
         var lexer = new Lexer(file, ops);
         var parser = new Parser(lexer);
@@ -131,7 +131,7 @@ public class PerformanceTests
         }
         return parser;
     }
-    static Maybe<TermGeneratorProfile> GetProfile(string name) => name switch {
+    private static Maybe<TermGeneratorProfile> GetProfile(string name) => name switch {
 #if PROFILE_DEBUG
         nameof(TermGeneratorProfile.Debug) => TermGeneratorProfile.Debug,
 #endif
@@ -146,7 +146,7 @@ public class PerformanceTests
 #endif
         _ => Maybe<TermGeneratorProfile>.None
     };
-    static ErgoFileStream SetupTestCase(
+    private static ErgoFileStream SetupTestCase(
         Func<TermGenerator, Func<IExplainable>> generator,
         TermGeneratorProfile profile,
         int numSamples,

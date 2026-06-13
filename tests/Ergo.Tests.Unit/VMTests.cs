@@ -195,9 +195,10 @@ public class VMTests : Tests
     [Fact]
     public void PutVariableWritesStackCorrectly()
     {
-        var vm = new ErgoVM();
-        vm.E = ErgoVM.HEAP_SIZE;
-        vm._QUERY = QueryBytecode.Preloaded([0, 0]);
+        var vm = new ErgoVM {
+            E = ErgoVM.HEAP_SIZE,
+            _QUERY = QueryBytecode.Preloaded([0, 0])
+        };
         vm.PutVariable();
         var storeAddr = ErgoVM.HEAP_SIZE + 0 + 2;
         var term = (Term)vm.Store[storeAddr];

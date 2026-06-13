@@ -5,7 +5,7 @@ namespace Ergo.Lang.Lexing;
 
 internal static partial class LexerUtils
 {
-    static readonly Regex UnescapeRegex = GetUnescapeRegex();
+    private static readonly Regex UnescapeRegex = GetUnescapeRegex();
     public static string Unescape(string s)
     {
         var sb = new StringBuilder();

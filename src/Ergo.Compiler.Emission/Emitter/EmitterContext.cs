@@ -29,7 +29,12 @@ public sealed class EmitterContext
                 return buf[..written].ToArray(); // flatten
             })],
             _constantLookup = kb.ConstantsLookup.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
-            _labels = new Dictionary<__WORD, __WORD>(kb.Labels) // shallow copy for isolation
+            _labels =
+            // shallow copy for isolation
+
+            [
+with(kb.Labels),
+            ]
         };
         return ctx;
     }

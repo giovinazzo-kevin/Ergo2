@@ -1,7 +1,9 @@
-﻿namespace Ergo.Runtime.WAM;
-
+﻿
 using Ergo.Compiler.Emission;
-using static ErgoVM.GetMode;
+using static Ergo.Runtime.WAM.ErgoVM.GetMode;
+
+namespace Ergo.Runtime.WAM;
+
 public partial class ErgoVM
 {
     #region Unify Instructions

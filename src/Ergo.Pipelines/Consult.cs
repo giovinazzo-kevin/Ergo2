@@ -4,7 +4,6 @@ using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Libs;
 using Ergo.Shared.Types;
-using System.Security.Cryptography;
 
 namespace Ergo.Pipelines;
 

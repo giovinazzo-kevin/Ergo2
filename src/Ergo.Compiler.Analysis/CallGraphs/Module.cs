@@ -1,7 +1,6 @@
 using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Parsing;
-using Ergo.Shared.Types;
 
 namespace Ergo.Compiler.Analysis;
 

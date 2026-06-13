@@ -11,8 +11,8 @@ public abstract class Bytecode
     public delegate Atom ConstantDeserializer(ref ReadOnlySpan<__WORD> span);
     public delegate void ConstantSerializer(Span<__WORD> buffer, Atom value, out int wordsWritten);
 
-    private static readonly Dictionary<__CONST_TAG, ConstantDeserializer> _constantDeserializers = new();
-    private static readonly Dictionary<__CONST_TAG, ConstantSerializer> _constantSerializers = new();
+    private static readonly Dictionary<__CONST_TAG, ConstantDeserializer> _constantDeserializers = [];
+    private static readonly Dictionary<__CONST_TAG, ConstantSerializer> _constantSerializers = [];
 
     public static IEnumerable<__CONST_TAG> RegisteredTags => _constantDeserializers.Keys;
 

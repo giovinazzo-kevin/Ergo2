@@ -6,8 +6,8 @@ namespace Ergo.Lang.Ast;
 
 public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinary, head, body)
 {
-    private Term _head = head;
-    private Term _body = body;
+    private readonly Term _head = head;
+    private readonly Term _body = body;
 
     public new readonly Term Functor = head;
     public new readonly Term[] Args = head.GetArguments();

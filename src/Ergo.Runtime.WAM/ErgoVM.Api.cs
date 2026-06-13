@@ -1,7 +1,4 @@
 using Ergo.Compiler.Emission;
-using Ergo.Lang.Ast;
-using Ergo.Lang.Ast.WellKnown;
-using static Ergo.Lang.Ast.Operator;
 using Query = Ergo.Compiler.Emission.Query;
 
 namespace Ergo.Runtime.WAM;

@@ -20,7 +20,7 @@ public sealed partial class KnowledgeBase
         Bytecode = bytecode;
     }
 
-    static KnowledgeBaseBytecode ReadFile(ErgoFileStream file)
+    private static KnowledgeBaseBytecode ReadFile(ErgoFileStream file)
     {
         using var ms = new MemoryStream();
         file.Stream.CopyTo(ms);
@@ -36,7 +36,7 @@ public sealed partial class KnowledgeBase
     public int RegisterBuiltInLabel(string name, Maybe<int> arity, Delegate handler)
     {
         var c = Bytecode.AddConstant(new Lang.Ast.__string(name));
-        var n = arity.TryGetValue(out var a) ? a : (int)Emission.Signature.VARIADIC;
+        var n = arity.TryGetValue(out var a) ? a : Signature.VARIADIC;
         var sig = (Signature)(c, n);
         var idx = _nextBuiltInIdx++;
         Bytecode.Labels[sig] = -(idx + 1);
@@ -51,7 +51,7 @@ public sealed partial class KnowledgeBase
     public void RegisterAbstractTerm(Ergo.Compiler.Analysis.AbstractTerm abs)
     {
         var c = Bytecode.AddConstant(new Lang.Ast.__string((string)abs.Signature.Functor.Value));
-        var n = abs.Signature.Arity.TryGetValue(out var a) ? a : (int)Emission.Signature.VARIADIC;
+        var n = abs.Signature.Arity.TryGetValue(out var a) ? a : Signature.VARIADIC;
         var packed = (Signature)(c, n);
         AbstractTerms[packed] = abs;
     }

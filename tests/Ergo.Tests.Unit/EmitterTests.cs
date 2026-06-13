@@ -136,11 +136,12 @@ public class EmitterTests : Tests
     [Fact]
     public void TryMeElse_Should_Allocate_ChoicePoint()
     {
-        var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.EMPTY;
-        vm.E = ErgoVM.HEAP_SIZE;
-        vm.B = ErgoVM.HEAP_SIZE;
-        vm.N = 2;
+        var vm = new ErgoVM {
+            _QUERY = QueryBytecode.EMPTY,
+            E = ErgoVM.HEAP_SIZE,
+            B = ErgoVM.HEAP_SIZE,
+            N = 2
+        };
         vm.A[0] = 111;
         vm.A[1] = 222;
         vm.TryMeElse();
@@ -155,9 +156,10 @@ public class EmitterTests : Tests
     [Fact]
     public void RetryMeElse_Should_Reset_ChoicePoint_And_Advance_Label()
     {
-        var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.Preloaded([999]);
-        vm.N = 2;
+        var vm = new ErgoVM {
+            _QUERY = QueryBytecode.Preloaded([999]),
+            N = 2
+        };
         vm.A[0] = 111;
         vm.A[1] = 222;
         vm.E = ErgoVM.HEAP_SIZE;

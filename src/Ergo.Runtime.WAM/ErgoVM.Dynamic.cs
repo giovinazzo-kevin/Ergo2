@@ -147,7 +147,7 @@ public partial class ErgoVM
 
         // Get or create dynamic predicate entry
         var p = _kb.AddConstant(sig.Functor);
-        var arityVal = sig.Arity.TryGetValue(out var av) ? av : (int)Ergo.Compiler.Emission.Signature.VARIADIC;
+        var arityVal = sig.Arity.TryGetValue(out var av) ? av : Signature.VARIADIC;
         var packed = (Signature)(p, arityVal);
         if (!_dynamics.ContainsKey(packed.RawValue))
             DeclareDynamic(_kbFull!, (string)sig.Functor.Value, arityVal);

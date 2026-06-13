@@ -1,6 +1,7 @@
-﻿namespace Ergo.Lang.Ast.WellKnown;
+﻿
+using static Ergo.Lang.Ast.Operator.Type;
 
-using static Operator.Type;
+namespace Ergo.Lang.Ast.WellKnown;
 
 public static class Operators
 {

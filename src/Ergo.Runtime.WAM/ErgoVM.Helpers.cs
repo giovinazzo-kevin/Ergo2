@@ -1,9 +1,8 @@
-﻿namespace Ergo.Runtime.WAM;
-
+﻿
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast.WellKnown;
-using System.Diagnostics;
-using static Ergo.Compiler.Emission.Term.__TAG;
+
+namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
@@ -343,7 +342,7 @@ public partial class ErgoVM
     {
         var sig = Heap[addr];
         if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
-        return abs.Pretty(this, addr, quoted);
+            return abs.Pretty(this, addr, quoted);
         }
         // Fallback: list-style pretty after signature
         return PrettyList(addr + 1, quoted);

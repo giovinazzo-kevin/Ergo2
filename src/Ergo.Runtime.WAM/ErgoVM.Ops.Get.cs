@@ -1,9 +1,8 @@
-﻿namespace Ergo.Runtime.WAM;
-
+﻿
 using Ergo.Compiler.Emission;
-using System.Diagnostics;
-using static Compiler.Emission.Term.__TAG;
-using static ErgoVM.GetMode;
+using static Ergo.Runtime.WAM.ErgoVM.GetMode;
+
+namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {

@@ -3,7 +3,7 @@
 public class Trie<TToken, TValue>
     where TToken : notnull
 {
-    class Node
+    private class Node
     {
         public Dictionary<TToken, Node> Children { get; } = [];
         public Maybe<TValue> Value { get; set; }

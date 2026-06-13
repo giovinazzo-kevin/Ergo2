@@ -22,7 +22,7 @@ public class ParserTestGenerator<T> : IEnumerable<object[]>
 #if ENABLE_TESTGEN
     const int NUM_SAMPLES = 100;
 #else
-    const int NUM_SAMPLES = 0;
+    private const int NUM_SAMPLES = 0;
 #endif
     private readonly TermGenerator _generator = new(
         ops: new(ParserTests.TestOperators),
@@ -41,7 +41,7 @@ public class ParserTestGenerator<T> : IEnumerable<object[]>
     private IEnumerable<object[]> Generate() =>
          Enumerable.Range(0, NUM_SAMPLES)
         .Select(GenerateCase);
-    object[] GenerateCase(int i)
+    private object[] GenerateCase(int i)
     {
         return [
             ((Func<T>)_field.GetValue(_generator)!)().Expl

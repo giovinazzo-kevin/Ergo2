@@ -1,6 +1,6 @@
-using Ergo.Lang.Ast.WellKnown;
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.WellKnown;
 using Ergo.Runtime.WAM;
 using System.Diagnostics;
 using static Ergo.Compiler.Emission.Term.__TAG;
@@ -86,8 +86,9 @@ public class BuiltInTests : Tests
             (__string)"parent", (__string)"john", (__string)"mary"
         };
 
-        var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.Preloaded([], constants);
+        var vm = new ErgoVM {
+            _QUERY = QueryBytecode.Preloaded([], constants)
+        };
 
         // Heap: parent(john, mary)
         //   H[0]: parent/2   H[1]: CON(1)=john  H[2]: CON(2)=mary

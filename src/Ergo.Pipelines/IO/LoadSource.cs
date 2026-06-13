@@ -32,7 +32,7 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
         };
     }
 
-    static ErgoFileStream Locate(__string input, Env env)
+    private static ErgoFileStream Locate(__string input, Env env)
     {
         ;
         env.ModuleLocator.Index.Update();
@@ -40,7 +40,7 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
         return Open(fileInfo, env);
     }
 
-    static ErgoFileStream Create(File input, Env env)
+    private static ErgoFileStream Create(File input, Env env)
     {
         if (env.SaveToPath is not null) {
             var directoryInfo = new DirectoryInfo(env.SaveToPath);
@@ -51,14 +51,14 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
         return ErgoFileStream.Create(input.Contents, input.Name);
     }
 
-    static ErgoFileStream Open(FileInfo input, Env env)
+    private static ErgoFileStream Open(FileInfo input, Env env)
     {
         if (!input.Exists)
             throw new FileNotFoundException(input.FullName);
         return ErgoFileStream.Open(input);
     }
 
-    static ErgoFileStream Open(FileStream input, Env env)
+    private static ErgoFileStream Open(FileStream input, Env env)
     {
         return ErgoFileStream.Open(input);
     }

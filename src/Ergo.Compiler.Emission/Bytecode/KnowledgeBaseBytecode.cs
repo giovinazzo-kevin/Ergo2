@@ -13,7 +13,7 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
         reference = default;
         if (!ConstantsLookup.TryGetValue(signature.Functor.Value, out var c))
             return false;
-        var n = signature.Arity.TryGetValue(out var a) ? a : (int)Signature.VARIADIC;
+        var n = signature.Arity.TryGetValue(out var a) ? a : Signature.VARIADIC;
         reference = (Signature)(c, n);
         return true;
     }

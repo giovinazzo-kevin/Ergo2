@@ -1,10 +1,12 @@
-﻿namespace Ergo.Lang.Ast;
-
+﻿
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Shared.Extensions;
-using static Operator.Associativity;
-using static Operator.Fixity;
+using static Ergo.Lang.Ast.Operator.Associativity;
+using static Ergo.Lang.Ast.Operator.Fixity;
+
+namespace Ergo.Lang.Ast;
+
 public class BinaryExpression(Operator op, Term lhs, Term rhs) : Expression(op, lhs, rhs)
 {
     public readonly Term Lhs = lhs;

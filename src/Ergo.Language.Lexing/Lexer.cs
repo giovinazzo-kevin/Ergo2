@@ -323,7 +323,7 @@ public class Lexer : IDisposable
         }
         return false;
     }
-    bool StartsWith(string x)
+    private bool StartsWith(string x)
     {
         for (var i = 0; i < x.Length; ++i)
             if (PeekAhead(i) != x[i])

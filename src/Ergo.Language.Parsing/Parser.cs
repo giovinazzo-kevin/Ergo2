@@ -8,9 +8,9 @@ using Ergo.Shared.Interfaces;
 using Ergo.Shared.Types;
 using System.Runtime.CompilerServices;
 
-namespace Ergo.Lang.Parsing;
+using static Ergo.Lang.Ast.Operator.Fixity;
 
-using static Operator.Fixity;
+namespace Ergo.Lang.Parsing;
 
 public class Parser : IDisposable
 {

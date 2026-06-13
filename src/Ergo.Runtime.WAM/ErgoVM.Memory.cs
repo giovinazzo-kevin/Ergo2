@@ -54,7 +54,7 @@ public partial class ErgoVM
         if (_QUERY.Labels.TryGetValue(sig, out address))
             return true;
         // Variadic fallback: try wildcard arity
-        Signature variadic = (sig.F, (__WORD)Ergo.Compiler.Emission.Signature.VARIADIC);
+        Signature variadic = (sig.F, Signature.VARIADIC);
         return _QUERY.Labels.TryGetValue(variadic, out address);
     }
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)

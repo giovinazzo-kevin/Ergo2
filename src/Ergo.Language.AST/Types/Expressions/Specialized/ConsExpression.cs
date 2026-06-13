@@ -28,7 +28,7 @@ public class ConsExpression : BinaryExpression
         Contents = contents;
     }
 
-    static Term FoldAndCount(Func<Term, Term, ConsExpression> fold, Operator op, IEnumerable<Term> args, out int length)
+    private static Term FoldAndCount(Func<Term, Term, ConsExpression> fold, Operator op, IEnumerable<Term> args, out int length)
     {
         var l = 0;
         var ret = args.Reverse().Aggregate((a, b) => {

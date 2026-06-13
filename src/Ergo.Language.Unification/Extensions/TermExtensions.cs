@@ -18,13 +18,13 @@ public static class TermExtensions
         _ => false
     };
 
-    static bool Assign(Variable lhs, Term rhs)
+    private static bool Assign(Variable lhs, Term rhs)
     {
         lhs.Value = rhs;
         return true;
     }
 
-    static bool UnifyArgs(Term[] a1, Term[] a2)
+    private static bool UnifyArgs(Term[] a1, Term[] a2)
     {
         for (int i = 0; i < a1.Length; i++)
             if (!Unify(a1[i], a2[i]))

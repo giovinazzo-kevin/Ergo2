@@ -4,10 +4,10 @@ using Ergo.Lang.Parsing;
 using Ergo.Runtime.WAM;
 using Ergo.Shared.Types;
 using ParseDelegate = Ergo.Lang.Parsing.WellKnown.Delegates.Parse;
-using UnifyDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.Unify;
-using ReadDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.Read;
-using WriteHeapDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.WriteHeap;
 using PrettyDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.Pretty;
+using ReadDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.Read;
+using UnifyDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.Unify;
+using WriteHeapDelegate = Ergo.Runtime.WAM.WellKnown.Delegates.WriteHeap;
 
 namespace Ergo.Libs;
 

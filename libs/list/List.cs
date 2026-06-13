@@ -4,8 +4,8 @@ using Ergo.Lang.Ast.WellKnown;
 using Ergo.Lang.Parsing;
 using Ergo.Lang.Parsing.Extensions;
 using Ergo.Shared.Types;
-using Term = Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__TAG;
+using Term = Ergo.Compiler.Emission.Term;
 
 namespace Ergo.Libs.List;
 
@@ -82,7 +82,7 @@ public sealed class List(Library parent) : Ergo.Libs.AbstractTerm<Lang.Ast.List>
 
     public override string OnPretty(Runtime.WAM.ErgoVM vm, int addr, bool quoted)
     {
-        var elems = new System.Collections.Generic.List<string>();
+        var elems = new List<string>();
         var dataAddr = addr + 1;
         while (true) {
             var head = (Term)vm.Heap[dataAddr];

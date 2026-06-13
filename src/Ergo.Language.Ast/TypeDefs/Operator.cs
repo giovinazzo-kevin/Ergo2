@@ -6,7 +6,7 @@ public readonly record struct Operator(int Precedence, Operator.Type Type_, para
     public enum Fixity : byte { Prefix, Infix, Postfix }
     public enum Associativity : byte { None, Left, Right }
 
-    static readonly (
+    private static readonly (
             Dictionary<(Fixity Fixity, Associativity Associativity), Type> To,
             Dictionary<Type, (Fixity Fixity, Associativity Associativity)> From
         ) Map = (

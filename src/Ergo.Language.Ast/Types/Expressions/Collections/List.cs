@@ -5,7 +5,7 @@ namespace Ergo.Lang.Ast;
 
 public class List : CollectionExpression
 {
-    private Term _tail;
+    private readonly Term _tail;
     public Term Tail => _tail;
     public IEnumerable<Term> Head => Contents.SkipLast(1);
 
@@ -28,11 +28,11 @@ public class List : CollectionExpression
         return [headTail.Lhs];
     }
 
-    static List Fold(Term a, Term b) => a is List l
+    private static List Fold(Term a, Term b) => a is List l
         ? new(l.Head.Prepend(b), l.Tail)
         : new([b], a);
 
-    static IEnumerable<Term> Normalize(IEnumerable<Term> head, ref Term tail)
+    private static IEnumerable<Term> Normalize(IEnumerable<Term> head, ref Term tail)
     {
         tail ??= Collections.List.EmptyElement;
         if (Collections.List.EmptyElement.Equals(tail))

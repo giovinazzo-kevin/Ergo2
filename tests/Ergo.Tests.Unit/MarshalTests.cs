@@ -10,8 +10,9 @@ public class MarshalTests : Tests
 {
     private ErgoVM SetupVM()
     {
-        var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.Preloaded([]);
+        var vm = new ErgoVM {
+            _QUERY = QueryBytecode.Preloaded([])
+        };
         return vm;
     }
 

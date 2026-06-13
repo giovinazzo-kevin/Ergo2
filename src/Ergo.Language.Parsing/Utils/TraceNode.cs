@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Ergo.Lang.Parsing;
+﻿namespace Ergo.Lang.Parsing;
 
 public class TraceNode
 {
