@@ -15,7 +15,7 @@ public sealed class DeclareModule(Library parent) : Compiler.Analysis.Directive(
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(__string), Signature, args[0])
         };
         var exports = args[1] switch {
-            Atom a when a == Literals.EmptyList => [],
+            Atom a when (string)a.Value == "[]" => [],
             CollectionExpression l => l.Contents.SkipLast(1),
             _ => throw new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(CollectionExpression), Signature, args[1])
         };

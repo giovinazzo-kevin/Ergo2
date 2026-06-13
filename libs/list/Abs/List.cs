@@ -9,30 +9,29 @@ using static Ergo.Compiler.Emission.Ops;
 using Term = Ergo.Compiler.Emission.Term;
 using Signature = Ergo.Compiler.Emission.Signature;
 using static Ergo.Compiler.Emission.Term.__TAG;
-using __WORD = int;
 
 namespace Ergo.Libs.List.Abs;
 
 public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
 {
-    public override Lang.Ast.Signature Signature => Functors.List / 2;
+    public override Lang.Ast.Signature Signature => WellKnown.Functor / 2;
 
     public override Func<Maybe<Lang.Ast.Term>> OnParse(Parser parser)
     {
         Func<Maybe<Lang.Ast.Term>> emptyList = parser.Transact([() =>
-            parser.Parenthesized(Collections.List, () => Maybe.Some<Atom>(null!))
-                .Select<Lang.Ast.Term>(_ => Literals.EmptyList)
+            parser.Parenthesized(WellKnown.Collection, () => Maybe.Some<Atom>(null!))
+                .Select<Lang.Ast.Term>(_ => WellKnown.EmptyList)
         ]);
         Func<Maybe<Ast.List>> listHeadTail = parser.Transact([() =>
-            parser.Parenthesized(Collections.List, parser.HeadTailExpression)
+            parser.Parenthesized(WellKnown.Collection, parser.HeadTailExpression)
                 .Select(x => new Ast.List(Ast.List.ExtractHead(x), x.Rhs))
         ]);
         Func<Maybe<Ast.List>> listNoTail = parser.Transact([() =>
-            parser.Parenthesized(Collections.List, parser.ConsExpression(Operators.Conjunction))
+            parser.Parenthesized(WellKnown.Collection, parser.ConsExpression(Operators.Conjunction))
                 .Select(x => new Ast.List(x.Contents))
         ]);
         Func<Maybe<Ast.List>> listSingleton = parser.Transact([() =>
-            parser.Parenthesized(Collections.List, parser.BinaryExpressionRhs)
+            parser.Parenthesized(WellKnown.Collection, parser.BinaryExpressionRhs)
                 .Select(x => new Ast.List([x]))
         ]);
         return parser.Transact([
@@ -52,7 +51,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
                 emitter.EmitUnify(ctx, elem);
             emitter.EmitUnify(ctx, list.Tail);
         } else {
-            ctx.Emit(get_constant(ctx.Constant(Literals.EmptyList.Value), Ai));
+            ctx.Emit(get_constant(ctx.Constant(WellKnown.EmptyList.Value), Ai));
         }
     }
 
@@ -62,7 +61,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
         if (!deep) return;
         var elems = list.Head.ToArray();
         if (elems.Length == 0) {
-            ctx.Emit(put_constant(ctx.Constant(Literals.EmptyList.Value), Ai));
+            ctx.Emit(put_constant(ctx.Constant(WellKnown.EmptyList.Value), Ai));
             return;
         }
         
@@ -85,8 +84,8 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
 
     public override Lang.Ast.Term OnGet(Runtime.WAM.ErgoVM vm, int addr)
     {
-        var elements = new System.Collections.Generic.List<Lang.Ast.Term>();
-        Lang.Ast.Term tail = Collections.List.EmptyElement;
+        var elements = new List<Lang.Ast.Term>();
+        Lang.Ast.Term tail = WellKnown.Collection.EmptyElement;
         var dataAddr = addr + 1;
         while (true) {
             elements.Add(vm.ReadHeapTerm(dataAddr));
@@ -110,17 +109,17 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
             }
             dataAddr = tailTerm.Value + 1;
         }
-        return new Ast.List(elements, tail);
+        return new Ast.List(elements, WellKnown.Collection.EmptyElement);
     }
 
     public override int OnPut(Runtime.WAM.ErgoVM vm, Ast.List list)
     {
         var elems = list.Head.ToArray();
         if (elems.Length == 0) {
-            var c = vm._QUERY.Bytecode.AddConstant(Collections.List.EmptyElement);
+            var c = vm._QUERY.Bytecode.AddConstant(WellKnown.Collection.EmptyElement);
             return (int)(Term)(CON, c);
         }
-        var c2 = vm._QUERY.Bytecode.AddConstant(new __string((string)Functors.List.Value));
+        var c2 = vm._QUERY.Bytecode.AddConstant(new __string((string)WellKnown.Functor.Value));
         var listSig = (Signature)(c2, 2);
         var tail = vm.WriteHeapTerm(list.Tail);
         for (int i = elems.Length - 1; i >= 0; i--) {

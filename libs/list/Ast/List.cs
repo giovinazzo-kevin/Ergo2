@@ -10,11 +10,11 @@ public class List : CollectionExpression
     public Term Tail => _tail;
     public IEnumerable<Term> Head => Contents.SkipLast(1);
 
-    public bool Complete => Tail.Equals(Collections.List.EmptyElement);
+    public bool Complete => Tail.Equals(WellKnown.Collection.EmptyElement);
     public bool ListTail => Tail is List { } || Tail is Variable { Value: List { } };
     public int Count => Length + (Tail is List { } l ? l.Count : 1);
 
-    public List(IEnumerable<Term> head, Term tail = null!) : base(Fold, Collections.List, Operators.List, Normalize(head, ref tail))
+    public List(IEnumerable<Term> head, Term tail = null!) : base(Fold, WellKnown.Collection, WellKnown.Operator, Normalize(head, ref tail))
     {
         _tail = tail;
     }
@@ -35,11 +35,11 @@ public class List : CollectionExpression
 
     private static IEnumerable<Term> Normalize(IEnumerable<Term> head, ref Term tail)
     {
-        tail ??= Collections.List.EmptyElement;
-        if (Collections.List.EmptyElement.Equals(tail))
+        tail ??= WellKnown.Collection.EmptyElement;
+        if (WellKnown.Collection.EmptyElement.Equals(tail))
             return head.Append(tail);
         if (tail is List { Complete: true, Contents: var contents }) {
-            tail = Literals.EmptyList;
+            tail = WellKnown.EmptyList;
             return head.Concat(contents);
         }
         var newContents = head;

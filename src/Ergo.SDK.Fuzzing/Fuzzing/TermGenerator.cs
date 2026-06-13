@@ -1,4 +1,4 @@
-﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
 using Ergo.Lang.Lexing;
 using Ergo.Shared.Types;
@@ -46,7 +46,7 @@ public class TermGenerator
     public Func<__string> Cut => () =>
         Literals.Cut;
     public Func<__string> EmptyList => () =>
-        Literals.EmptyList;
+        (__string)"[]";
     public Func<Atom> Atom => () =>
          Choose<Atom>([
              Cut,
@@ -126,7 +126,7 @@ public class TermGenerator
         return new Directive(Complex());
     };
     public Func<Module> Module => () => {
-        var module = new Directive(new Complex("module", __string(), Literals.EmptyList));
+        var module = new Directive(new Complex("module", __string(), (__string)"[]"));
         var numDirectives = _rng.Next(Profile.MinProgramDirectives, Profile.MaxProgramDirectives + 1);
         var numClauses = _rng.Next(Profile.MinProgramClauses, Profile.MaxProgramClauses + 1);
         var directives = new Directive[numDirectives];

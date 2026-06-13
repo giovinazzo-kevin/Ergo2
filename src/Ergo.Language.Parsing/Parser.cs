@@ -216,7 +216,7 @@ public class Parser : IDisposable
         return ret;
     }
     public Maybe<T> Parenthesized<T>(Func<Maybe<T>> tryParse) where T : Term =>
-         Parenthesized(Collections.Tuple, tryParse)
+         Parenthesized(new Collection("(", ")"), tryParse)
         .Select(x => (T)x.Parenthesized());
     public Maybe<T> Parenthesized<T>(Collection collection, Func<Maybe<T>> tryParse) where T : Term =>
          Parenthesized(collection.OpeningDelim, collection.ClosingDelim, tryParse);

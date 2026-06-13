@@ -25,7 +25,7 @@ public partial class ErgoVM
         if (P < 0) {
             var contIdx = -(P + 1);
             if (!RetryDynamic(contIdx)) {
-                // No more dynamic clauses — remove choice point and continue
+                // No more dynamic clauses ï¿½ remove choice point and continue
                 var n = Store[B];
                 B = Store[B + n + 3];
                 HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
@@ -168,7 +168,7 @@ public partial class ErgoVM
                         break;
                     }
                 }
-                // Fallback: list-style [head, tail] pairs after signature
+                // Fallback: unregistered ABS
                 WalkList(x.Value + 1, y.Value + 1, todo);
                 break;
 
@@ -246,45 +246,13 @@ public partial class ErgoVM
             return new Lang.Ast.Complex(atom, args);
         }
 
-        Lang.Ast.Term ReadList(__ADDR addr)
-        {
-            // Fallback for unregistered abstract terms: produce cons-cell Complex terms
-            var elements = new List<Lang.Ast.Term>();
-            while (true) {
-                var headTerm = (Term)Heap[addr];
-                var tailTerm = (Term)Heap[addr + 1];
-
-                elements.Add(Read(headTerm));
-
-                if (tailTerm.Tag == REF) {
-                    elements.Add(Read(tailTerm));
-                    break;
-                }
-
-                if (tailTerm.Tag != ABS) {
-                    elements.Add(Read(tailTerm));
-                    break;
-                }
-
-                // Skip signature word in next cons cell
-                addr = tailTerm.Value + 1;
-            }
-
-            // Build nested cons cells: .(a, .(b, .(c, tail)))
-            var result = elements[^1];
-            for (int i = elements.Count - 2; i >= 0; i--)
-                result = new Lang.Ast.Complex(Lang.Ast.WellKnown.Functors.List, elements[i], result);
-            return result;
-        }
-
         Lang.Ast.Term ReadAbstract(__ADDR addr)
         {
             var sig = Heap[addr];
             if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
                 return ((WellKnown.Delegates.Get)abs.Get)(this, addr);
             }
-            // Fallback: treat as list (data starts after signature)
-            return ReadList(addr + 1);
+            throw new NotSupportedException($"No abstract term handler registered for signature {sig}");
         }
     }
 
@@ -315,41 +283,13 @@ public partial class ErgoVM
         return $"{functor}({string.Join(", ", args)})";
     }
 
-    private string PrettyList(__ADDR addr, bool quoted = false)
-    {
-        var elems = new List<string>();
-        while (true) {
-            var head = (Term)Heap[addr];
-            var tail = (Term)Heap[addr + 1];
-            elems.Add(Pretty(head, quoted));
-            if (tail.Tag == CON && Constants[tail.Value].Value is string s && s == "[]")
-                break;
-            if (tail.Tag == ABS) {
-                addr = tail.Value + 1; // skip signature
-                continue;
-            }
-            if (tail.Tag == REF) {
-                var d = deref(tail.Value);
-                var dt = (Term)Store[d];
-                if (dt.Tag == ABS) { addr = dt.Value + 1; continue; }
-                if (dt.Tag == CON && Constants[dt.Value].Value is string s2 && s2 == "[]") break;
-                elems.Add("|" + Pretty(dt, quoted));
-                break;
-            }
-            elems.Add("|" + Pretty(tail, quoted));
-            break;
-        }
-        return $"[{string.Join(",", elems)}]";
-    }
-
     private string PrettyAbstract(__ADDR addr, bool quoted = false)
     {
         var sig = Heap[addr];
         if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
             return ((WellKnown.Delegates.Pretty)abs.Pretty)(this, addr, quoted);
         }
-        // Fallback: list-style pretty after signature
-        return PrettyList(addr + 1, quoted);
+        throw new NotSupportedException($"No abstract term handler registered for signature {sig}");
     }
 
     /// <summary>

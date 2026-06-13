@@ -146,7 +146,7 @@ public class MarshalTests : Tests
     {
         var vm = SetupVM();
         var astElems = elems.Select(e => (Lang.Ast.Term)(__string)e).ToArray();
-        var read = Roundtrip(vm, new List(astElems, Collections.List.EmptyElement));
+        var read = Roundtrip(vm, new List(astElems, Ergo.Libs.List.WellKnown.EmptyList));
         Assert.IsType<List>(read);
         var head = ((List)read).Head.ToArray();
         Assert.Equal(elems.Length, head.Length);

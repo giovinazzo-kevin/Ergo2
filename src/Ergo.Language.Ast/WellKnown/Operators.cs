@@ -22,8 +22,4 @@ public static class Operators
     public static readonly Operator Module = new(600, xfy, Functors.Module);
 
     public static readonly Operator Pipe = new(1105, xfy, Functors.Pipe);
-    public static readonly Operator List = new(900, xfy, Functors.List);
-    public static readonly Operator Set = new(900, xfy, Functors.Set);
-
-    public static readonly HashSet<Operator> RESERVED = [List, Set];
 }
