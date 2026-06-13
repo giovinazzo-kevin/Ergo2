@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Analysis;
+using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Emission;
 using Ergo.IO;
 using Ergo.Lang.Ast;
@@ -18,18 +18,15 @@ public class Tests
 
     protected KnowledgeBase Consult(string moduleName)
     {
-        return Pipeline.Consult
-            .Or(Pipeline.Compile)
+        return Pipeline.Consult.Or(Pipeline.Compile)
             .Run((__string)moduleName)
             .GetOrThrow();
     }
 
     protected Query CompileQuery(KnowledgeBase kb, string query)
     {
-        return Steps.CompileQuery
-            .Run(kb, new())
-            .GetOrThrow()
-            .Run(query)
+        return kb.Query
+            .Run((__string)query)
             .GetOrThrow();
     }
 
@@ -96,3 +93,6 @@ public class Tests
     }
 
 }
+
+
+

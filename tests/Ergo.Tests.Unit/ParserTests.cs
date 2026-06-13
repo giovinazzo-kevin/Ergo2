@@ -1,7 +1,9 @@
-﻿using Ergo.IO;
+using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
+using Ergo.Libs.Lists.Ast;
+using List = Ergo.Libs.Lists.Ast.List;
 using Ergo.Lang.Lexing;
 using Ergo.Lang.Parsing;
 using Ergo.SDK.Fuzzing;
@@ -68,8 +70,8 @@ public class ParserTests
 
     protected static void RegisterListParser(Parser parser)
     {
-        var module = new Ergo.Compiler.Analysis.Module(null!, "test");
-        var lib = new Ergo.Libs.List.LibList(module);
+        var module = new Compiler.Analysis.Module(null!, "test");
+        var lib = new Libs.Lists.LibList(module);
         foreach (var abs in lib.ExportedAbstractTerms) {
             parser.AddAbstractParser(((ParseDelegate)abs.Parse)(parser));
         }
@@ -265,7 +267,7 @@ public class ParserTests
     [InlineData("[a, b|[c, d|[e, f|[]]]]", 6, "[a, b, c, d, e, f]")]
     public void List(string input, int len, string? expected = null)
     {
-        var result = (Lang.Ast.List)Expect<Term>(input, p => p.Term);
+        var result = (Libs.Lists.Ast.List)Expect(input, p => p.Term);
         Assert.Equal(expected ?? input, result.Expl);
         Assert.Equal(len, result.Count);
     }
@@ -414,3 +416,5 @@ clause(Y) :-
         Assert.NotNull(goal);
     }
 }
+
+

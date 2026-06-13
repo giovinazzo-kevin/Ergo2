@@ -14,7 +14,7 @@ namespace Ergo.Lang.Parsing;
 
 public class Parser : IDisposable
 {
-    public readonly Lexing.Lexer Lexer;
+    public readonly Lexer Lexer;
     public readonly ParserContext Context;
     private readonly List<Func<Maybe<Term>>> _abstractParsers = [];
 
@@ -241,7 +241,7 @@ public class Parser : IDisposable
             yield return item;
     }
     #endregion
-    public Parser(Lexing.Lexer lexer, ParserContext? context = null)
+    public Parser(Lexer lexer, ParserContext? context = null)
     {
         Lexer = lexer;
         Context = context ?? new();

@@ -28,5 +28,7 @@ public partial class ErgoVM
         return op;
     }
     protected void Panic() => throw new NotImplementedException();
+
+    public ErgoVM() { }
     #endregion
 }

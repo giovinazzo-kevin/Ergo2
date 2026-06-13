@@ -1,5 +1,5 @@
 :- module(_, [flatten/2, parse/1]).
-:- use_module(list).
+:- use_module(lists).
 
 flatten([], []).
 flatten([H|T], Flat) :-

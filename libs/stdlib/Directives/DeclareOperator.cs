@@ -1,6 +1,7 @@
 using Ergo.Compiler.Analysis;
 using Ergo.Compiler.Analysis.Exceptions;
 using Ergo.Lang.Ast;
+using Ergo.Libs.Lists.Ast;
 namespace Ergo.Libs.Stdlib.Directives;
 
 public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directive(parent, new("op", 3), 10)
@@ -21,3 +22,5 @@ public sealed class DeclareOperator(Library parent) : Compiler.Analysis.Directiv
         lookup.AddRange(new Operator(precedence, type, [.. synonyms.Cast<Atom>()]));
     }
 }
+
+

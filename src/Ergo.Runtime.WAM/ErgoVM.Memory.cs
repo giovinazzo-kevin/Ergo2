@@ -1,4 +1,4 @@
-﻿
+
 using Ergo.Compiler.Emission;
 
 namespace Ergo.Runtime.WAM;
@@ -15,8 +15,7 @@ public partial class ErgoVM
     public __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
     public QueryBytecode _QUERY = null!;
     public Dictionary<string, __VAR> _VARS = null!;
-    private IReadOnlyList<Delegate>? _builtInHandlers;
-    private IReadOnlyDictionary<__WORD, AbstractTermDispatch>? _abstractTerms;
+    public KnowledgeBase KB = null!;
     private __WORD _F = 0;
     private __WORD _N = 0;
     #endregion
@@ -53,8 +52,7 @@ public partial class ErgoVM
     {
         if (_QUERY.Labels.TryGetValue(sig, out address))
             return true;
-        // Variadic fallback: try wildcard arity
-        Signature variadic = (sig.F, Signature.VARIADIC);
+        Signature variadic = (sig.F, (__WORD)Ergo.Compiler.Emission.Signature.VARIADIC);
         return _QUERY.Labels.TryGetValue(variadic, out address);
     }
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)

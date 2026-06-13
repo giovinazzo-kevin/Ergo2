@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ergo.Pipelines.IO;
 
-public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream, LoadSource.File>, ErgoFileStream, LoadSource.Env>
+public sealed class LoadSource : IPipeline<SourceInput, ErgoFileStream, LoadSource.Env>
 {
     public class Env
     {
@@ -21,7 +21,7 @@ public sealed class LoadSource : IPipeline<Either<__string, FileInfo, FileStream
     internal static readonly LoadSource Instance = new();
     private LoadSource() { }
 
-    public Result<ErgoFileStream, PipelineError> Run(Either<__string, FileInfo, FileStream, File> input, Env env)
+    public Result<ErgoFileStream, PipelineError> Run(SourceInput input, Env env)
     {
         return input switch {
             Case<File> { Value: var file } => Create(file, env),

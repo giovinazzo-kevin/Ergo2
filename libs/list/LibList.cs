@@ -1,6 +1,6 @@
 using Ergo.Compiler.Analysis;
 
-namespace Ergo.Libs.List;
+namespace Ergo.Libs.Lists;
 
 public sealed class LibList : Library
 {

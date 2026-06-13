@@ -8,7 +8,7 @@ public sealed partial class KnowledgeBase
     public readonly string Name;
     public readonly KnowledgeBaseBytecode Bytecode;
     public readonly List<Delegate> BuiltInHandlers = [];
-    public readonly Dictionary<__WORD, Ergo.Compiler.Analysis.AbstractTerm> AbstractTerms = [];
+    public readonly Dictionary<__WORD, Analysis.AbstractTerm> AbstractTerms = [];
     public readonly Dictionary<(object Functor, int Arity), Func<Lang.Ast.Term[], Lang.Ast.Term>> Reconstructors = [];
 
     public KnowledgeBase(ErgoFileStream file)
@@ -48,7 +48,7 @@ public sealed partial class KnowledgeBase
     public int RegisterBuiltInLabel(string name, int arity, Delegate handler)
         => RegisterBuiltInLabel(name, (Maybe<int>)arity, handler);
 
-    public void RegisterAbstractTerm(Ergo.Compiler.Analysis.AbstractTerm abs)
+    public void RegisterAbstractTerm(Analysis.AbstractTerm abs)
     {
         var c = Bytecode.AddConstant(new Lang.Ast.__string((string)abs.Signature.Functor.Value));
         var n = abs.Signature.Arity.TryGetValue(out var a) ? a : Signature.VARIADIC;

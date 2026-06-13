@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Analysis;
+using Ergo.Compiler.Analysis;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Ast.WellKnown;
@@ -10,13 +10,12 @@ namespace Ergo.Compiler.Emission;
 
 public class Emitter
 {
-    private __WORD _listSig = -1;
-    protected __WORD ListSignature(EmitterContext ctx)
+    private readonly Dictionary<Lang.Ast.Signature, AbstractTerm> _abstractTerms = new();
+
+    public void RegisterAbstractTermEmitter(AbstractTerm abs, EmitterContext ctx)
     {
-        if (_listSig != -1) return _listSig;
-        var c = ctx.Constant(Lang.Ast.WellKnown.Functors.List.Value);
-        _listSig = (Signature)(c, 2);
-        return _listSig;
+        abs.PackedSig = (int)(Signature)(ctx.Constant(abs.Signature.Functor.Value), abs.Signature.Arity.GetOrThrow());
+        _abstractTerms[abs.Signature] = abs;
     }
     public virtual KnowledgeBase KnowledgeBase(CallGraph graph)
     {
@@ -26,9 +25,13 @@ public class Emitter
         foreach (var module in graph.Modules.Values) {
             foreach (var import in module.Imports)
                 ctx.AddImport(import.Name);
-            // Collect abstract terms from libraries
+            // Collect and register abstract terms BEFORE predicate emission
             foreach (var lib in module.Libraries)
                 abstractTerms.AddRange(lib.ExportedAbstractTerms);
+        }
+        foreach (var abs in abstractTerms)
+            RegisterAbstractTermEmitter(abs, ctx);
+        foreach (var module in graph.Modules.Values) {
             foreach (var pred in module.Predicates.Values) {
                 if (pred.BuiltIns.Count > 0 && pred.Clauses.Count == 0)
                     builtIns.AddRange(pred.BuiltIns);
@@ -41,7 +44,10 @@ public class Emitter
         foreach (var bi in builtIns)
             kb.RegisterBuiltInLabel((string)bi.Signature.Functor.Value, bi.Signature.Arity, bi.Handler);
         foreach (var abs in abstractTerms)
+        {
             kb.RegisterAbstractTerm(abs);
+            RegisterAbstractTermEmitter(abs, ctx);
+        }
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: false));
 #endif
@@ -103,7 +109,7 @@ public class Emitter
                 return ctx;
             }
             var sign = term.GetSignature().GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
-            // Unwrap module qualification: io:write(X) → write(X)
+            // Unwrap module qualification: io:write(X) ? write(X)
             var goal = term is BinaryExpression { Operator: var op } bin && op == Operators.Module
                 ? bin.Rhs : term;
             needsStackFrame = goal.GetVariables().Any();
@@ -121,7 +127,7 @@ public class Emitter
                     Write(ctx, args, i, queryVars, deep: true);
             }
             if (!kb.TryResolve(sign, out var label)) {
-                // Check if it's declared dynamic — emit call for runtime resolution
+                // Check if it's declared dynamic � emit call for runtime resolution
                 var c = ctx.Constant(sign.Functor.Value);
                 var dynSig = (Signature)(c, sign.Arity.TryGetValue(out var dynA) ? dynA : Signature.VARIADIC);
                 if (kb.Labels.ContainsKey(dynSig))
@@ -211,7 +217,7 @@ public class Emitter
         }
     }
 
-    protected virtual void EmitUnify(EmitterContext ctx, Lang.Ast.Term term)
+    public virtual void EmitUnify(EmitterContext ctx, Lang.Ast.Term term)
     {
         switch (term) {
             case Variable v when v.Value is not __int:
@@ -241,14 +247,8 @@ public class Emitter
     protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName)
     {
         switch (args[Ai]) {
-            case List list when list.Head.Any():
-                ctx.Emit(get_abstract(ListSignature(ctx), Ai));
-                foreach (var elem in list.Head)
-                    EmitUnify(ctx, elem);
-                EmitUnify(ctx, list.Tail);
-                break;
-            case List list:
-                ctx.Emit(get_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai));
+            case var _ when args[Ai].GetSignature().TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
+                ((WellKnown.Delegates.EmitGet)match.EmitGet)(this, ctx, match.PackedSig, args, Ai, varsByName);
                 break;
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
@@ -288,21 +288,9 @@ public class Emitter
     protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName, bool deep = false)
     {
         switch (args[Ai]) {
-            case List list when deep: {
-                    var elems = list.Head.ToArray();
-                    if (elems.Length == 0) { ctx.Emit(put_constant(ctx.Constant(Lang.Ast.WellKnown.Literals.EmptyList.Value), Ai)); break; }
-                    var lsig = ListSignature(ctx);
-                    int prevV = -1;
-                    for (int k = elems.Length - 1; k >= 0; k--) {
-                        int reg = k == 0 ? Ai : Ai + elems.Length - k;
-                        ctx.Emit(put_abstract(lsig, reg));
-                        EmitSet(ctx, elems[k], varsByName);
-                        if (prevV < 0) EmitSet(ctx, list.Tail, varsByName);
-                        else ctx.Emit(set_value(prevV));
-                        if (k > 0) { prevV = ctx.NumVars++; ctx.Emit(get_variable(prevV, reg)); }
-                    }
-                    break;
-                }
+            case var _ when args[Ai].GetSignature().TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
+                ((WellKnown.Delegates.EmitPut)match.EmitPut)(this, ctx, match.PackedSig, args, Ai, varsByName, deep);
+                break;
             case Complex @struct:
                 var f = ctx.Constant(@struct.Functor.Value);
                 var fn = (Signature)(f, @struct.Arity);
@@ -348,15 +336,15 @@ public class Emitter
         }
     }
 
-    protected virtual void EmitSet(EmitterContext ctx, Lang.Ast.Term term, Dictionary<string, int>? varsByName = null)
+    public virtual void EmitSet(EmitterContext ctx, Lang.Ast.Term term, Dictionary<string, int>? varsByName = null)
     {
         switch (term) {
             case Variable v when v.Value is __int i:
-                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value (via Value) for '{v.Name}' → V[{(__WORD)i}]");
+                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value (via Value) for '{v.Name}' ? V[{(__WORD)i}]");
                 ctx.Emit(set_value((__WORD)i));
                 break;
             case Variable v when varsByName != null && varsByName.TryGetValue(v.Name, out var knownIdx):
-                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value for '{v.Name}' → V[{knownIdx}]");
+                System.Diagnostics.Trace.WriteLine($"[EMIT] set_value for '{v.Name}' ? V[{knownIdx}]");
                 ctx.Emit(set_value(knownIdx));
                 break;
             case Variable v:
@@ -404,7 +392,7 @@ public class Emitter
                 EmitSet(ctx, @struct.Args[k], varsByName);
         }
 
-        // Copy A[tempA] → V[vn] for parent's set_value
+        // Copy A[tempA] ? V[vn] for parent's set_value
         var vn = ctx.NumVars++;
         ctx.Emit(get_variable(vn, tempA));
         return vn;

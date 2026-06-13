@@ -12,17 +12,10 @@ public partial class ErgoVM
     private readonly Dictionary<__WORD, DynamicPredicate> _dynamics = [];
     private readonly List<DynContinuation> _dynConts = [];
     private int _globalGen;
-    private Emitter? _emitter;
-    private KnowledgeBaseBytecode? _kb;
-    private KnowledgeBase? _kbFull;
+    private readonly Emitter _emitter = new();
+    
+    
     private bool _inDynClause;
-
-    public void InitDynamic(Emitter emitter, KnowledgeBase kb)
-    {
-        _emitter = emitter;
-        _kb = kb.Bytecode;
-        _kbFull = kb;
-    }
 
     public void RegisterDynamic(Signature sig)
     {
@@ -38,12 +31,12 @@ public partial class ErgoVM
     /// </summary>
     public void DeclareDynamic(KnowledgeBase kb, string functor, int arity)
     {
-        var c = kb.Bytecode.AddConstant(new Lang.Ast.__string(functor));
+        var c = kb.Bytecode.AddConstant(new __string(functor));
         var raw = ((__WORD)(Signature)(c, arity));
         if (!_dynamics.ContainsKey(raw))
             _dynamics[raw] = new DynamicPredicate();
         if (!kb.Bytecode.Labels.ContainsKey(raw))
-            kb.RegisterBuiltInLabel(functor, arity, (ErgoVM.__op)(vm => vm.DispatchDynamic(raw)));
+            kb.RegisterBuiltInLabel(functor, arity, (__op)(vm => vm.DispatchDynamic(raw)));
     }
 
     /// <summary>
@@ -111,8 +104,6 @@ public partial class ErgoVM
     public void AssertClause(int ai = 0, bool atEnd = true)
     {
         System.Diagnostics.Trace.WriteLine($"[DYN] AssertClause fired! ai={ai}");
-        if (_emitter == null || _kb == null)
-            throw new InvalidOperationException("Dynamic predicates not initialized. Call InitDynamic first.");
 
         // Read the heap term from A[ai] back to AST
         var addr = deref(ArgAddr(ai));
@@ -124,17 +115,17 @@ public partial class ErgoVM
         var sig = head.GetSignature().GetOrThrow();
 
         // Compile the clause using KB's constant table
-        var ctx = EmitterContext.From(_kb);
+        var ctx = EmitterContext.From(KB.Bytecode);
         var rawCode = _emitter.EmitDynamicClause(ctx, term);
 
         // Collect new constants
-        var newConstants = ctx.NewConstants(_kb)
+        var newConstants = ctx.NewConstants(KB.Bytecode)
             .Select(nc => Atom.FromObject(nc.Value))
             .ToArray();
 
         // Sync constants to KB and current query
         foreach (var c in newConstants) {
-            _kb.AddConstant(c);
+            KB.Bytecode.AddConstant(c);
             _QUERY.AddConstant(c);
         }
 
@@ -146,11 +137,11 @@ public partial class ErgoVM
         var dynClause = new DynClause(rawCode, newConstants, gen) { Offset = offset };
 
         // Get or create dynamic predicate entry
-        var p = _kb.AddConstant(sig.Functor);
+        var p = KB.Bytecode.AddConstant(sig.Functor);
         var arityVal = sig.Arity.TryGetValue(out var av) ? av : Signature.VARIADIC;
         var packed = (Signature)(p, arityVal);
         if (!_dynamics.ContainsKey(packed.RawValue))
-            DeclareDynamic(_kbFull!, (string)sig.Functor.Value, arityVal);
+            DeclareDynamic(KB, (string)sig.Functor.Value, arityVal);
         var dyn = _dynamics[packed.RawValue];
 
         if (atEnd)
@@ -166,7 +157,7 @@ public partial class ErgoVM
         if (t.Tag != Term.__TAG.STR) return;
         var sig = (Signature)Heap[t.Value];
         var atom = Constants[sig.F];
-        var packed = (Signature)(_kb!.AddConstant(atom), sig.N);
+        var packed = (Signature)(KB.Bytecode.AddConstant(atom), sig.N);
         if (!_dynamics.TryGetValue(packed.RawValue, out var dyn)) return;
 
         var savedTR = TR; var savedH = H;

@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Emission;
+using Ergo.Compiler.Emission;
 using Ergo.Runtime.WAM;
 using static Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__TAG;
@@ -30,9 +30,7 @@ public class VMTests : Tests
         Assert.Equal(3, packed.N);
     }
 
-    // All query-level tests: rows are cases, one method is the invariant
     [Theory]
-    // ground facts — no bindings
     [InlineData("emitter_tests", "fact", new string[] { "" })]
     [InlineData("emitter_tests", "another_fact", new string[] { "" })]
     [InlineData("emitter_tests", "multiple_fact", new string[] { "", "" })]
@@ -40,30 +38,25 @@ public class VMTests : Tests
     [InlineData("emitter_tests", "parent(john, mary)", new string[] { "" })]
     [InlineData("emitter_tests", "parent(mary, susan)", new string[] { "" })]
     [InlineData("emitter_tests", "parent(susan, john)", new string[] { })]
-    // fact queries with bindings
     [InlineData("emitter_tests", "parent(X, mary)", new string[] { "X/john" })]
     [InlineData("emitter_tests", "parent(mary, X)", new string[] { "X/susan" })]
     [InlineData("emitter_tests", "parent(X, Y)", new string[] { "X/john, Y/mary", "X/mary, Y/susan" })]
     [InlineData("emitter_tests", "complex_fact(A, B, C)", new string[] { "A/0, B/1, C/2" })]
-    // backtracking
     [InlineData("backtrack_tests", "value(X)", new string[] { "X/1", "X/2", "X/3" })]
-    // rules with body goals — variable export
     [InlineData("emitter_tests", "ancestor(john, mary)", new string[] { "" })]
     [InlineData("emitter_tests", "ancestor(john, susan)", new string[] { "" })]
     [InlineData("emitter_tests", "ancestor(X, Y)", new string[] { "X/john, Y/mary" })]
     [InlineData("emitter_tests", "ancestor(john, X)", new string[] { "X/mary" })]
     [InlineData("emitter_tests", "ancestor(X, susan)", new string[] { "X/mary" })]
-    // rules with body conjunction — no cut — variable export
     [InlineData("emitter_tests", "mutual(a, b)", new string[] { "" })]
     [InlineData("emitter_tests", "mutual(a, X)", new string[] { "X/b" })]
     [InlineData("emitter_tests", "mutual(X, Y)", new string[] { "X/a, Y/b", "X/b, Y/a" })]
-    // conjunction with cut
     [InlineData("emitter_tests", "parent(X, Y), !, complex_fact(0,1,2).", new string[] { "X/john, Y/mary" })]
     public void Query(string module, string query, string[] expected)
     {
         var kb = Consult(module);
-        var q = CompileQuery(kb, query);
         var vm = new ErgoVM();
+        var q = CompileQuery(kb, query);
         var solutions = new List<ErgoVM.Solution>();
         vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
         vm.Run(q);
@@ -90,13 +83,13 @@ public class VMTests : Tests
             AssertConst("a", ref span, bytes);
             AssertInt32(0, ref span);
             AssertOp(OpCode.put_variable, ref span);
-            AssertInt32(0, ref span); // V0
-            AssertInt32(1, ref span); // A1
+            AssertInt32(0, ref span);
+            AssertInt32(1, ref span);
             AssertOp(OpCode.call, ref span);
             AssertSignature("mutual", 2, ref span, bytes);
             AssertOp(OpCode.put_unsafe_value, ref span);
-            AssertInt32(0, ref span); // V0
-            AssertInt32(1, ref span); // A1
+            AssertInt32(0, ref span);
+            AssertInt32(1, ref span);
             AssertOp(OpCode.deallocate, ref span);
             AssertOp(OpCode.halt, ref span);
         }
@@ -183,7 +176,10 @@ public class VMTests : Tests
     [Fact]
     public void RefDerefsToConstant()
     {
+        var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
+        var q = CompileQuery(kb, "fact");
+        vm.Run(q);
         var addr = 1033;
         vm.Store[addr] = (Term)(REF, addr);
         vm.Store[addr] = (Term)(CON, 4);
@@ -195,10 +191,13 @@ public class VMTests : Tests
     [Fact]
     public void PutVariableWritesStackCorrectly()
     {
-        var vm = new ErgoVM {
-            E = ErgoVM.HEAP_SIZE,
-            _QUERY = QueryBytecode.Preloaded([0, 0])
-        };
+        var kb = Consult("emitter_tests");
+        var vm = new ErgoVM();
+        var q = CompileQuery(kb, "fact");
+        vm.Run(q);
+        vm.E = ErgoVM.HEAP_SIZE;
+        vm._QUERY = QueryBytecode.Preloaded([0, 0]);
+        vm.P = 0;
         vm.PutVariable();
         var storeAddr = ErgoVM.HEAP_SIZE + 0 + 2;
         var term = (Term)vm.Store[storeAddr];
@@ -270,3 +269,4 @@ public class VMTests : Tests
     }
     #endregion
 }
+

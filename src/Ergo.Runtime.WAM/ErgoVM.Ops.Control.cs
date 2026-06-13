@@ -1,4 +1,4 @@
-﻿namespace Ergo.Runtime.WAM;
+namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
@@ -54,7 +54,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                ((__op)_builtInHandlers![idx])(this);
+                ((__op)KB.BuiltInHandlers[idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }
@@ -91,7 +91,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                ((__op)_builtInHandlers![idx])(this);
+                ((__op)KB.BuiltInHandlers[idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }
@@ -154,7 +154,7 @@ public partial class ErgoVM
             var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
             var term = ReadHeapTerm(addr);
 #if WAM_TRACE
-            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) → {term.Expl}");
+            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) ? {term.Expl}");
 #endif
             bindings[i++] = new(name, term);
         }

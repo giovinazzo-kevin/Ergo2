@@ -4,13 +4,16 @@ namespace Ergo.UnitTests;
 
 public class ListTests : Tests
 {
+    private const string MODULE = "list_tests";
+
     private List<ErgoVM.Solution> Run(string query)
     {
-        var kb = Consult("list_tests");
+        var kb = Consult(MODULE);
         var vm = new ErgoVM();
+        var q = CompileQuery(kb, query);
         var solutions = new List<ErgoVM.Solution>();
         vm.SolutionEmitted += _ => solutions.Add(vm.MaterializeSolution());
-        vm.Run(CompileQuery(kb, query));
+        vm.Run(q);
         return solutions;
     }
 
@@ -33,3 +36,4 @@ public class ListTests : Tests
         Assert.Equal(expected, Run(query).Count);
     }
 }
+

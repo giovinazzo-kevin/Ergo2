@@ -1,5 +1,5 @@
 using Ergo.Libs.IO;
-using Ergo.Libs.List;
+using Ergo.Libs.Lists;
 using Ergo.Libs.Math;
 using Ergo.Libs.Prologue;
 using Ergo.Libs.Stdlib;

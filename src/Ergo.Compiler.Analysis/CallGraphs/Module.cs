@@ -32,7 +32,7 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
     public readonly Dictionary<Signature, Predicate> Predicates = [];
     public readonly HashSet<Signature> Exports = [];
     public readonly HashSet<Signature> Dynamic = [];
-    public readonly List<Ergo.Lang.Parsing.WellKnown.Delegates.Parse> AbstractParsers = [];
+    public readonly List<Lang.Parsing.WellKnown.Delegates.Parse> AbstractParsers = [];
 
     public Stage LoadStage { get; internal set; }
     public bool IsLoading { get; internal set; }

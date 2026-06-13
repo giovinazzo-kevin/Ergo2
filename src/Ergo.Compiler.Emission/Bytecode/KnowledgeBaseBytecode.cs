@@ -1,4 +1,4 @@
-﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast;
 using Ergo.Lang.Lexing;
 
 namespace Ergo.Compiler.Emission;
@@ -17,6 +17,8 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
         reference = (Signature)(c, n);
         return true;
     }
+
+    public QueryBytecode AsQuery() => new([0, 0, 0], _consts.ToArray(), 0);
 
     protected override void LoadData(ref ReadOnlySpan<int> span)
     {

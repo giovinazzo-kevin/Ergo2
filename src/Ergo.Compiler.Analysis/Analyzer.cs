@@ -51,7 +51,7 @@ public class Analyzer
             module.Libraries
                 .SelectMany(lib => lib.ExportedAbstractTerms)
                 .Where(abs => abs.Parse != null)
-                .Select(abs => (Ergo.Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse!));
+                .Select(abs => (Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse!));
         return Module.Stage.Imported;
     }
 

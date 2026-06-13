@@ -7,8 +7,10 @@ public class DynamicTests : Tests
 {
     private (KnowledgeBase kb, ErgoVM vm) Setup()
     {
-        var kb = Consult(nameof(EmitterTests.emitter_tests));
+        var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
+        vm.KB = kb;
+        vm._QUERY = kb.Bytecode.AsQuery();
         return (kb, vm);
     }
 
@@ -94,3 +96,5 @@ public class DynamicTests : Tests
         AssertSolutions(RunQuery(vm, kb, query), expected);
     }
 }
+
+

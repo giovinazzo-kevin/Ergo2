@@ -1,6 +1,7 @@
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.WellKnown;
+using Ergo.Libs.Lists.Ast;
 using Ergo.Runtime.WAM;
 using Term = Ergo.Compiler.Emission.Term;
 
@@ -8,11 +9,14 @@ namespace Ergo.UnitTests;
 
 public class MarshalTests : Tests
 {
+    private const string MODULE = "list_tests";
+
     private ErgoVM SetupVM()
     {
-        var vm = new ErgoVM {
-            _QUERY = QueryBytecode.Preloaded([])
-        };
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        vm.KB = kb;
+        vm._QUERY = kb.Bytecode.AsQuery();
         return vm;
     }
 
@@ -154,9 +158,9 @@ public class MarshalTests : Tests
 
     #region Heap allocation
     [Theory]
-    [InlineData(0, 0)]   // atom: no heap
-    [InlineData(1, 1)]   // variable: 1 cell
-    [InlineData(2, 3)]   // complex f(a): 1 sig + 1 arg (atom inlined) = wait no...
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    [InlineData(2, 3)]
     public void HeapAllocation(int termKind, int expectedCells)
     {
         var vm = SetupVM();
@@ -212,3 +216,7 @@ public class MarshalTests : Tests
     }
     #endregion
 }
+
+
+
+

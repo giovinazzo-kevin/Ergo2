@@ -159,12 +159,12 @@ public partial class ErgoVM
                 return WalkStructure(x.Value, y.Value, todo);
 
             case ABS:
-                if (_abstractTerms != null) {
+                if (KB.AbstractTerms.Count > 0) {
                     var xSig = Heap[x.Value];
                     var ySig = Heap[y.Value];
                     if (xSig != ySig) { fail = true; return false; }
-                    if (_abstractTerms.TryGetValue(xSig, out var abs)) {
-                        abs.Unify(this, x.Value, y.Value, todo);
+                    if (KB.AbstractTerms.TryGetValue(xSig, out var abs)) {
+                        ((WellKnown.Delegates.Unify)abs.Unify)(this, x.Value, y.Value, todo);
                         break;
                     }
                 }
@@ -240,7 +240,7 @@ public partial class ErgoVM
                 args[i] = Read(Heap[addr + 1 + i]);
 
             var atom = Constants[functor.F];
-            if (_reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
+            if (KB.Reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
                 return reconstruct(args);
 
             return new Lang.Ast.Complex(atom, args);
@@ -248,8 +248,8 @@ public partial class ErgoVM
 
         Lang.Ast.Term ReadList(__ADDR addr)
         {
+            // Fallback for unregistered abstract terms: produce cons-cell Complex terms
             var elements = new List<Lang.Ast.Term>();
-            Lang.Ast.Term tail = Collections.List.EmptyElement;
             while (true) {
                 var headTerm = (Term)Heap[addr];
                 var tailTerm = (Term)Heap[addr + 1];
@@ -262,7 +262,7 @@ public partial class ErgoVM
                 }
 
                 if (tailTerm.Tag != ABS) {
-                    tail = Read(tailTerm);
+                    elements.Add(Read(tailTerm));
                     break;
                 }
 
@@ -270,14 +270,18 @@ public partial class ErgoVM
                 addr = tailTerm.Value + 1;
             }
 
-            return new Lang.Ast.List(elements, tail);
+            // Build nested cons cells: .(a, .(b, .(c, tail)))
+            var result = elements[^1];
+            for (int i = elements.Count - 2; i >= 0; i--)
+                result = new Lang.Ast.Complex(Lang.Ast.WellKnown.Functors.List, elements[i], result);
+            return result;
         }
 
         Lang.Ast.Term ReadAbstract(__ADDR addr)
         {
             var sig = Heap[addr];
-            if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
-                return abs.Read(this, addr);
+            if (KB.AbstractTerms.TryGetValue(sig, out var abs)) {
+                return ((WellKnown.Delegates.Get)abs.Get)(this, addr);
             }
             // Fallback: treat as list (data starts after signature)
             return ReadList(addr + 1);
@@ -341,8 +345,8 @@ public partial class ErgoVM
     private string PrettyAbstract(__ADDR addr, bool quoted = false)
     {
         var sig = Heap[addr];
-        if (_abstractTerms != null && _abstractTerms.TryGetValue(sig, out var abs)) {
-            return abs.Pretty(this, addr, quoted);
+        if (KB.AbstractTerms.TryGetValue(sig, out var abs)) {
+            return ((WellKnown.Delegates.Pretty)abs.Pretty)(this, addr, quoted);
         }
         // Fallback: list-style pretty after signature
         return PrettyList(addr + 1, quoted);

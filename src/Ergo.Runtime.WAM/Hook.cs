@@ -17,11 +17,12 @@ public readonly struct Hook
     {
         var ctx = EmitterContext.From(kb.Bytecode);
         ctx.Emit(call((Signature)sig));
-        Query = new Query(ctx.ToQuery(kb.Bytecode), [], kb.BuiltInHandlers, kb.AbstractTerms, kb.Reconstructors, kb);
+        Query = new Query(ctx.ToQuery(kb.Bytecode), [], kb);
     }
 
     public Lang.Ast.Term? Call(ErgoVM vm, params Lang.Ast.Term[] args)
     {
+        vm.KB = Query.Source;
         vm._QUERY = Query.Bytecode;
 
         for (int i = 0; i < args.Length; i++)
@@ -42,6 +43,7 @@ public readonly struct Hook
 
     public bool Fire(ErgoVM vm, params Lang.Ast.Term[] args)
     {
+        vm.KB = Query.Source;
         vm._QUERY = Query.Bytecode;
 
         for (int i = 0; i < args.Length; i++)

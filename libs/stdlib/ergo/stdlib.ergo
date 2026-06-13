@@ -1,5 +1,5 @@
 :- module(_).
-:- use_module(list).
+:- use_module(lists).
 :- use_module(prologue).
 :- use_module(io).
 :- use_module(math).

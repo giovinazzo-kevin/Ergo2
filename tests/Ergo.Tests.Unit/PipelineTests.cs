@@ -1,4 +1,4 @@
-﻿using Ergo.Lang.Ast;
+using Ergo.Lang.Ast;
 using Ergo.Pipelines;
 using Ergo.Pipelines.IO;
 

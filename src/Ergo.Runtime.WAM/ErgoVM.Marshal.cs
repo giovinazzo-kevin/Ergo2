@@ -14,6 +14,14 @@ public partial class ErgoVM
     /// </summary>
     public __WORD WriteHeapTerm(Lang.Ast.Term term)
     {
+        // Try abstract term handlers first (before Complex, since abstract terms may inherit from it)
+        if (KB.AbstractTerms.Count > 0) {
+            foreach (var (sig, abs) in KB.AbstractTerms) {
+                if (abs.AstType.IsInstanceOfType(term)) {
+                    return ((WellKnown.Delegates.Put)abs.Put)(this, term);
+                }
+            }
+        }
         switch (term) {
             case Atom a: {
                     var c = _QUERY.AddConstant(a);
@@ -23,24 +31,6 @@ public partial class ErgoVM
                     var addr = H;
                     Heap[H++] = (Term)(REF, addr);
                     return (Term)(REF, addr);
-                }
-            case List list: {
-                    var elems = list.Head.ToArray();
-                    if (elems.Length == 0) {
-                        var c = _QUERY.AddConstant(Collections.List.EmptyElement);
-                        return (Term)(CON, c);
-                    }
-                    // Need list signature for ABS tag
-                    var listSig = GetListSignature();
-                    var tail = WriteHeapTerm(list.Tail);
-                    for (int i = elems.Length - 1; i >= 0; i--) {
-                        var pairAddr = H;
-                        Heap[H++] = listSig; // signature word
-                        Heap[H++] = WriteHeapTerm(elems[i]);
-                        Heap[H++] = tail;
-                        tail = (Term)(ABS, pairAddr);
-                    }
-                    return tail;
                 }
             case Complex s: {
                     var fAddr = H;
@@ -54,14 +44,5 @@ public partial class ErgoVM
                 throw new NotSupportedException(
                     $"WriteHeapTerm: {term.GetType().Name}");
         }
-    }
-
-    private __WORD _listSigCache = -1;
-    private __WORD GetListSignature()
-    {
-        if (_listSigCache != -1) return _listSigCache;
-        var c = _QUERY.AddConstant(new Lang.Ast.__string((string)Functors.List.Value));
-        _listSigCache = (Signature)(c, 2);
-        return _listSigCache;
     }
 }

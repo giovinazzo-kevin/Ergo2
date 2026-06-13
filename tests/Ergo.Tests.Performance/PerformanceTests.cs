@@ -1,4 +1,4 @@
-﻿using Ergo.IO;
+using Ergo.IO;
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
 using Ergo.Lang.Lexing;
@@ -123,10 +123,10 @@ public class PerformanceTests
     {
         var lexer = new Lexer(file, ops);
         var parser = new Parser(lexer);
-        var module = new Ergo.Compiler.Analysis.Module(null!, "perf");
-        var lib = new Ergo.Libs.List.LibList(module);
+        var module = new Compiler.Analysis.Module(null!, "perf");
+        var lib = new Libs.Lists.LibList(module);
         foreach (var abs in lib.ExportedAbstractTerms) {
-            var factory = (Ergo.Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse;
+            var factory = (Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse;
             parser.AddAbstractParser(factory(parser));
         }
         return parser;

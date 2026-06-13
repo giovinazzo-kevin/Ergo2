@@ -1,4 +1,5 @@
 ﻿using Ergo.Compiler.Emission;
+using Ergo.Pipelines.Compiler;
 using Ergo.Shared.Types;
 using System.Reflection;
 
@@ -12,7 +13,7 @@ public sealed class Pipeline
     public static Pipeline<SourceInput, KnowledgeBase> Compile =>
         WithStep(Steps.LoadSource)
             .WithStep(Steps.Analyze)
-            .WithStep(Steps.Compile, new Compiler.Compile.Env { SaveToPath = "./bin/" });
+            .WithStep(Steps.Compile, new Compile.Env { SaveToPath = "./bin/" });
 
     public static Pipeline<TInput, TOutput> WithStep<TInput, TOutput, TEnv>(IPipeline<TInput, TOutput, TEnv> firstStep, TEnv? env = default)
         where TEnv : class, new()
