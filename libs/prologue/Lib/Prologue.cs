@@ -11,7 +11,8 @@ public sealed class Prologue : Library
             new Assert(this),
             new AssertZ(this),
             new AssertA(this),
-            new Retract(this)
+            new Retract(this),
+            new Unify(this)
         ];
     }
 }

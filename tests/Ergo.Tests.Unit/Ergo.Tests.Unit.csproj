@@ -39,6 +39,7 @@
 		<ProjectReference Include="..\..\src\Ergo.Pipelines\Ergo.Pipelines.csproj" />
 		<ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
 		<ProjectReference Include="..\..\src\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
+		<ProjectReference Include="..\..\libs\set\Ergo.Libs.Set.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
