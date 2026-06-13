@@ -54,7 +54,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                ((__op)KB.BuiltInHandlers[idx])(this);
+                ((__op)_QUERY.Source.BuiltInHandlers[idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }
@@ -91,7 +91,7 @@ public partial class ErgoVM
                 N = p.N;
                 B0 = B;
                 var savedP = P;
-                ((__op)KB.BuiltInHandlers[idx])(this);
+                ((__op)_QUERY.Source.BuiltInHandlers[idx])(this);
                 if (!fail && P == savedP) P = CP;
                 return;
             }
@@ -130,7 +130,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine("[WAM] EmitSolution");
         Trace.WriteLine($"[WAM] EmitSolution: fail={fail}, P={P}, B={B}, B0={B0}");
-        for (int i = 0; i < _VARS.Count; i++) {
+        for (int i = 0; i < _QUERY.Variables.Count; i++) {
             Trace.WriteLine($"[WAM] A[{i}] = {A[i]}, deref = {deref(((Term)A[i]).Value)}, Store = {Store[deref(((Term)A[i]).Value)]}");
         }
 #endif
@@ -149,8 +149,8 @@ public partial class ErgoVM
     public Solution MaterializeSolution()
     {
         int i = 0;
-        var bindings = new Binding[_VARS.Count];
-        foreach (var (name, index) in _VARS.Values.OrderBy(x => x.Index)) {
+        var bindings = new Binding[_QUERY.Variables.Count];
+        foreach (var (name, index) in _QUERY.Variables.Values.OrderBy(x => x.Index)) {
             var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
             var term = ReadHeapTerm(addr);
 #if WAM_TRACE

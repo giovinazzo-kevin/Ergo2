@@ -1,4 +1,4 @@
-﻿
+
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast.WellKnown;
 
@@ -15,7 +15,7 @@ public partial class ErgoVM
 #endif
         if (B == BOTTOM_OF_STACK) {
 #if WAM_TRACE
-            Trace.WriteLine("[WAM] backtrack: hit bottom of stack → FAIL FINAL");
+            Trace.WriteLine("[WAM] backtrack: hit bottom of stack ? FAIL FINAL");
 #endif
             return fail_and_exit_program();
         }
@@ -25,7 +25,7 @@ public partial class ErgoVM
         if (P < 0) {
             var contIdx = -(P + 1);
             if (!RetryDynamic(contIdx)) {
-                // No more dynamic clauses — remove choice point and continue
+                // No more dynamic clauses � remove choice point and continue
                 var n = Store[B];
                 B = Store[B + n + 3];
                 HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
@@ -33,7 +33,7 @@ public partial class ErgoVM
             }
         }
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] Backtrack → P={P}, Code.Length={Code.Length}");
+        Trace.WriteLine($"[WAM] Backtrack ? P={P}, Code.Length={Code.Length}");
         Trace.WriteLine($"[WAM] Stack Snapshot @ B={B}:");
         for (int i = 0; i < 10; i++)
             Trace.WriteLine($"  Store[{B + i}] = {Store[B + i]}");
@@ -159,11 +159,11 @@ public partial class ErgoVM
                 return WalkStructure(x.Value, y.Value, todo);
 
             case ABS:
-                if (KB.AbstractTerms.Count > 0) {
+                if (_QUERY.Source.AbstractTerms.Count > 0) {
                     var xSig = Heap[x.Value];
                     var ySig = Heap[y.Value];
                     if (xSig != ySig) { fail = true; return false; }
-                    if (KB.AbstractTerms.TryGetValue(xSig, out var abs)) {
+                    if (_QUERY.Source.AbstractTerms.TryGetValue(xSig, out var abs)) {
                         ((WellKnown.Delegates.Unify)abs.Unify)(this, x.Value, y.Value, todo);
                         break;
                     }
@@ -240,7 +240,7 @@ public partial class ErgoVM
                 args[i] = Read(Heap[addr + 1 + i]);
 
             var atom = Constants[functor.F];
-            if (KB.Reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
+            if (_QUERY.Source.Reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
                 return reconstruct(args);
 
             return new Lang.Ast.Complex(atom, args);
@@ -280,7 +280,7 @@ public partial class ErgoVM
         Lang.Ast.Term ReadAbstract(__ADDR addr)
         {
             var sig = Heap[addr];
-            if (KB.AbstractTerms.TryGetValue(sig, out var abs)) {
+            if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
                 return ((WellKnown.Delegates.Get)abs.Get)(this, addr);
             }
             // Fallback: treat as list (data starts after signature)
@@ -345,7 +345,7 @@ public partial class ErgoVM
     private string PrettyAbstract(__ADDR addr, bool quoted = false)
     {
         var sig = Heap[addr];
-        if (KB.AbstractTerms.TryGetValue(sig, out var abs)) {
+        if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
             return ((WellKnown.Delegates.Pretty)abs.Pretty)(this, addr, quoted);
         }
         // Fallback: list-style pretty after signature

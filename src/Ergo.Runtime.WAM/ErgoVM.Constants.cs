@@ -1,4 +1,4 @@
-﻿namespace Ergo.Runtime.WAM;
+namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {

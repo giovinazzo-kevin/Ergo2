@@ -15,8 +15,8 @@ public partial class ErgoVM
     public __WORD WriteHeapTerm(Lang.Ast.Term term)
     {
         // Try abstract term handlers first (before Complex, since abstract terms may inherit from it)
-        if (KB.AbstractTerms.Count > 0) {
-            foreach (var (sig, abs) in KB.AbstractTerms) {
+        if (_QUERY.Source.AbstractTerms.Count > 0) {
+            foreach (var (sig, abs) in _QUERY.Source.AbstractTerms) {
                 if (abs.AstType.IsInstanceOfType(term)) {
                     return ((WellKnown.Delegates.Put)abs.Put)(this, term);
                 }
@@ -24,7 +24,7 @@ public partial class ErgoVM
         }
         switch (term) {
             case Atom a: {
-                    var c = _QUERY.AddConstant(a);
+                    var c = _QUERY.Bytecode.AddConstant(a);
                     return (Term)(CON, c);
                 }
             case Variable: {
@@ -34,7 +34,7 @@ public partial class ErgoVM
                 }
             case Complex s: {
                     var fAddr = H;
-                    var fc = _QUERY.AddConstant(s.Functor);
+                    var fc = _QUERY.Bytecode.AddConstant(s.Functor);
                     Heap[H++] = (Signature)(fc, s.Arity);
                     for (int i = 0; i < s.Args.Length; i++)
                         Heap[H++] = WriteHeapTerm(s.Args[i]);

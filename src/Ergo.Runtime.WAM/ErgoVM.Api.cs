@@ -10,15 +10,13 @@ public partial class ErgoVM
 
     public void Run(Query query)
     {
-        KB = query.Source;
+        _QUERY = query;
         CP = int.MaxValue;
-        _QUERY = query.Bytecode;
-        _VARS = query.Variables;
         if (_dynamics.Count > 0)
             RehydrateDynamicCode();
         _dynConts.Clear();
         _inDynClause = false;
-        P = _QUERY.QueryStart;
+        P = _QUERY.Bytecode.QueryStart;
         E = HEAP_SIZE;
         B = HEAP_SIZE;
         H = 0;

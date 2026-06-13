@@ -13,16 +13,14 @@ public partial class ErgoVM
 
     #region Physical Memory Layout
     public __WORD[] _RAM = new __WORD[HEAP_SIZE + STACK_SIZE + MAX_ARGS + MAX_TMPS + DEFAULT_TRAIL_SIZE];
-    public QueryBytecode _QUERY = null!;
-    public Dictionary<string, __VAR> _VARS = null!;
-    public KnowledgeBase KB = null!;
+    public Query _QUERY = null!;
     private __WORD _F = 0;
     private __WORD _N = 0;
     #endregion
 
     #region Logical Memory Areas
-    public ReadOnlySpan<__WORD> Code => _QUERY.Code;
-    public ReadOnlySpan<Lang.Ast.Atom> Constants => _QUERY.Constants;
+    public ReadOnlySpan<__WORD> Code => _QUERY.Bytecode.Code;
+    public ReadOnlySpan<Lang.Ast.Atom> Constants => _QUERY.Bytecode.Constants;
     public Span<__WORD> Store => _RAM.AsSpan();
     public Span<__WORD> Heap => _RAM.AsSpan(0, HEAP_SIZE);
     public Span<__WORD> Stack => _RAM.AsSpan(HEAP_SIZE, STACK_SIZE);
@@ -50,10 +48,10 @@ public partial class ErgoVM
     #region Memory Access Helpers
     protected bool defined(Signature sig, out __ADDR address)
     {
-        if (_QUERY.Labels.TryGetValue(sig, out address))
+        if (_QUERY.Bytecode.Labels.TryGetValue(sig, out address))
             return true;
         Signature variadic = (sig.F, (__WORD)Ergo.Compiler.Emission.Signature.VARIADIC);
-        return _QUERY.Labels.TryGetValue(variadic, out address);
+        return _QUERY.Bytecode.Labels.TryGetValue(variadic, out address);
     }
     protected (bool Found, __ADDR Address) get_hash(__WORD match, __ADDR table, __WORD n)
     {

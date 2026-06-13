@@ -128,7 +128,7 @@ public class EmitterTests : Tests
     public void TryMeElse_Should_Allocate_ChoicePoint()
     {
         var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.EMPTY;
+        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.EMPTY, []);
         vm.E = ErgoVM.HEAP_SIZE;
         vm.B = ErgoVM.HEAP_SIZE;
         vm.N = 2;
@@ -147,7 +147,7 @@ public class EmitterTests : Tests
     public void RetryMeElse_Should_Reset_ChoicePoint_And_Advance_Label()
     {
         var vm = new ErgoVM();
-        vm._QUERY = QueryBytecode.Preloaded([999]);
+        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([999]), []);
         vm.N = 2;
         vm.A[0] = 111;
         vm.A[1] = 222;

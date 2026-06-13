@@ -117,10 +117,10 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
     {
         var elems = list.Head.ToArray();
         if (elems.Length == 0) {
-            var c = vm._QUERY.AddConstant(Collections.List.EmptyElement);
+            var c = vm._QUERY.Bytecode.AddConstant(Collections.List.EmptyElement);
             return (int)(Term)(CON, c);
         }
-        var c2 = vm._QUERY.AddConstant(new __string((string)Functors.List.Value));
+        var c2 = vm._QUERY.Bytecode.AddConstant(new __string((string)Functors.List.Value));
         var listSig = (Signature)(c2, 2);
         var tail = vm.WriteHeapTerm(list.Tail);
         for (int i = elems.Length - 1; i >= 0; i--) {

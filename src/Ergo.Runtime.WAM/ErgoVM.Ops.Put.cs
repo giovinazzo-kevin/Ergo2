@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Emission;
+using Ergo.Compiler.Emission;
 
 namespace Ergo.Runtime.WAM;
 

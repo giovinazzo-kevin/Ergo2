@@ -1,4 +1,4 @@
-﻿namespace Ergo.Runtime.WAM;
+namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
@@ -65,7 +65,7 @@ public partial class ErgoVM
     {
         var n = Store[B];
 #if WAM_TRACE
-        Trace.WriteLine($"[WAM] {nameof(TrustMe)}: Cutting to last clause. Previous B={B} → B={Store[B + n + 3]}");
+        Trace.WriteLine($"[WAM] {nameof(TrustMe)}: Cutting to last clause. Previous B={B} ? B={Store[B + n + 3]}");
 #endif
         for (int i = 1; i <= n; i++)
             A[i - 1] = Store[B + i];

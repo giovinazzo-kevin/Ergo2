@@ -1,4 +1,4 @@
-﻿
+
 global using static Ergo.Compiler.Emission.Term.__TAG;
 global using __ADDR = int;
 global using __WORD = int;

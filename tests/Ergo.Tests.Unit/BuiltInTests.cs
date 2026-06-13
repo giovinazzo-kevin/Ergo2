@@ -25,8 +25,7 @@ public class BuiltInTests : Tests
 
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
-        vm.KB = kb;
-        vm._QUERY = QueryBytecode.Preloaded([], constants);
+        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([], constants), [], kb);
 
         var h = vm.Heap;
         h[0] = (Signature)(0, 1);
@@ -74,8 +73,7 @@ public class BuiltInTests : Tests
 
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
-        vm.KB = kb;
-        vm._QUERY = QueryBytecode.Preloaded([], constants);
+        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([], constants), [], kb);
 
         var h = vm.Heap;
         h[0] = (Signature)(0, 2);

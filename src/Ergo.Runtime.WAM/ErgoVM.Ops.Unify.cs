@@ -1,4 +1,4 @@
-﻿
+
 using Ergo.Compiler.Emission;
 using static Ergo.Runtime.WAM.ErgoVM.GetMode;
 

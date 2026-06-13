@@ -196,7 +196,7 @@ public class VMTests : Tests
         var q = CompileQuery(kb, "fact");
         vm.Run(q);
         vm.E = ErgoVM.HEAP_SIZE;
-        vm._QUERY = QueryBytecode.Preloaded([0, 0]);
+        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([0, 0]), []);
         vm.P = 0;
         vm.PutVariable();
         var storeAddr = ErgoVM.HEAP_SIZE + 0 + 2;

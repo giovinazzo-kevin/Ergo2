@@ -1,4 +1,4 @@
-﻿using Ergo.Compiler.Emission;
+using Ergo.Compiler.Emission;
 using Ergo.Shared.Extensions;
 using System.Reflection;
 using System.Runtime.CompilerServices;

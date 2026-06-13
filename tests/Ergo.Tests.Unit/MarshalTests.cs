@@ -15,8 +15,7 @@ public class MarshalTests : Tests
     {
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
-        vm.KB = kb;
-        vm._QUERY = kb.Bytecode.AsQuery();
+        vm._QUERY = new Ergo.Compiler.Emission.Query(kb.Bytecode.AsQuery(), [], kb);
         return vm;
     }
 
@@ -40,7 +39,7 @@ public class MarshalTests : Tests
         var vm = SetupVM();
         var term = (Term)vm.WriteHeapTerm((__string)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
-        Assert.Equal(value, vm._QUERY.Constants[term.Value].Value);
+        Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
 
     [Theory]
@@ -54,7 +53,7 @@ public class MarshalTests : Tests
         var vm = SetupVM();
         var term = (Term)vm.WriteHeapTerm((__int)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
-        Assert.Equal(value, vm._QUERY.Constants[term.Value].Value);
+        Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
 
     [Theory]
@@ -65,7 +64,7 @@ public class MarshalTests : Tests
         var vm = SetupVM();
         var term = (Term)vm.WriteHeapTerm((__bool)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
-        Assert.Equal(value, vm._QUERY.Constants[term.Value].Value);
+        Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
 
     [Theory]
@@ -77,7 +76,7 @@ public class MarshalTests : Tests
         var vm = SetupVM();
         var term = (Term)vm.WriteHeapTerm((__double)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
-        Assert.Equal(value, vm._QUERY.Constants[term.Value].Value);
+        Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
 
     [Theory]

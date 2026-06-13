@@ -22,8 +22,7 @@ public readonly struct Hook
 
     public Lang.Ast.Term? Call(ErgoVM vm, params Lang.Ast.Term[] args)
     {
-        vm.KB = Query.Source;
-        vm._QUERY = Query.Bytecode;
+        vm._QUERY = Query;
 
         for (int i = 0; i < args.Length; i++)
             vm.A[i] = vm.WriteHeapTerm(args[i]);
@@ -43,8 +42,7 @@ public readonly struct Hook
 
     public bool Fire(ErgoVM vm, params Lang.Ast.Term[] args)
     {
-        vm.KB = Query.Source;
-        vm._QUERY = Query.Bytecode;
+        vm._QUERY = Query;
 
         for (int i = 0; i < args.Length; i++)
             vm.A[i] = vm.WriteHeapTerm(args[i]);

@@ -93,9 +93,9 @@ public partial class ErgoVM
                 if (clause.ErasedGen == int.MaxValue) {
                     // Sync constants
                     foreach (var c in clause.NewConstants)
-                        _QUERY.AddConstant(c);
+                        _QUERY.Bytecode.AddConstant(c);
                     // Append code and update offset
-                    clause.Offset = _QUERY.AppendCode(clause.Code);
+                    clause.Offset = _QUERY.Bytecode.AppendCode(clause.Code);
                 }
             }
         }
@@ -115,33 +115,33 @@ public partial class ErgoVM
         var sig = head.GetSignature().GetOrThrow();
 
         // Compile the clause using KB's constant table
-        var ctx = EmitterContext.From(KB.Bytecode);
+        var ctx = EmitterContext.From(_QUERY.Source.Bytecode);
         var rawCode = _emitter.EmitDynamicClause(ctx, term);
 
         // Collect new constants
-        var newConstants = ctx.NewConstants(KB.Bytecode)
+        var newConstants = ctx.NewConstants(_QUERY.Source.Bytecode)
             .Select(nc => Atom.FromObject(nc.Value))
             .ToArray();
 
         // Sync constants to KB and current query
         foreach (var c in newConstants) {
-            KB.Bytecode.AddConstant(c);
-            _QUERY.AddConstant(c);
+            _QUERY.Source.Bytecode.AddConstant(c);
+            _QUERY.Bytecode.AddConstant(c);
         }
 
         // Append to current query for immediate availability
-        var offset = _QUERY.AppendCode(rawCode);
+        var offset = _QUERY.Bytecode.AppendCode(rawCode);
 
         // Create DynClause
         var gen = ++_globalGen;
         var dynClause = new DynClause(rawCode, newConstants, gen) { Offset = offset };
 
         // Get or create dynamic predicate entry
-        var p = KB.Bytecode.AddConstant(sig.Functor);
+        var p = _QUERY.Source.Bytecode.AddConstant(sig.Functor);
         var arityVal = sig.Arity.TryGetValue(out var av) ? av : Signature.VARIADIC;
         var packed = (Signature)(p, arityVal);
         if (!_dynamics.ContainsKey(packed.RawValue))
-            DeclareDynamic(KB, (string)sig.Functor.Value, arityVal);
+            DeclareDynamic(_QUERY.Source, (string)sig.Functor.Value, arityVal);
         var dyn = _dynamics[packed.RawValue];
 
         if (atEnd)
@@ -157,7 +157,7 @@ public partial class ErgoVM
         if (t.Tag != Term.__TAG.STR) return;
         var sig = (Signature)Heap[t.Value];
         var atom = Constants[sig.F];
-        var packed = (Signature)(KB.Bytecode.AddConstant(atom), sig.N);
+        var packed = (Signature)(_QUERY.Source.Bytecode.AddConstant(atom), sig.N);
         if (!_dynamics.TryGetValue(packed.RawValue, out var dyn)) return;
 
         var savedTR = TR; var savedH = H;
