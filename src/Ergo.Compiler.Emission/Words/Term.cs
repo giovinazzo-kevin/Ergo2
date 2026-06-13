@@ -14,18 +14,18 @@ public readonly ref struct Term
 
     public enum __TAG : byte
     {
+        REF,
         CON,
         STR,
-        ABS,
-        REF
+        ABS
     }
 
     public enum __CONST_TAG : __WORD
     {
-        STRING = 0,
-        INT = 1,
+        INT = 0,
+        DOUBLE = 1,
         BOOL = 2,
-        DOUBLE = 3
+        STRING = 3
     }
 
     private Term(__WORD raw)

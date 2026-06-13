@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ergo.Language.AST\Ergo.Lang.AST.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Language.Parsing\Ergo.Lang.Parsing.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Compiler.Analysis\Ergo.Compiler.Analysis.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
+    <ProjectReference Include="..\..\src\Ergo.Libs\Ergo.Libs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ergo\set.ergo">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

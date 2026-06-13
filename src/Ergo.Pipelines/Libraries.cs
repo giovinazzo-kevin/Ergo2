@@ -9,6 +9,7 @@ public static class Libraries
         typeof(Prologue.Lib.Prologue).Assembly,
         typeof(Math.Lib.Math).Assembly,
         typeof(List.Lib.List).Assembly,
+        typeof(Set.Lib.Set).Assembly,
         typeof(IO.Lib.IO).Assembly
     ];
 }
