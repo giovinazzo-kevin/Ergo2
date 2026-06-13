@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
+    <Compile Remove="Types\Abstract\**" />
+    <EmbeddedResource Remove="Types\Abstract\**" />
+    <None Remove="Types\Abstract\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Types\Abstract\" />
+    <ProjectReference Include="..\Ergo.Shared\Ergo.Shared.csproj" />
   </ItemGroup>
 
 </Project>
