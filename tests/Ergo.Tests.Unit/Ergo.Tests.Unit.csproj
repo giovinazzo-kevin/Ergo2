@@ -40,6 +40,7 @@
 		<ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
 		<ProjectReference Include="..\..\src\Ergo.SDK.Fuzzing\Ergo.SDK.Fuzzing.csproj" />
 		<ProjectReference Include="..\..\libs\set\Ergo.Libs.Set.csproj" />
+		<ProjectReference Include="..\..\libs\dict\Ergo.Libs.Dict.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

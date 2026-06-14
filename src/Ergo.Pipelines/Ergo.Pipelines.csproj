@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\libs\prologue\Ergo.Libs.Prologue.csproj" />
     <ProjectReference Include="..\..\libs\stdlib\Ergo.Libs.Stdlib.csproj" />
     <ProjectReference Include="..\..\libs\set\Ergo.Libs.Set.csproj" />
+    <ProjectReference Include="..\..\libs\dict\Ergo.Libs.Dict.csproj" />
   </ItemGroup>
 
 </Project>
