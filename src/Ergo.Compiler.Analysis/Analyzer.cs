@@ -41,18 +41,12 @@ public class Analyzer
             pred.BuiltIns.AddRange(builtIns);
         }
         Operators.AddRange(module.Libraries.SelectMany(x => x.ExportedOperators).ToArray());
-        return Module.Stage.Linked;
-    }
-
-    protected Module.Stage LoadStage_Import(Module module)
-    {
-        Trace.WriteLine($"{nameof(LoadStage_Import)}: {module.Name}");
         module.AbstractParsers.AddRange(
             module.Libraries
                 .SelectMany(lib => lib.ExportedAbstractTerms)
                 .Where(abs => abs.Parse != null)
                 .Select(abs => (Lang.Parsing.WellKnown.Delegates.Parse)abs.Parse!));
-        return Module.Stage.Imported;
+        return Module.Stage.Linked;
     }
 
     protected Module.Stage LoadStage_Open(CallGraph graph, Module module, ErgoFileStream stream)
@@ -197,8 +191,6 @@ public class Analyzer
             module = graph.Modules[name] = new(graph, name);
         if (module.LoadStage < Module.Stage.Linked)
             module.LoadStage = LoadStage_Link(module);
-        if (module.LoadStage < Module.Stage.Imported)
-            module.LoadStage = LoadStage_Import(module);
         if (module.LoadStage < Module.Stage.Opened)
             module.LoadStage = LoadStage_Open(graph, module, fs);
         if (module.LoadStage < Module.Stage.Preloaded) {

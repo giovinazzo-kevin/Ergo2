@@ -10,10 +10,9 @@ public class Module(CallGraph parent, __string name) : CallGraph.Node<CallGraph>
     {
         Unloaded = 0,
         Linked = 1,
-        Imported = 2,
-        Opened = 3,
-        Preloaded = 4,
-        Loaded = 5
+        Opened = 2,
+        Preloaded = 3,
+        Loaded = 4
     }
 
     private __string _name = name;
