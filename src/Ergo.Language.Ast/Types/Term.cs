@@ -1,4 +1,5 @@
 ﻿using Ergo.Shared.Interfaces;
+using Ergo.Shared.Types;
 using System.Diagnostics;
 
 namespace Ergo.Lang.Ast;
@@ -14,7 +15,12 @@ public abstract class Term : IExplainable, IComparable<Term>
     public static implicit operator Term(bool b) => new __bool(b);
     public static implicit operator Term(double d) => new __double(d);
 
+    public virtual IEnumerable<Variable> Variables => [];
+    public virtual Term[] Arguments => [];
+
     public abstract Term Clone();
+
+    public virtual Maybe<Signature> Signature => default;
 
     /// <summary>
     /// Standard order of terms: variables &lt; numbers &lt; atoms &lt; compound terms.

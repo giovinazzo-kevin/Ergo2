@@ -37,9 +37,12 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
             using var stream = sourceFile.OpenRead();
             var sourceBytes = System.Security.Cryptography.SHA256.HashData(stream);
             var versionBytes = BitConverter.GetBytes(Ergo.Compiler.Emission.BytecodeVersion.VERSION);
-            var combined = new byte[sourceBytes.Length + versionBytes.Length];
+            var libBytes = System.Text.Encoding.UTF8.GetBytes(
+                string.Join("|", Libraries.Standard.Select(a => a.FullName)));
+            var combined = new byte[sourceBytes.Length + versionBytes.Length + libBytes.Length];
             sourceBytes.CopyTo(combined, 0);
             versionBytes.CopyTo(combined, sourceBytes.Length);
+            libBytes.CopyTo(combined, sourceBytes.Length + versionBytes.Length);
             var currentHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(combined));
             var cachedHash = File.ReadAllText(hashFile);
             if (currentHash != cachedHash)

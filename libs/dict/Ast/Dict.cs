@@ -1,4 +1,6 @@
 using Ergo.Lang.Ast;
+using Ergo.Lang.Ast.Extensions;
+using Ergo.Shared.Types;
 
 namespace Ergo.Libs.Dict.Ast;
 
@@ -15,6 +17,23 @@ public class Dict : Term
         // Sort pairs by key for canonical form
         Pairs = [.. pairs.OrderBy(p => p.Lhs)];
     }
+
+    public override IEnumerable<Variable> Variables
+    {
+        get
+        {
+            if (DictFunctor is Variable v)
+                yield return v;
+            foreach (var vv in Pairs.SelectMany(p => p.Lhs.GetVariables().Concat(p.Rhs.GetVariables())))
+                yield return vv;
+        }
+    }
+
+    public override Term[] Arguments =>
+        [DictFunctor, .. Pairs.SelectMany(p => new[] { p.Lhs, p.Rhs })];
+
+    public override Maybe<Lang.Ast.Signature> Signature =>
+        new Lang.Ast.Signature(Libs.Dict.WellKnown.Functor, 2);
 
     public override string Expl
     {

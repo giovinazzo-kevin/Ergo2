@@ -1,0 +1,6 @@
+:- module(_, [contento/2]).
+
+home{backend: postgres}.
+loves(fox, solenne).
+loves(solenne, fox).
+contento(X, H) :- loves(X, Y), loves(Y, X), home{backend: H}.

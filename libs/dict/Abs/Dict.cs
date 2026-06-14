@@ -39,18 +39,29 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
             var kvps = parser.Parenthesized(
                 Set.WellKnown.Collection,
                 parser.ConsExpression(Operators.Conjunction));
-            if (!kvps.TryGetValue(out var cons))
-                return Maybe<Ast.Dict>.None;
-
-            var pairs = new System.Collections.Generic.List<BinaryExpression>();
-            foreach (var item in cons.Contents)
+            if (kvps.TryGetValue(out var cons))
             {
-                if (item is BinaryExpression { Operator: var op } bin && op == Operators.Module)
-                    pairs.Add(bin);
-                else
-                    return Maybe<Ast.Dict>.None;
+                var pairs = new System.Collections.Generic.List<BinaryExpression>();
+                foreach (var item in cons.Contents)
+                {
+                    if (item is BinaryExpression { Operator: var op } bin && op == Operators.Module)
+                        pairs.Add(bin);
+                    else
+                        return Maybe<Ast.Dict>.None;
+                }
+                return new Ast.Dict(f, pairs);
             }
-            return new Ast.Dict(f, pairs);
+
+            // Try singleton: functor{k: v}
+            var single = parser.Parenthesized(
+                Set.WellKnown.Collection,
+                parser.BinaryExpressionRhs);
+            if (single.TryGetValue(out var singleTerm)
+                && singleTerm is BinaryExpression { Operator: var sop } sbin
+                && sop == Operators.Module)
+                return new Ast.Dict(f, [sbin]);
+
+            return Maybe<Ast.Dict>.None;
         }]);
 
         return parser.Transact([

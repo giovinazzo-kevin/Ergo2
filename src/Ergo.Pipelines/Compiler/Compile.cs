@@ -40,9 +40,12 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
                 using var stream = sourceFile.OpenRead();
                 var sourceBytes = SHA256.HashData(stream);
                 var versionBytes = BitConverter.GetBytes(BytecodeVersion.VERSION);
-                var combined = new byte[sourceBytes.Length + versionBytes.Length];
+                var libBytes = System.Text.Encoding.UTF8.GetBytes(
+                    string.Join("|", Ergo.Libs.Libraries.Standard.Select(a => a.FullName)));
+                var combined = new byte[sourceBytes.Length + versionBytes.Length + libBytes.Length];
                 sourceBytes.CopyTo(combined, 0);
                 versionBytes.CopyTo(combined, sourceBytes.Length);
+                libBytes.CopyTo(combined, sourceBytes.Length + versionBytes.Length);
                 var hash = Convert.ToHexString(SHA256.HashData(combined));
                 File.WriteAllText(Path.Combine(binDir, input.Root + ".kb.hash"), hash);
             }

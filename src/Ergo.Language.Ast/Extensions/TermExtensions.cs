@@ -26,12 +26,15 @@ public static class TermExtensions
         if (term is Complex c)
             foreach (var vv in c.Args.SelectMany(GetVariables))
                 yield return vv;
+        else
+            foreach (var vv in term.Variables)
+                yield return vv;
     }
     public static Term[] GetArguments(this Term term)
     {
         if (term is Complex c)
             return c.Args;
-        return [];
+        return term.Arguments;
     }
     public static Maybe<Signature> GetSignature(this Term term) => term switch {
         Atom a
@@ -40,6 +43,8 @@ public static class TermExtensions
             => exp.Rhs.GetSignature().Select(x => x with { Module = module }),
         Complex c
             => new Signature(default, c.Functor, c.Arity),
+        Term t when t.Signature.HasValue
+            => t.Signature,
         _ => default
     };
 }
