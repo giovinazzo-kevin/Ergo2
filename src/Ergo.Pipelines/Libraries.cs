@@ -11,6 +11,7 @@ public static class Libraries
         typeof(List.Lib.List).Assembly,
         typeof(Set.Lib.Set).Assembly,
         typeof(Dict.Lib.Dict).Assembly,
-        typeof(IO.Lib.IO).Assembly
+        typeof(IO.Lib.IO).Assembly,
+        typeof(Reflection.Lib.Reflection).Assembly
     ];
 }

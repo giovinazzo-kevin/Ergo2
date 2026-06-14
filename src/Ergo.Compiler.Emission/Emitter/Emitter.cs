@@ -77,9 +77,9 @@ public class Emitter
         if (needsStackFrame)
             ctx.Emit(allocate);
         ctx.Concat(scope);
-        // Restore query variable bindings from stack frame to A after call returns
-        // (callees with body goals may clobber A registers; V registers may be clobbered by nested calls)
-        // put_unsafe_value reads from Store[E + Yn + 2] and globalizes to heap before deallocate
+        // Restore query variable bindings from stack frame to A after call returns.
+        // All query vars were pre-allocated as permanent via put_variable in JITGoal,
+        // so put_unsafe_value correctly reads from Store[E + Yn + 2] for all of them.
         foreach (var (name, vIdx) in queryVars) {
             if (variableMap.TryGetValue(name, out var entry))
                 ctx.Emit(put_unsafe_value(vIdx, entry.Index));
@@ -114,12 +114,29 @@ public class Emitter
                 ? bin.Rhs : term;
             needsStackFrame = goal.GetVariables().Any();
             var args = goal.GetArguments();
+
+            // Pre-allocate query variables that appear ONLY inside nested compounds.
+            // Direct arg variables get put_variable naturally (writes to stack frame).
+            // Nested variables would get set_variable (heap only, no stack frame),
+            // so we pre-allocate them here with put_variable to scratch A registers.
+            var directArgVarNames = new HashSet<string>();
+            for (int i = 0; i < args.Length; i++)
+                if (args[i] is Variable dv) directArgVarNames.Add(dv.Name);
+            var scratchA = args.Length;
+            foreach (var qv in goal.GetVariables().Distinct()) {
+                if (!directArgVarNames.Contains(qv.Name) && !queryVars.ContainsKey(qv.Name)) {
+                    var newIdx = ctx.NumVars;
+                    queryVars[qv.Name] = newIdx;
+                    qv.Value = (__int)newIdx;
+                    ctx.Emit(put_variable(ctx.NumVars++, scratchA++));
+                }
+            }
+
             for (int i = 0; i < args.Length; ++i) {
-                // Use name-based tracking for query variables
-                // (parser may create distinct Variable objects for same name across conjunction)
                 if (args[i] is Variable v && queryVars.TryGetValue(v.Name, out var knownIdx))
                     ctx.Emit(put_value(knownIdx, i));
                 else if (args[i] is Variable v2) {
+                    // Should not reach here -- all vars pre-allocated above
                     var newIdx = ctx.NumVars;
                     queryVars[v2.Name] = newIdx;
                     ctx.Emit(put_variable(ctx.NumVars++, i));

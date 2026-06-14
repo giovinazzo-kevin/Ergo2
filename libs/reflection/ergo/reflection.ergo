@@ -1,0 +1,4 @@
+:- module(reflection, [term/3, '=..'/2]).
+:- op(700, xfx, ['=..']).
+
+'=..'(Term, [Functor|Args]) :- term(Functor, Args, Term).

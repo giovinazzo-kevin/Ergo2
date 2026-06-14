@@ -153,6 +153,76 @@ public class BuiltInTests : Tests
         Assert.Equal("mary", output[1]);
     }
 
+    #region call/N
+    [Fact]
+    public void Call1_Diagnostic()
+    {
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        var output = new List<string>();
+
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)((vm) => {
+            output.Add(vm.Pretty(vm.A[0]));
+        }));
+
+        // call/1 dispatches parent, then write captures the result
+        var query = CompileQuery(kb, "call(parent(john, X)), my_write(X)");
+        Trace.WriteLine($"Query vars: {string.Join(", ", query.Variables.Select(kv => $"{kv.Key}=A[{kv.Value.Index}]"))}");
+        vm.Run(query);
+
+        Assert.Single(output);
+        Assert.Equal("mary", output[0]);
+    }
+
+    [Fact]
+    public void Call1_CallsPredicateFromHeapTerm()
+    {
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        var solutions = new List<ErgoVM.Solution>();
+        vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
+        var query = CompileQuery(kb, "call(parent(john, X))");
+        vm.Run(query);
+        AssertSolutions(solutions, ["X/mary"]);
+    }
+
+    [Fact]
+    public void Call2_AppendsExtraArg()
+    {
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        var solutions = new List<ErgoVM.Solution>();
+        vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
+        var query = CompileQuery(kb, "call(parent(john), X)");
+        vm.Run(query);
+        AssertSolutions(solutions, ["X/mary"]);
+    }
+
+    [Fact]
+    public void Call1_AtomCallWithExtraArgs()
+    {
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        var solutions = new List<ErgoVM.Solution>();
+        vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
+        var query = CompileQuery(kb, "call(fact)");
+        vm.Run(query);
+        Assert.Single(solutions);
+    }
+
+    [Fact]
+    public void Call1_BacktracksOverMultipleSolutions()
+    {
+        var kb = Consult(MODULE);
+        var vm = new ErgoVM();
+        var solutions = new List<ErgoVM.Solution>();
+        vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
+        var query = CompileQuery(kb, "call(parent(X, Y))");
+        vm.Run(query);
+        AssertSolutions(solutions, ["X/john, Y/mary", "X/mary, Y/susan"]);
+    }
+    #endregion
+
     [Fact]
     public void FailingBuiltIn_CausesBacktrack()
     {
