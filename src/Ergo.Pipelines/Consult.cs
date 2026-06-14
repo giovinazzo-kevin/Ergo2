@@ -44,12 +44,27 @@ public class Consult : IPipeline<SourceInput, KnowledgeBase, Consult.Env>
             versionBytes.CopyTo(combined, sourceBytes.Length);
             libBytes.CopyTo(combined, sourceBytes.Length + versionBytes.Length);
             var currentHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(combined));
-            var cachedHash = File.ReadAllText(hashFile);
+            string cachedHash;
+            try {
+                using var hashFs = new FileStream(hashFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var hashReader = new StreamReader(hashFs);
+                cachedHash = hashReader.ReadToEnd();
+            } catch (IOException ex) {
+                return new PipelineError(this, ex);
+            }
             if (currentHash != cachedHash)
                 return new PipelineError(this, new InvalidOperationException("Source changed"));
         }
 
-        var bytes = File.ReadAllBytes(kbFile);
+        byte[] bytes;
+        try {
+            using var kbFs = new FileStream(kbFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var ms = new MemoryStream();
+            kbFs.CopyTo(ms);
+            bytes = ms.ToArray();
+        } catch (IOException ex) {
+            return new PipelineError(this, ex);
+        }
         var words = new int[bytes.Length / sizeof(int)];
         Buffer.BlockCopy(bytes, 0, words, 0, bytes.Length);
         var kb = new KnowledgeBase(name, new KnowledgeBaseBytecode(words));

@@ -47,7 +47,11 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
                 versionBytes.CopyTo(combined, sourceBytes.Length);
                 libBytes.CopyTo(combined, sourceBytes.Length + versionBytes.Length);
                 var hash = Convert.ToHexString(SHA256.HashData(combined));
-                File.WriteAllText(Path.Combine(binDir, input.Root + ".kb.hash"), hash);
+                using var hashStream = new FileStream(
+                    Path.Combine(binDir, input.Root + ".kb.hash"),
+                    FileMode.Create, FileAccess.Write, FileShare.None);
+                using var hashWriter = new StreamWriter(hashStream);
+                hashWriter.Write(hash);
             }
         }
         return kb;

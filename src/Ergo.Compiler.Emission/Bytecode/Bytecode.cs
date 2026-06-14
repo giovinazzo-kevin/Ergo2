@@ -97,7 +97,7 @@ public abstract class Bytecode
     {
         if (!file.Directory!.Exists)
             file.Directory.Create();
-        using var fs = file.OpenWrite();
+        using var fs = new FileStream(file.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
         var bytes = new byte[sizeof(__WORD)].AsSpan();
         for (int i = 0; i < _bytes.Length; i++) {
             bytes[0] = (byte)(_bytes[i] >> 0);
