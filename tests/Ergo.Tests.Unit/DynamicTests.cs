@@ -9,7 +9,10 @@ public class DynamicTests : Tests
     {
         var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
-        vm._QUERY = new Query(kb.Bytecode.AsQuery(), [], kb);
+        var q = CompileQuery(kb, "fact");
+        vm.open_query(q);
+        vm.next_solution();
+        vm.close_query();
         return (kb, vm);
     }
 

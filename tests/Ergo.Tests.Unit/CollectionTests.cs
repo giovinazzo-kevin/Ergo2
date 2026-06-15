@@ -16,7 +16,9 @@ public abstract class CollectionTests<TCollection> : Tests where TCollection : C
     {
         var kb = Consult(Module);
         var vm = new ErgoVM();
-        vm._QUERY = new Ergo.Compiler.Emission.Query(kb.Bytecode.AsQuery(), [], kb);
+        var q = CompileQuery(kb, "fact");
+        vm.open_query(q);
+        vm.next_solution();
         return vm;
     }
 

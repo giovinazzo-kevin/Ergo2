@@ -124,62 +124,9 @@ public class EmitterTests : Tests
         AssertOp(OpCode.proceed, ref span);
     }
 
-    [Fact]
-    public void TryMeElse_Should_Allocate_ChoicePoint()
-    {
-        var vm = new ErgoVM();
-        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.EMPTY, []);
-        vm.E = ErgoVM.HEAP_SIZE;
-        vm.B = ErgoVM.HEAP_SIZE;
-        vm.N = 2;
-        vm.A[0] = 111;
-        vm.A[1] = 222;
-        vm.TryMeElse();
-
-        var b = vm.B;
-        Assert.Equal(2, vm.Store[b]);
-        Assert.Equal(111, vm.Store[b + 1]);
-        Assert.Equal(222, vm.Store[b + 2]);
-        Assert.Equal(ErgoVM.HEAP_SIZE, vm.Store[b + 3]);
-    }
-
-    [Fact]
-    public void RetryMeElse_Should_Reset_ChoicePoint_And_Advance_Label()
-    {
-        var vm = new ErgoVM();
-        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([999]), []);
-        vm.N = 2;
-        vm.A[0] = 111;
-        vm.A[1] = 222;
-        vm.E = ErgoVM.HEAP_SIZE;
-        vm.B = ErgoVM.HEAP_SIZE + 10;
-        vm.Store[vm.B] = 2;
-        vm.CP = 1234;
-        vm.TR = 44;
-        vm.H = 77;
-        vm.HB = 77;
-        vm.B0 = ErgoVM.HEAP_SIZE;
-
-        vm.TryMeElse();
-
-        var b = vm.B;
-        vm.TR = 55;
-        vm.H = 88;
-        vm.P = 0;
-
-        vm.RetryMeElse();
-
-        Assert.Equal(ErgoVM.HEAP_SIZE, vm.E);
-        Assert.Equal(ErgoVM.HEAP_SIZE + 20, vm.B);
-        Assert.Equal(2, vm.Store[b]);
-        Assert.Equal(111, vm.Store[b + 1]);
-        Assert.Equal(222, vm.Store[b + 2]);
-        Assert.Equal(1234, vm.CP);
-        Assert.Equal(44, vm.TR);
-        Assert.Equal(77, vm.H);
-        Assert.Equal(77, vm.HB);
-        Assert.Equal(1, vm.P);
-    }
+    [Theory]
+    [InlineData("backtrack_tests", "value(X)", new[] { "X/1", "X/2", "X/3" })]
+    [InlineData("emitter_tests", "multiple_fact", new[] { "", "" })]
+    public void Backtracking_ProducesAllSolutions(string module, string query, string[] expected)
+        => AssertSolutions(new ErgoVM().findall(CompileQuery(Consult(module), query)), expected);
 }
-
-

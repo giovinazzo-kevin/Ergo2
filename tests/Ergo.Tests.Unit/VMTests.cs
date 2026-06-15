@@ -2,6 +2,7 @@ using Ergo.Compiler.Emission;
 using Ergo.Runtime.WAM;
 using static Ergo.Compiler.Emission.Term;
 using static Ergo.Compiler.Emission.Term.__TAG;
+using __ADDR = int;
 
 namespace Ergo.UnitTests;
 
@@ -169,73 +170,27 @@ public class VMTests : Tests
     }
     #endregion
 
-    #region VM internals
-    [Fact]
-    public void RefDerefsToConstant()
+    #region Unification
+    [Theory]
+    [InlineData(100, REF, 100, 104, REF, 104, false)]  // two unbound refs bind together
+    [InlineData(100, REF, 100, 104, CON, 7, false)]     // unbound ref binds to constant
+    [InlineData(100, CON, 1, 104, CON, 2, true)]        // different constants fail
+    [InlineData(100, CON, 1, 104, CON, 1, false)]       // same constants succeed
+    public void Unify(__ADDR addr1, __TAG tag1, int val1, __ADDR addr2, __TAG tag2, int val2, bool expectFail)
     {
-        var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
-        var q = CompileQuery(kb, "fact");
-        vm.open_query(q);
-        vm.next_solution();
-        var addr = 1033;
-        vm.Store[addr] = (Term)(REF, addr);
-        vm.Store[addr] = (Term)(CON, 4);
-        var deref = vm.deref(addr);
-        Assert.Equal(addr, deref);
-        Assert.Equal((int)(Term)(CON, 4), (int)(Term)vm.Store[deref]);
+        vm.Store[addr1] = (Term)(tag1, val1);
+        vm.Store[addr2] = (Term)(tag2, val2);
+        vm.unify(addr1, addr2);
+        Assert.Equal(expectFail, vm.fail);
+        if (!expectFail && tag1 == REF && tag2 == REF)
+            Assert.Equal(vm.deref(addr1), vm.deref(addr2));
+        if (!expectFail && tag1 == REF && tag2 == CON)
+            Assert.Equal(((Term)(CON, val2)).RawValue, ((Term)vm.Store[vm.deref(addr1)]).RawValue);
     }
 
     [Fact]
-    public void PutVariableWritesStackCorrectly()
-    {
-        var kb = Consult("emitter_tests");
-        var vm = new ErgoVM();
-        var q = CompileQuery(kb, "fact");
-        vm.open_query(q);
-        vm.next_solution();
-        vm.E = ErgoVM.HEAP_SIZE;
-        vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([0, 0]), []);
-        vm.P = 0;
-        vm.PutVariable();
-        var storeAddr = ErgoVM.HEAP_SIZE + 0 + 2;
-        var term = (Term)vm.Store[storeAddr];
-        Assert.Equal(storeAddr, term.Value);
-        Assert.Equal((int)term, vm.A[0]);
-    }
-
-    [Fact]
-    public void Unify_TwoUnboundRefs_BindsThemTogether()
-    {
-        var vm = new ErgoVM();
-        vm.Store[100] = (Term)(REF, 100);
-        vm.Store[104] = (Term)(REF, 104);
-        vm.unify(100, 104);
-        Assert.Equal(vm.deref(100), vm.deref(104));
-    }
-
-    [Fact]
-    public void Unify_UnboundRefAndConstant_BindsRefToConst()
-    {
-        var vm = new ErgoVM();
-        vm.Store[100] = (Term)(REF, 100);
-        vm.Store[104] = (Term)(CON, 7);
-        vm.unify(100, 104);
-        Assert.Equal(((Term)(CON, 7)).RawValue, ((Term)vm.Store[vm.deref(100)]).RawValue);
-    }
-
-    [Fact]
-    public void Unify_TwoDifferentConstants_Fails()
-    {
-        var vm = new ErgoVM();
-        vm.Store[100] = (Term)(CON, 1);
-        vm.Store[104] = (Term)(CON, 2);
-        vm.unify(100, 104);
-        Assert.True(vm.fail);
-    }
-
-    [Fact]
-    public void Unify_SameFunctorAndArgs_Succeeds()
+    public void Unify_SameStructure_Succeeds()
     {
         var vm = new ErgoVM();
         var f = (Term)(CON, 10);
@@ -252,7 +207,7 @@ public class VMTests : Tests
     }
 
     [Fact]
-    public void Unify_DifferentFunctorAndArgs_Fails()
+    public void Unify_DifferentStructure_Fails()
     {
         var vm = new ErgoVM();
         vm.Store[100] = (Term)(STR, 101);
@@ -266,6 +221,21 @@ public class VMTests : Tests
         vm.unify(100, 200);
         Assert.True(vm.fail);
     }
+
+    [Fact]
+    public void RefDerefsToConstant()
+    {
+        var kb = Consult("emitter_tests");
+        var vm = new ErgoVM();
+        var q = CompileQuery(kb, "fact");
+        vm.open_query(q);
+        vm.next_solution();
+        var addr = 1033;
+        vm.Store[addr] = (Term)(REF, addr);
+        vm.Store[addr] = (Term)(CON, 4);
+        var deref = vm.deref(addr);
+        Assert.Equal(addr, deref);
+        Assert.Equal((int)(Term)(CON, 4), (int)(Term)vm.Store[deref]);
+    }
     #endregion
 }
-

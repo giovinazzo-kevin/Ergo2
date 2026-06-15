@@ -34,7 +34,9 @@ public class SetCollectionTests : CollectionTests<Set>
     {
         var kb = Consult(Module);
         var vm = new ErgoVM();
-        vm._QUERY = new Ergo.Compiler.Emission.Query(kb.Bytecode.AsQuery(), [], kb);
+        var q = CompileQuery(kb, "fact");
+        vm.open_query(q);
+        vm.next_solution();
         var w = vm.WriteHeapTerm(new Set([(__string)"c", (__string)"a", (__string)"b"]));
         var a = vm.H; vm.Heap[vm.H++] = w;
         var h = ((Set)vm.ReadHeapTerm(a)).Head.ToArray();

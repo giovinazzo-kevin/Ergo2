@@ -1,2 +1,3 @@
 :- module(_, []).
 :- use_module(list).
+fact.
