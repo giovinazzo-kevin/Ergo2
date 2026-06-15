@@ -126,10 +126,10 @@ public partial class ErgoVM
         P = CP;
     }
 
-    public void Halt()
+    public void Fail()
     {
 #if WAM_TRACE
-        Trace.WriteLine("[WAM] Halt");
+        Trace.WriteLine("[WAM] Fail");
 #endif
         fail = true;
     }

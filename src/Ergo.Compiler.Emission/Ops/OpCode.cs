@@ -49,12 +49,12 @@ public enum OpCode : byte
     get_level,
     cut,
 
-    halt
+    fail
 }
 
 public static class BytecodeVersion
 {
     // Bump this whenever opcode layout, encoding, or semantics change.
     // Mixed into .kb hash to invalidate stale caches.
-    public const int VERSION = 3;
+    public const int VERSION = 4;
 }

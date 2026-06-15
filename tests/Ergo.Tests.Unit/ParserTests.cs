@@ -103,20 +103,14 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("true")]
-    [InlineData("false")]
-    public void __bool(string input)
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    [InlineData("⊤", true)]
+    [InlineData("⊥", false)]
+    public void __bool(string input, bool expected)
     {
         var result = Expect(input, p => p.__bool);
-        Assert.Equal(Parse(), (bool)result.Value);
-        bool Parse()
-        {
-            if (input == (string)Literals.True.Value)
-                return true;
-            if (input == (string)Literals.False.Value)
-                return false;
-            return bool.Parse(input);
-        }
+        Assert.Equal(expected, (bool)result.Value);
     }
 
     [Theory]

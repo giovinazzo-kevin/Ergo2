@@ -13,9 +13,7 @@ public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinar
     public new readonly Term[] Args = head.GetArguments();
 
     public readonly IEnumerable<Term> Goals =
-        body.Equals(Literals.True)
-        ? []
-        : (body is BinaryExpression { IsCons: true } cons
+        (body is BinaryExpression { IsCons: true } cons
             && cons.Operator.Equals(Operators.Conjunction))
         ? new ConsExpression(cons.Operator, cons.Lhs, cons.Rhs).Contents
         : [body];

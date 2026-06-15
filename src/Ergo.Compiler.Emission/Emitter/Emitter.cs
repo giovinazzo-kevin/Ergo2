@@ -216,6 +216,9 @@ public class Emitter
                 }
                 ctx.Emit(cut((int)cutReg));
                 break;
+            case Fail:
+                ctx.Emit(Ops.fail);
+                break;
             case StaticGoal @static:
                 var p1 = ctx.Constant(@static.Callee.Signature.Functor.Value);
                 var n1 = @static.Callee.Signature.Arity.TryGetValue(out var sA) ? sA : Signature.VARIADIC;
@@ -422,7 +425,9 @@ public class Emitter
     {
         var clause = term as Lang.Ast.Clause;
         var head = clause?.Functor ?? term;
-        var goals = clause?.Goals.ToArray() ?? Array.Empty<Lang.Ast.Term>();
+        var goals = clause?.Goals
+            .Where(g => g is not __bool { Value: true })
+            .ToArray() ?? Array.Empty<Lang.Ast.Term>();
         var headArgs = head.GetArguments();
 
         var scope = ctx.Scope();
@@ -457,6 +462,12 @@ public class Emitter
                 }
                 if (goal is Atom a && a.Value is string s && s == "!") {
                     sc.Emit(Ops.cut((int)cr!));
+                    continue;
+                }
+                if (goal is __bool { Value: true })
+                    continue;
+                if (goal is __bool { Value: false }) {
+                    sc.Emit(Ops.fail);
                     continue;
                 }
                 var goalArgs = goal.GetArguments();

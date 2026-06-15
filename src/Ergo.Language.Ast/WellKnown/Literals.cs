@@ -3,7 +3,7 @@
 public static class Literals
 {
     public static readonly Variable Discard = "_";
-    public static readonly __string True = "⊤";
-    public static readonly __string False = "⊥";
+    public static readonly __bool True = true;
+    public static readonly __bool False = false;
     public static readonly __string Cut = "!";
 }

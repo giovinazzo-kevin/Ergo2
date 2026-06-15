@@ -159,6 +159,10 @@ public class Analyzer
         }
         if (signature.Functor == Literals.Cut && signature.Arity.TryGetValue(out var cutArity) && cutArity == 0)
             return [new Cut(clause)];
+        if (goalDef is __bool { Value: true })
+            return [];
+        if (goalDef is __bool { Value: false })
+            return [new Fail(clause)];
         if (signature.Module.TryGetValue(out var qualification)) {
             if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
                 throw new AnalyzerException(AnalyzerError.UndefinedModule0, qualification);
