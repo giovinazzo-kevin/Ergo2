@@ -37,7 +37,7 @@ public class DictTests : Tests
         var d = new Dict((__string)"event", [
             new BinaryExpression(Operators.Module, (__string)"z", (__string)"1"),
             new BinaryExpression(Operators.Module, (__string)"a", (__string)"2")]);
-        Assert.Equal("a", (string)((Atom)d.Pairs[0].Lhs).Value);
+        Assert.Equal("a", (string)((Atom)d.Pairs.First().Lhs).Value);
     }
     [Fact] public void Ast_Expl() => Assert.Equal("event{type: click}",
         new Dict((__string)"event", [new BinaryExpression(Operators.Module, (__string)"type", (__string)"click")]).Expl);
@@ -54,7 +54,7 @@ public class DictTests : Tests
     [Fact] public void Roundtrip_MultiplePairs()
         => Assert.Equal(2, ((Dict)Roundtrip(SetupVM(), new Dict((__string)"point", [
             new BinaryExpression(Operators.Module, (__string)"x", (__int)10),
-            new BinaryExpression(Operators.Module, (__string)"y", (__int)20)]))).Pairs.Length);
+            new BinaryExpression(Operators.Module, (__string)"y", (__int)20)]))).Length);
     [Fact] public void Roundtrip_Empty()
         => Assert.Empty(((Dict)Roundtrip(SetupVM(), new Dict((__string)"empty", []))).Pairs);
 

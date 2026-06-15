@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\src\Ergo.Compiler.Emission\Ergo.Compiler.Emission.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Runtime.WAM\Ergo.Runtime.WAM.csproj" />
     <ProjectReference Include="..\..\src\Ergo.Libs\Ergo.Libs.csproj" />
+    <ProjectReference Include="..\list\Ergo.Libs.List.csproj" />
     <ProjectReference Include="..\set\Ergo.Libs.Set.csproj" />
   </ItemGroup>
 

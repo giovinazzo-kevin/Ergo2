@@ -20,7 +20,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
     public override Func<Maybe<Lang.Ast.Term>> OnParse(Parser parser)
     {
         Func<Maybe<Ast.Dict>> dict = parser.Transact([() => {
-            Lang.Ast.Term f;
+            Either<Atom, Variable> f;
             if (parser.Atom().TryGetValue(out var atom))
                 f = atom;
             else if (parser.Variable().TryGetValue(out var v))
@@ -74,7 +74,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
         var dict = (Ast.Dict)args[Ai];
         ctx.Emit(get_abstract(sig, Ai));
         emitter.EmitUnify(ctx, dict.DictFunctor);
-        ctx.Emit(unify_constant(ctx.Constant((__int)dict.Pairs.Length)));
+        ctx.Emit(unify_constant(ctx.Constant((__int)dict.Length)));
         foreach (var pair in dict.Pairs)
         {
             emitter.EmitUnify(ctx, pair.Lhs);
@@ -88,7 +88,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
         if (!deep) return;
         ctx.Emit(put_abstract(sig, Ai));
         emitter.EmitSet(ctx, dict.DictFunctor, varsByName);
-        emitter.EmitSet(ctx, (__int)dict.Pairs.Length, varsByName);
+        emitter.EmitSet(ctx, (__int)dict.Length, varsByName);
         foreach (var pair in dict.Pairs)
         {
             emitter.EmitSet(ctx, pair.Lhs, varsByName);
@@ -147,7 +147,11 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
             var val = vm.read_heap_term(addr + 3 + i * 2 + 1);
             pairs[i] = new BinaryExpression(Operators.Module, key, val);
         }
-        return new Ast.Dict(functor, pairs);
+        return new Ast.Dict(functor switch {
+            Atom a => a,
+            Variable v => v,
+            _ => throw new NotSupportedException()
+        }, pairs);
     }
 
     public override int OnPut(Runtime.WAM.ErgoVM vm, Ast.Dict dict)
@@ -157,7 +161,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
         var baseAddr = vm.H;
         vm.Heap[vm.H++] = dictSig;
         vm.Heap[vm.H++] = vm.write_heap_term(dict.DictFunctor);
-        var nConst = vm._QUERY.Bytecode.AddConstant((__int)dict.Pairs.Length);
+        var nConst = vm._QUERY.Bytecode.AddConstant((__int)dict.Length);
         vm.Heap[vm.H++] = (Term)(CON, nConst);
         foreach (var pair in dict.Pairs)
         {

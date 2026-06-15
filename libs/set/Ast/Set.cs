@@ -4,18 +4,12 @@ using Ergo.Shared.Extensions;
 
 namespace Ergo.Libs.Set.Ast;
 
-public class Set : CollectionExpression
+public class Set(IEnumerable<Term> head, Term tail = null!) : CollectionExpression(Fold, WellKnown.Collection, WellKnown.Operator, Normalize(head, ref tail))
 {
-    private readonly Term _tail;
-    public Term Tail => _tail;
+    public Term Tail => tail;
     public IEnumerable<Term> Head => Contents.SkipLast(1);
 
     public bool Complete => Tail.Equals(WellKnown.EmptySet);
-
-    public Set(IEnumerable<Term> head, Term tail = null!) : base(Fold, WellKnown.Collection, WellKnown.Operator, Normalize(head, ref tail))
-    {
-        _tail = tail;
-    }
 
     private static Set Fold(Term a, Term b) => a is Set s
         ? new(s.Head.Prepend(b), s.Tail)
@@ -40,5 +34,4 @@ public class Set : CollectionExpression
         : Complete
          ? $"{base.Expl[..^(Collection.ClosingDelim.Length + COMMA.Length + Tail.Expl.Length + 1)]}{Collection.ClosingDelim}"
         : base.Expl).Parenthesized(IsParenthesized);
-    public override Term Clone() => new Set(Head.Select(t => t.Clone()), Tail.Clone());
 }

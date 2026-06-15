@@ -4,19 +4,31 @@ using Ergo.Shared.Types;
 
 namespace Ergo.Libs.Dict.Ast;
 
-public class Dict : Term
+public class Dict(Either<Atom, Variable> functor, IEnumerable<BinaryExpression> pairs) 
+    : Complex(WellKnown.Functor, [CastFunctor(functor), CastPairs(pairs)])
 {
-    public readonly Term DictFunctor;
-    public readonly BinaryExpression[] Pairs;
+    static Term CastFunctor(Either<Atom, Variable> functor)
+    {
+        Maybe<Atom> atom = functor;
+        Maybe<Variable> var = functor;
+        return atom.Cast<Term>()
+            .Or(var.Cast<Term>())
+            .GetOrThrow();
+    }
+
+    static Term CastPairs(IEnumerable<BinaryExpression> pairs)
+    {
+        var unique = pairs.OrderBy(p => p.Lhs).DistinctBy(p => p.Lhs).ToList();
+        if (unique.Count == 0)
+            return List.WellKnown.EmptyList;
+        return new List.Ast.List(unique);
+    }
+
+    public Term DictFunctor => Args[0];
+    public IEnumerable<BinaryExpression> Pairs => Args[1] is not List.Ast.List ? [] : ((List.Ast.List)Args[1]).Head.Cast<BinaryExpression>();
+    public int Length => Args[1] is not List.Ast.List ? 0 : ((List.Ast.List)Args[1]).Count;
 
     public override bool IsGround => DictFunctor.IsGround && Pairs.All(p => p.IsGround);
-
-    public Dict(Term functor, IEnumerable<BinaryExpression> pairs)
-    {
-        DictFunctor = functor;
-        // Sort pairs by key for canonical form
-        Pairs = [.. pairs.OrderBy(p => p.Lhs)];
-    }
 
     public override IEnumerable<Variable> Variables
     {
@@ -43,8 +55,4 @@ public class Dict : Term
             return $"{DictFunctor.Expl}{{{kvps}}}";
         }
     }
-
-    public override Term Clone() => new Dict(
-        DictFunctor.Clone(),
-        Pairs.Select(p => new BinaryExpression(p.Operator, p.Lhs.Clone(), p.Rhs.Clone())));
 }

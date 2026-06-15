@@ -1,6 +1,6 @@
 ﻿namespace Ergo.Shared.Types;
 
-public interface Case<T>
+public interface Case<out T>
 {
     T Value { get; }
 }

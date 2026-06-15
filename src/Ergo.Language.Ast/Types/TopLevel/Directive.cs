@@ -18,5 +18,4 @@ public class Directive(Term arg) : PrefixExpression(Operators.HornUnary, arg)
     public new int Arity => Args.Length;
 
     public override string Expl => $"{Operator.CanonicalFunctor.Value} {Arg}";
-    public override Term Clone() => new Directive(Arg);
 }

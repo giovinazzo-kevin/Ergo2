@@ -39,12 +39,8 @@ public static class TermExtensions
     public static Maybe<Signature> GetSignature(this Term term) => term switch {
         Atom a
             => new Signature(default, a, 0),
-        BinaryExpression exp when exp.Operator == Operators.Module && exp.Lhs is __string module
-            => exp.Rhs.GetSignature().Select(x => x with { Module = module }),
         Complex c
             => new Signature(default, c.Functor, c.Arity),
-        Term t when t.Signature.HasValue
-            => t.Signature,
-        _ => default
+        _ => Maybe<Signature>.None
     };
 }

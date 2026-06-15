@@ -13,5 +13,4 @@ public sealed class __int(int value) : Atom(typeof(__int), value)
     public override string Expl => $"{Value}"!.Parenthesized(IsParenthesized);
     public override bool Equals(object? obj) => base.Equals(obj);
     public override int GetHashCode() => base.GetHashCode();
-    public override Term Clone() => (__int)value;
 }

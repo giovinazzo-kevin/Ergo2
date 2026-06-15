@@ -4,20 +4,14 @@ using Ergo.Shared.Extensions;
 
 namespace Ergo.Libs.List.Ast;
 
-public class List : CollectionExpression
+public class List(IEnumerable<Term> head, Term tail = null!) : CollectionExpression(Fold, WellKnown.Collection, WellKnown.Operator, Normalize(head, ref tail))
 {
-    private readonly Term _tail;
-    public Term Tail => _tail;
+    public Term Tail => tail;
     public IEnumerable<Term> Head => Contents.SkipLast(1);
 
     public bool Complete => Tail.Equals(WellKnown.Collection.EmptyElement);
     public bool ListTail => Tail is List { } || Tail is Variable { Value: List { } };
     public int Count => Length + (Tail is List { } l ? l.Count : 1);
-
-    public List(IEnumerable<Term> head, Term tail = null!) : base(Fold, WellKnown.Collection, WellKnown.Operator, Normalize(head, ref tail))
-    {
-        _tail = tail;
-    }
 
     public static IEnumerable<Term> ExtractHead(BinaryExpression headTail)
     {
@@ -59,5 +53,4 @@ public class List : CollectionExpression
         : ListTail
          ? $"{base.Expl[..^(Collection.ClosingDelim.Length + COMMA.Length + Tail.Expl.Length + 1)]}{COMMA}{Tail.Expl[Collection.OpeningDelim.Length..^Collection.ClosingDelim.Length]}{Collection.ClosingDelim}"
         : base.Expl).Parenthesized(IsParenthesized);
-    public override Term Clone() => new List(Head.Select(t => t.Clone()), Tail.Clone());
 }

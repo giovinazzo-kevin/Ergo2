@@ -20,5 +20,4 @@ public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinar
 
     public override string Expl => $"{Functor} {Operator.CanonicalFunctor.Value}\n{string.Join(",\n", Goals.Select(x => "    " + x.Expl))}";
 
-    public override Term Clone() => new Clause(_head, _body);
 }

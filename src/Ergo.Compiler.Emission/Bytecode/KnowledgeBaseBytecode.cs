@@ -6,7 +6,7 @@ namespace Ergo.Compiler.Emission;
 public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
 {
     public readonly OperatorLookup Operators = new();
-    public readonly List<string> Imports = [];
+    public readonly HashSet<string> Imports = [];
 
     public bool TryResolve(Lang.Ast.Signature signature, out Signature reference)
     {

@@ -9,7 +9,7 @@ public class ConsExpression : BinaryExpression
     public readonly int Length;
 
     public ConsExpression(Func<Term, Term, ConsExpression> fold, Operator op, params IEnumerable<Term> contents)
-        : base(op, contents.First(), FoldAndCount(fold, op, contents.Skip(1), out var length))
+        : base(op, contents.First(), FoldAndCount(fold, contents.Skip(1), out var length))
     {
         Length = length;
         Contents = contents;
@@ -28,7 +28,7 @@ public class ConsExpression : BinaryExpression
         Contents = contents;
     }
 
-    private static Term FoldAndCount(Func<Term, Term, ConsExpression> fold, Operator op, IEnumerable<Term> args, out int length)
+    private static Term FoldAndCount(Func<Term, Term, ConsExpression> fold, IEnumerable<Term> args, out int length)
     {
         var l = 0;
         var ret = args.Reverse().Aggregate((a, b) => {
@@ -40,5 +40,4 @@ public class ConsExpression : BinaryExpression
     }
 
     public override string Expl => $"{Lhs.Expl}{Operator.CanonicalFunctor.Value} {Rhs.Expl}".Parenthesized(IsParenthesized);
-    public override Term Clone() => new ConsExpression(Operator, Lhs.Clone(), Rhs.Clone());
 }

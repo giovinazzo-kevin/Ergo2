@@ -110,6 +110,12 @@ public readonly struct Maybe<T>
             return this;
         return other();
     }
+    public Maybe<T> Or(Maybe<T> other)
+    {
+        if (HasValue)
+            return this;
+        return other;
+    }
 
     public Maybe<T> And<U>(Func<Maybe<U>> other)
     {

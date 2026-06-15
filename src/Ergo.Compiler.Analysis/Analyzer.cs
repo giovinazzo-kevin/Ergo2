@@ -152,17 +152,18 @@ public class Analyzer
     protected static IEnumerable<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
         var args = goalDef.GetArguments();
-        if (!goalDef.GetSignature().TryGetValue(out var signature)) {
+        var sig = goalDef.GetSignature();
+        if (!sig.TryGetValue(out var signature)) {
             if (goalDef is Variable lateBound)
                 return [new LateBoundGoal(clause, lateBound)];
             throw new NotSupportedException();
         }
-        if (signature.Functor == Literals.Cut && signature.Arity.TryGetValue(out var cutArity) && cutArity == 0)
-            return [new Cut(clause)];
         if (goalDef is __bool { Value: true })
             return [];
         if (goalDef is __bool { Value: false })
             return [new Fail(clause)];
+        if (signature.Functor == Literals.Cut && signature.Arity.TryGetValue(out var cutArity) && cutArity == 0)
+            return [new Cut(clause)];
         if (signature.Module.TryGetValue(out var qualification)) {
             if (!graph.Modules.TryGetValue(qualification, out var referencedModule))
                 throw new AnalyzerException(AnalyzerError.UndefinedModule0, qualification);

@@ -18,8 +18,6 @@ public abstract class Term : IExplainable, IComparable<Term>
     public virtual IEnumerable<Variable> Variables => [];
     public virtual Term[] Arguments => [];
 
-    public abstract Term Clone();
-
     public virtual Maybe<Signature> Signature => default;
 
     /// <summary>
