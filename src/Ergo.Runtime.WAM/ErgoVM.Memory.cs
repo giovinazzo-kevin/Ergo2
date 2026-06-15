@@ -41,7 +41,6 @@ public partial class ErgoVM
     public __ADDR TR { get; set; }
     public __WORD N { get; set; }
     public bool fail { get; set; }
-    public bool exit { get; set; }
     public GetMode mode { get; set; }
     #endregion
 

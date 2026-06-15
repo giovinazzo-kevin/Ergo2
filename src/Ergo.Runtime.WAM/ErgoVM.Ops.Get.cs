@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using Ergo.Compiler.Emission;
 using static Ergo.Runtime.WAM.ErgoVM.GetMode;
 
@@ -142,11 +143,11 @@ public partial class ErgoVM
             var addr = deref(term.Value);
             var resolved = (Term)Store[addr];
             if (resolved.Tag == REF && resolved.Value == addr) {
-                // Unbound — bind to constant
+                // Unbound ï¿½ bind to constant
                 Store[addr] = (Term)(CON, c);
                 trail(addr);
             } else if (resolved.Tag == CON) {
-                // Already bound — check equality
+                // Already bound ï¿½ check equality
                 fail = resolved.Value != c;
             } else {
                 fail = true;

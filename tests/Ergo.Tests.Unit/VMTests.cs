@@ -57,9 +57,7 @@ public class VMTests : Tests
         var kb = Consult(module);
         var vm = new ErgoVM();
         var q = CompileQuery(kb, query);
-        var solutions = new List<ErgoVM.Solution>();
-        vm.SolutionEmitted += v => solutions.Add(v.MaterializeSolution());
-        vm.Run(q);
+        var solutions = vm.findall(q);
         AssertSolutions(solutions, expected);
     }
 
@@ -91,7 +89,6 @@ public class VMTests : Tests
             AssertInt32(0, ref span);
             AssertInt32(1, ref span);
             AssertOp(OpCode.deallocate, ref span);
-            AssertOp(OpCode.halt, ref span);
         }
     }
 
@@ -179,7 +176,8 @@ public class VMTests : Tests
         var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
         var q = CompileQuery(kb, "fact");
-        vm.Run(q);
+        vm.open_query(q);
+        vm.next_solution();
         var addr = 1033;
         vm.Store[addr] = (Term)(REF, addr);
         vm.Store[addr] = (Term)(CON, 4);
@@ -194,7 +192,8 @@ public class VMTests : Tests
         var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
         var q = CompileQuery(kb, "fact");
-        vm.Run(q);
+        vm.open_query(q);
+        vm.next_solution();
         vm.E = ErgoVM.HEAP_SIZE;
         vm._QUERY = new Ergo.Compiler.Emission.Query(QueryBytecode.Preloaded([0, 0]), []);
         vm.P = 0;

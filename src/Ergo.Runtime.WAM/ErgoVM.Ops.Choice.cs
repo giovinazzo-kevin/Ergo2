@@ -1,3 +1,4 @@
+using System.Diagnostics;
 namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM

@@ -5,10 +5,6 @@ using Signature = Ergo.Compiler.Emission.Signature;
 
 namespace Ergo.Runtime.WAM;
 
-/// <summary>
-/// A well-known query that C# calls into ergo.
-/// Inbound FFI. Builtins are the outbound FFI.
-/// </summary>
 public readonly struct Hook
 {
     public readonly Query Query;
@@ -22,7 +18,7 @@ public readonly struct Hook
 
     public Lang.Ast.Term? Call(ErgoVM vm, params Lang.Ast.Term[] args)
     {
-        vm._QUERY = Query;
+        vm.open_query(Query);
 
         for (int i = 0; i < args.Length; i++)
             vm.A[i] = vm.WriteHeapTerm(args[i]);
@@ -32,23 +28,25 @@ public readonly struct Hook
         vm.A[args.Length] = (Term)(Term.__TAG.REF, outAddr);
         vm.H++;
 
-        vm.Run(Query);
-
-        if (vm.fail && vm.exit)
+        if (!vm.next_solution()) {
+            vm.close_query();
             return null;
+        }
 
-        return vm.ReadHeapTerm(vm.deref(outAddr));
+        var result = vm.ReadHeapTerm(vm.deref(outAddr));
+        vm.close_query();
+        return result;
     }
 
     public bool Fire(ErgoVM vm, params Lang.Ast.Term[] args)
     {
-        vm._QUERY = Query;
+        vm.open_query(Query);
 
         for (int i = 0; i < args.Length; i++)
             vm.A[i] = vm.WriteHeapTerm(args[i]);
 
-        vm.Run(Query);
-
-        return !(vm.fail && vm.exit);
+        var result = vm.next_solution();
+        vm.close_query();
+        return result;
     }
 }

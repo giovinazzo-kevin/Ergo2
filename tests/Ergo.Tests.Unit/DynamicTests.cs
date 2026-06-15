@@ -9,18 +9,8 @@ public class DynamicTests : Tests
     {
         var kb = Consult("emitter_tests");
         var vm = new ErgoVM();
-        vm._QUERY = new Ergo.Compiler.Emission.Query(kb.Bytecode.AsQuery(), [], kb);
+        vm._QUERY = new Query(kb.Bytecode.AsQuery(), [], kb);
         return (kb, vm);
-    }
-
-    private List<ErgoVM.Solution> RunQuery(ErgoVM vm, KnowledgeBase kb, string query)
-    {
-        var solutions = new List<ErgoVM.Solution>();
-        void handler(ErgoVM v) => solutions.Add(v.MaterializeSolution());
-        vm.SolutionEmitted += handler;
-        vm.Run(CompileQuery(kb, query));
-        vm.SolutionEmitted -= handler;
-        return solutions;
     }
 
     [Theory]
@@ -32,8 +22,11 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, functor, args.Length);
-        vm.Run(CompileQuery(kb, $"assert({functor}({string.Join(", ", args)}))"));
-        AssertSolutions(RunQuery(vm, kb, query), expected);
+        var q = CompileQuery(kb, $"assert({functor}({string.Join(", ", args)}))");
+        vm.open_query(q);
+        vm.next_solution();
+        vm.close_query();
+        AssertSolutions(vm.findall(CompileQuery(kb, query)), expected);
     }
 
     [Theory]
@@ -43,9 +36,13 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, functor, 1);
-        foreach (var v in values)
-            vm.Run(CompileQuery(kb, $"assert({functor}({v}))"));
-        var solutions = RunQuery(vm, kb, $"{functor}(X)");
+        foreach (var v in values) {
+            var q = CompileQuery(kb, $"assert({functor}({v}))");
+            vm.open_query(q);
+            vm.next_solution();
+            vm.close_query();
+        }
+        var solutions = vm.findall(CompileQuery(kb, $"{functor}(X)"));
         Assert.Equal(values.Length, solutions.Count);
         for (int i = 0; i < values.Length; i++)
             Assert.Equal(values[i], solutions[i].Bindings[0].Value.Expl);
@@ -59,10 +56,17 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "item", 1);
-        foreach (var item in new[] { "a", "b", "c" })
-            vm.Run(CompileQuery(kb, $"assert(item({item}))"));
-        vm.Run(CompileQuery(kb, $"retract(item({retract}))"));
-        var solutions = RunQuery(vm, kb, "item(X)");
+        foreach (var item in new[] { "a", "b", "c" }) {
+            var q = CompileQuery(kb, $"assert(item({item}))");
+            vm.open_query(q);
+            vm.next_solution();
+            vm.close_query();
+        }
+        var rq = CompileQuery(kb, $"retract(item({retract}))");
+        vm.open_query(rq);
+        vm.next_solution();
+        vm.close_query();
+        var solutions = vm.findall(CompileQuery(kb, "item(X)"));
         Assert.Equal(expected.Length, solutions.Count);
         for (int i = 0; i < expected.Length; i++)
             Assert.Equal(expected[i], solutions[i].Bindings[0].Value.Expl);
@@ -74,7 +78,7 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "immediate", 1);
-        AssertSolutions(RunQuery(vm, kb, query), expected);
+        AssertSolutions(vm.findall(CompileQuery(kb, query)), expected);
     }
 
     [Theory]
@@ -83,8 +87,11 @@ public class DynamicTests : Tests
     {
         var (kb, vm) = Setup();
         vm.DeclareDynamic(kb, "grandparent", 2);
-        vm.Run(CompileQuery(kb, assertQuery));
-        AssertSolutions(RunQuery(vm, kb, query), expected);
+        var q = CompileQuery(kb, assertQuery);
+        vm.open_query(q);
+        vm.next_solution();
+        vm.close_query();
+        AssertSolutions(vm.findall(CompileQuery(kb, query)), expected);
     }
 
     [Theory]
@@ -92,8 +99,6 @@ public class DynamicTests : Tests
     public void Static_NotShadowed(string query, string[] expected)
     {
         var (kb, vm) = Setup();
-        AssertSolutions(RunQuery(vm, kb, query), expected);
+        AssertSolutions(vm.findall(CompileQuery(kb, query)), expected);
     }
 }
-
-

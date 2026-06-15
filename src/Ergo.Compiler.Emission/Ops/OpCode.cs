@@ -56,5 +56,5 @@ public static class BytecodeVersion
 {
     // Bump this whenever opcode layout, encoding, or semantics change.
     // Mixed into .kb hash to invalidate stale caches.
-    public const int VERSION = 2;
+    public const int VERSION = 3;
 }

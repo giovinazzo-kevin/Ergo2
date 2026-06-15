@@ -1,3 +1,4 @@
+using System.Diagnostics;
 namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
@@ -125,24 +126,11 @@ public partial class ErgoVM
         P = CP;
     }
 
-    public void EmitSolution()
-    {
-#if WAM_TRACE
-        Trace.WriteLine("[WAM] EmitSolution");
-        Trace.WriteLine($"[WAM] EmitSolution: fail={fail}, P={P}, B={B}, B0={B0}");
-        for (int i = 0; i < _QUERY.Variables.Count; i++) {
-            Trace.WriteLine($"[WAM] A[{i}] = {A[i]}, deref = {deref(((Term)A[i]).Value)}, Store = {Store[deref(((Term)A[i]).Value)]}");
-        }
-#endif
-        SolutionEmitted(this);
-    }
-
     public void Halt()
     {
 #if WAM_TRACE
         Trace.WriteLine("[WAM] Halt");
 #endif
-        EmitSolution();
         fail = true;
     }
 

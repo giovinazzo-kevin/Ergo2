@@ -74,8 +74,7 @@ public class Emitter
             }
             variableMap[vars[i].Name] = new(vars[i].Name, ai);
         }
-        if (needsStackFrame)
-            ctx.Emit(allocate);
+        ctx.Emit(allocate);
         ctx.Concat(scope);
         // Restore query variable bindings from stack frame to A after call returns.
         // All query vars were pre-allocated as permanent via put_variable in JITGoal,
@@ -84,9 +83,8 @@ public class Emitter
             if (variableMap.TryGetValue(name, out var entry))
                 ctx.Emit(put_unsafe_value(vIdx, entry.Index));
         }
-        if (needsStackFrame)
-            ctx.Emit(deallocate);
-        ctx.Emit(halt);
+        ctx.Emit(deallocate);
+        ctx.Emit(proceed);
         var code = ctx.ToQuery(kb);
 #if EMITTER_TRACE
         System.Diagnostics.Trace.WriteLine(ctx.Dump(query: true));

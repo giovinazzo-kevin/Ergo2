@@ -1,3 +1,4 @@
+using System.Diagnostics;
 
 using Ergo.Compiler.Emission;
 using Ergo.Lang.Ast.WellKnown;
@@ -6,6 +7,85 @@ namespace Ergo.Runtime.WAM;
 
 public partial class ErgoVM
 {
+    #region Query Lifecycle
+    private __ADDR _savedB;
+    private __ADDR _savedH;
+    private __ADDR _savedTR;
+    private bool _queryOpen;
+
+    public void open_query(Query query)
+    {
+        _QUERY = query;
+        CP = int.MaxValue;
+        if (_dynamics.Count > 0)
+            RehydrateDynamicCode();
+        _dynConts.Clear();
+        _inDynClause = false;
+        P = _QUERY.Bytecode.QueryStart;
+        E = HEAP_SIZE;
+        B = HEAP_SIZE;
+        H = 0;
+        TR = 0;
+        fail = false;
+        _savedB = B;
+        _savedH = H;
+        _savedTR = TR;
+        _queryOpen = true;
+    }
+
+    public bool next_solution()
+    {
+        if (fail) {
+            if (backtrack())
+                return false;
+        }
+        while (true) {
+            if (fail) {
+                if (backtrack())
+                    return false;
+                continue;
+            }
+            if (P >= Code.Length)
+                return true;
+            var op = __word();
+            OP_TABLE[op](this);
+        }
+    }
+
+    public void close_query()
+    {
+        if (!_queryOpen) return;
+        unwind_trail(_savedTR, TR);
+        TR = _savedTR;
+        H = _savedH;
+        B = _savedB;
+        HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
+        fail = false;
+        _queryOpen = false;
+    }
+
+    public void cut_query()
+    {
+        if (!_queryOpen) return;
+        B = _savedB;
+        HB = B == BOTTOM_OF_STACK ? 0 : Store[B + Store[B] + 6];
+        fail = false;
+        _queryOpen = false;
+    }
+
+    public List<Solution> findall(Query query)
+    {
+        var solutions = new List<Solution>();
+        open_query(query);
+        while (next_solution()) {
+            solutions.Add(MaterializeSolution());
+            fail = true;
+        }
+        close_query();
+        return solutions;
+    }
+    #endregion
+
     #region Ancillary Operations
     public bool backtrack()
     {
@@ -46,7 +126,7 @@ public partial class ErgoVM
         Trace.WriteLine($"[WAM] {nameof(fail_and_exit_program)}");
 #endif
         P = Code.Length;
-        return exit = fail = true;
+        return fail = true;
     }
     public __WORD deref(__WORD addr)
     {

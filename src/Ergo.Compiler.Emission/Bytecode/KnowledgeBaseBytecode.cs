@@ -18,7 +18,7 @@ public class KnowledgeBaseBytecode(__WORD[] data) : Bytecode(data, [])
         return true;
     }
 
-    public QueryBytecode AsQuery() => new([0, 0, 0], _consts.ToArray(), 0);
+    public QueryBytecode AsQuery() => new([0, 0, 0], _consts.ToArray(), 0, 0);
 
     protected override void LoadData(ref ReadOnlySpan<int> span)
     {
