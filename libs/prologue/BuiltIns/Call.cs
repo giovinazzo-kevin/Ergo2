@@ -15,7 +15,7 @@ public sealed class Call(Library parent) : BuiltIn(parent)
     {
         // A[0] = the goal term, A[1..N-1] = extra args
         var extraArgs = vm.N - 1;
-        var addr = vm.deref(ErgoVM.ArgAddr(0));
+        var addr = vm.deref(ErgoVM.arg_addr(0));
         var cell = (Term)vm.Store[addr];
 
         if (cell.Tag == Term.__TAG.STR)
@@ -31,7 +31,7 @@ public sealed class Call(Library parent) : BuiltIn(parent)
 
             // Copy extra args into A[goalArity..totalArity-1]
             for (int i = 0; i < extraArgs; i++)
-                vm.A[goalArity + i] = vm.Store[ErgoVM.ArgAddr(1 + i)];
+                vm.A[goalArity + i] = vm.Store[ErgoVM.arg_addr(1 + i)];
 
             // Resolve the new signature
             var targetSig = (EmSig)(sig.F, totalArity);
@@ -63,7 +63,7 @@ public sealed class Call(Library parent) : BuiltIn(parent)
 
             // Shift extra args into A[0..extraArgs-1]
             for (int i = 0; i < extraArgs; i++)
-                vm.A[i] = vm.Store[ErgoVM.ArgAddr(1 + i)];
+                vm.A[i] = vm.Store[ErgoVM.arg_addr(1 + i)];
 
             var targetSig = (EmSig)(constIdx, totalArity);
             if (vm._QUERY.Bytecode.Labels.TryGetValue(targetSig, out var target))

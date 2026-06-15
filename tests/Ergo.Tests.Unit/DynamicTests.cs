@@ -24,7 +24,7 @@ public class DynamicTests : Tests
     public void Assert_Query(string functor, string[] args, string query, string[] expected)
     {
         var (kb, vm) = Setup();
-        vm.DeclareDynamic(kb, functor, args.Length);
+        vm.declare_dynamic(kb, functor, args.Length);
         var q = CompileQuery(kb, $"assert({functor}({string.Join(", ", args)}))");
         vm.open_query(q);
         vm.next_solution();
@@ -38,7 +38,7 @@ public class DynamicTests : Tests
     public void Assert_MultipleFacts(string functor, string[] values)
     {
         var (kb, vm) = Setup();
-        vm.DeclareDynamic(kb, functor, 1);
+        vm.declare_dynamic(kb, functor, 1);
         foreach (var v in values) {
             var q = CompileQuery(kb, $"assert({functor}({v}))");
             vm.open_query(q);
@@ -58,7 +58,7 @@ public class DynamicTests : Tests
     public void Retract(string retract, string[] expected)
     {
         var (kb, vm) = Setup();
-        vm.DeclareDynamic(kb, "item", 1);
+        vm.declare_dynamic(kb, "item", 1);
         foreach (var item in new[] { "a", "b", "c" }) {
             var q = CompileQuery(kb, $"assert(item({item}))");
             vm.open_query(q);
@@ -80,7 +80,7 @@ public class DynamicTests : Tests
     public void Assert_WithinQuery(string query, string[] expected)
     {
         var (kb, vm) = Setup();
-        vm.DeclareDynamic(kb, "immediate", 1);
+        vm.declare_dynamic(kb, "immediate", 1);
         AssertSolutions(vm.findall(CompileQuery(kb, query)), expected);
     }
 
@@ -89,7 +89,7 @@ public class DynamicTests : Tests
     public void Assert_Rule(string assertQuery, string query, string[] expected)
     {
         var (kb, vm) = Setup();
-        vm.DeclareDynamic(kb, "grandparent", 2);
+        vm.declare_dynamic(kb, "grandparent", 2);
         var q = CompileQuery(kb, assertQuery);
         vm.open_query(q);
         vm.next_solution();

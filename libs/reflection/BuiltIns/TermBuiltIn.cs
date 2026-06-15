@@ -21,7 +21,7 @@ public sealed class TermBuiltIn(Library parent) : BuiltIn(parent)
     public override ErgoVM.__op Handle => vm =>
     {
         // A[0] = Functor, A[1] = Args (list), A[2] = Term
-        var termAddr = vm.deref(ErgoVM.ArgAddr(2));
+        var termAddr = vm.deref(ErgoVM.arg_addr(2));
         var termCell = (Term)vm.Store[termAddr];
 
         if (termCell.Tag == Term.__TAG.STR)
@@ -36,37 +36,37 @@ public sealed class TermBuiltIn(Library parent) : BuiltIn(parent)
             var functorCon = (Term)(Term.__TAG.CON, functorConst);
             var functorHeapAddr = vm.H;
             vm.Heap[vm.H++] = functorCon;
-            vm.unify(ErgoVM.ArgAddr(0), functorHeapAddr);
+            vm.unify(ErgoVM.arg_addr(0), functorHeapAddr);
             if (vm.fail) return;
 
             // Build the args as a list on the heap and unify with Args
             var argsListWord = BuildListFromStructArgs(vm, fAddr, arity);
             var argsHeapAddr = vm.H;
             vm.Heap[vm.H++] = argsListWord;
-            vm.unify(ErgoVM.ArgAddr(1), argsHeapAddr);
+            vm.unify(ErgoVM.arg_addr(1), argsHeapAddr);
         }
         else if (termCell.Tag == Term.__TAG.CON)
         {
             // Term is an atom: Functor = atom, Args = []
-            vm.unify(ErgoVM.ArgAddr(0), termAddr);
+            vm.unify(ErgoVM.arg_addr(0), termAddr);
             if (vm.fail) return;
 
             // Unify Args with empty list
             var emptyConst = vm._QUERY.Bytecode.AddConstant(List.WellKnown.EmptyList);
             var emptyAddr = vm.H;
             vm.Heap[vm.H++] = (Term)(Term.__TAG.CON, emptyConst);
-            vm.unify(ErgoVM.ArgAddr(1), emptyAddr);
+            vm.unify(ErgoVM.arg_addr(1), emptyAddr);
         }
         else if (termCell.Tag == Term.__TAG.REF)
         {
             // Construct: Term is unbound, build from Functor + Args
-            var functorAddr = vm.deref(ErgoVM.ArgAddr(0));
+            var functorAddr = vm.deref(ErgoVM.arg_addr(0));
             var functorCell = (Term)vm.Store[functorAddr];
             if (functorCell.Tag != Term.__TAG.CON) { vm.fail = true; return; }
 
             // Walk the args list to collect addresses
             var argAddrs = new System.Collections.Generic.List<int>();
-            var listAddr = vm.deref(ErgoVM.ArgAddr(1));
+            var listAddr = vm.deref(ErgoVM.arg_addr(1));
             var listCell = (Term)vm.Store[listAddr];
 
             while (listCell.Tag == Term.__TAG.ABS)

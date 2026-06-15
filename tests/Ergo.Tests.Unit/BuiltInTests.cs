@@ -33,7 +33,7 @@ public class BuiltInTests : Tests
     {
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
-        vm.DeclareDynamic(kb, "grandparent", 2);
+        vm.declare_dynamic(kb, "grandparent", 2);
         var q = CompileQuery(kb, assertQuery);
         vm.open_query(q);
         vm.next_solution();

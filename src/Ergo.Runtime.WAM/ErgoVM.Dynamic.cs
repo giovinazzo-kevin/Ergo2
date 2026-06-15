@@ -17,33 +17,33 @@ public partial class ErgoVM
     
     private bool _inDynClause;
 
-    public void RegisterDynamic(Signature sig)
+    public void register_dynamic(Signature sig)
     {
         _dynamics[sig.RawValue] = new DynamicPredicate();
     }
 
-    public IReadOnlyDictionary<__WORD, DynamicPredicate> GetDynamicPredicates() => _dynamics;
+    public IReadOnlyDictionary<__WORD, DynamicPredicate> get_dynamic_predicates() => _dynamics;
 
     /// <summary>
     /// Declares a predicate as dynamic: registers it as a builtin whose
     /// handler dispatches through dynamic clause machinery.
     /// Equivalent to :- dynamic F/N.
     /// </summary>
-    public void DeclareDynamic(KnowledgeBase kb, string functor, int arity)
+    public void declare_dynamic(KnowledgeBase kb, string functor, int arity)
     {
         var c = kb.Bytecode.AddConstant(new __string(functor));
         var raw = ((__WORD)(Signature)(c, arity));
         if (!_dynamics.ContainsKey(raw))
             _dynamics[raw] = new DynamicPredicate();
         if (!kb.Bytecode.Labels.ContainsKey(raw))
-            kb.RegisterBuiltInLabel(functor, arity, (__op)(vm => vm.DispatchDynamic(raw)));
+            kb.RegisterBuiltInLabel(functor, arity, (__op)(vm => vm.dispatch_dynamic(raw)));
     }
 
     /// <summary>
     /// Builtin handler for dynamic predicates. Creates choice points
     /// and sets P to the first visible clause's code offset.
     /// </summary>
-    private void DispatchDynamic(__WORD sigRaw)
+    private void dispatch_dynamic(__WORD sigRaw)
     {
         if (!_dynamics.TryGetValue(sigRaw, out var dyn)) {
             fail = true;
@@ -80,13 +80,13 @@ public partial class ErgoVM
     /// <summary>
     /// Returns the Store address of argument register A[i].
     /// </summary>
-    public static int ArgAddr(int i) => HEAP_SIZE + STACK_SIZE + i;
+    public static int arg_addr(int i) => HEAP_SIZE + STACK_SIZE + i;
 
     /// <summary>
     /// Re-appends all live dynamic clause code to the current _QUERY bytecode.
     /// Called at the start of each Run to ensure offsets are valid.
     /// </summary>
-    private void RehydrateDynamicCode()
+    private void rehydrate_dynamic_code()
     {
         foreach (var dyn in _dynamics.Values) {
             foreach (var clause in dyn.Clauses) {
@@ -101,12 +101,12 @@ public partial class ErgoVM
         }
     }
 
-    public void AssertClause(int ai = 0, bool atEnd = true)
+    public void assert_clause(int ai = 0, bool atEnd = true)
     {
-        System.Diagnostics.Trace.WriteLine($"[DYN] AssertClause fired! ai={ai}");
+        System.Diagnostics.Trace.WriteLine($"[DYN] assert_clause fired! ai={ai}");
 
         // Read the heap term from A[ai] back to AST
-        var addr = deref(ArgAddr(ai));
+        var addr = deref(arg_addr(ai));
         var term = read_heap_term(addr);
 
         // Determine the signature
@@ -141,7 +141,7 @@ public partial class ErgoVM
         var arityVal = sig.Arity.TryGetValue(out var av) ? av : Signature.VARIADIC;
         var packed = (Signature)(p, arityVal);
         if (!_dynamics.ContainsKey(packed.RawValue))
-            DeclareDynamic(_QUERY.Source, (string)sig.Functor.Value, arityVal);
+            declare_dynamic(_QUERY.Source, (string)sig.Functor.Value, arityVal);
         var dyn = _dynamics[packed.RawValue];
 
         if (atEnd)
@@ -150,9 +150,9 @@ public partial class ErgoVM
             dyn.Clauses.Insert(0, dynClause);
     }
 
-    public void RetractClause(int ai = 0)
+    public void retract_clause(int ai = 0)
     {
-        var addr = deref(ArgAddr(ai));
+        var addr = deref(arg_addr(ai));
         var t = (Term)Store[addr];
         if (t.Tag != Term.__TAG.STR) return;
         var sig = (Signature)Heap[t.Value];
@@ -163,14 +163,14 @@ public partial class ErgoVM
         var savedTR = TR; var savedH = H;
         foreach (var clause in dyn.Visible(_globalGen).ToArray()) {
             fail = false;
-            unify(addr, DecompileClauseHead(clause.Code, packed));
+            unify(addr, decompile_clause_head(clause.Code, packed));
             if (!fail) { clause.ErasedGen = ++_globalGen; return; }
             unwind_trail(savedTR, TR); TR = savedTR; H = savedH; fail = false;
         }
         fail = true;
     }
 
-    private int DecompileClauseHead(__WORD[] code, Signature sig)
+    private int decompile_clause_head(__WORD[] code, Signature sig)
     {
         var fAddr = H;
         Heap[H++] = sig;
@@ -195,7 +195,7 @@ public partial class ErgoVM
     /// Handles backtracking into a dynamic predicate's next clause.
     /// Called when backtrack reads a negative P (dynamic continuation index).
     /// </summary>
-    private bool RetryDynamic(int contIdx)
+    private bool retry_dynamic(int contIdx)
     {
         var cont = _dynConts[contIdx];
         var dyn = _dynamics[cont.Sig];

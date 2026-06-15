@@ -8,5 +8,5 @@ namespace Ergo.Libs.Prologue.BuiltIns;
 public sealed class AssertZ(Library parent) : BuiltIn(parent)
 {
     public override Signature Signature { get; } = new((__string)"assertz", 1);
-    public override ErgoVM.__op Handle => vm => vm.AssertClause(0, atEnd: true);
+    public override ErgoVM.__op Handle => vm => vm.assert_clause(0, atEnd: true);
 }

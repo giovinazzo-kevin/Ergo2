@@ -18,7 +18,7 @@ public partial class ErgoVM
         _QUERY = query;
         CP = int.MaxValue;
         if (_dynamics.Count > 0)
-            RehydrateDynamicCode();
+            rehydrate_dynamic_code();
         _dynConts.Clear();
         _inDynClause = false;
         P = _QUERY.Bytecode.QueryStart;
@@ -117,7 +117,7 @@ public partial class ErgoVM
         // Dynamic predicate retry: negative P encodes a continuation index
         if (P < 0) {
             var contIdx = -(P + 1);
-            if (!RetryDynamic(contIdx)) {
+            if (!retry_dynamic(contIdx)) {
                 // No more dynamic clauses � remove choice point and continue
                 var n = Store[B];
                 B = Store[B + n + 3];

@@ -16,7 +16,7 @@ public class DynClause
     public readonly Atom[] NewConstants;
     public readonly int CreatedGen;
     public int ErasedGen = int.MaxValue;
-    public int Offset; // Updated per-query via RehydrateDynamicCode
+    public int Offset; // Updated per-query via rehydrate_dynamic_code
 
     public DynClause(__WORD[] code, Atom[] newConstants, int createdGen)
     {
