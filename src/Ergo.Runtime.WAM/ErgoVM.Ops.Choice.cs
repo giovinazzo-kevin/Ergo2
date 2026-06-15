@@ -13,7 +13,7 @@ public partial class ErgoVM
     public void TryMeElse()
     {
         var l = __addr();
-        var es = envsize();
+        var es = env_size();
         var newB = E > B
             ? E + es + 2
             : B + Store[B] + 8;
@@ -92,7 +92,7 @@ public partial class ErgoVM
 #endif
         var l = __addr();
         var newB = E > B
-            ? E + envsize() + 2
+            ? E + env_size() + 2
             : B + Store[B] + 8;
         var n = Store[newB] = N;
         for (int i = 1; i <= n; i++)

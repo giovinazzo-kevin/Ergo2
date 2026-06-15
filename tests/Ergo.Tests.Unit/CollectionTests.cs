@@ -24,11 +24,11 @@ public abstract class CollectionTests<TCollection> : Tests where TCollection : C
 
     private Term Roundtrip(ErgoVM vm, Term term)
     {
-        var w = vm.WriteHeapTerm(term); var a = vm.H; vm.Heap[vm.H++] = w;
-        return vm.ReadHeapTerm(a);
+        var w = vm.write_heap_term(term); var a = vm.H; vm.Heap[vm.H++] = w;
+        return vm.read_heap_term(a);
     }
 
-    private List<ErgoVM.Solution> Run(string query)
+    private IEnumerable<ErgoVM.Solution> Run(string query)
         => new ErgoVM().findall(CompileQuery(Consult(Module), query));
 
     [Fact] public void Parse_Empty() => Assert.Single(Run($"X = {OpenDelim}{CloseDelim}, write(X)"));

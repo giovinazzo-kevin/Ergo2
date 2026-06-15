@@ -21,14 +21,14 @@ public class DictTests : Tests
 
     private Lang.Ast.Term Roundtrip(ErgoVM vm, Lang.Ast.Term term)
     {
-        var w = vm.WriteHeapTerm(term); var a = vm.H; vm.Heap[vm.H++] = w;
-        return vm.ReadHeapTerm(a);
+        var w = vm.write_heap_term(term); var a = vm.H; vm.Heap[vm.H++] = w;
+        return vm.read_heap_term(a);
     }
 
     private void UnifyDicts(ErgoVM vm, Lang.Ast.Term d1, Lang.Ast.Term d2)
     {
-        var w1 = vm.WriteHeapTerm(d1); var a1 = vm.H; vm.Heap[vm.H++] = w1;
-        var w2 = vm.WriteHeapTerm(d2); var a2 = vm.H; vm.Heap[vm.H++] = w2;
+        var w1 = vm.write_heap_term(d1); var a1 = vm.H; vm.Heap[vm.H++] = w1;
+        var w2 = vm.write_heap_term(d2); var a2 = vm.H; vm.Heap[vm.H++] = w2;
         vm.unify(a1, a2);
     }
 

@@ -11,7 +11,7 @@ public sealed class WriteLn(Library parent) : BuiltIn(parent)
     public override Signature Signature { get; } = new((__string)"writeln", default(Maybe<int>));
     public override ErgoVM.__op Handle => vm => {
         for (int i = 0; i < vm.N; i++)
-            vm.Out.Write(vm.Pretty(vm.A[i]));
+            vm.Out.Write(vm.pretty(vm.A[i]));
         vm.Out.WriteLine();
     };
 }

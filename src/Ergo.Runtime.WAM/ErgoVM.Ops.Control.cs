@@ -15,7 +15,7 @@ public partial class ErgoVM
 #if WAM_TRACE
         Trace.WriteLine($"[WAM] {nameof(Allocate)}");
 #endif
-        var es = envsize();
+        var es = env_size();
         var newE = E > B
             ? E + es + 2
             : B + Store[B] + 8;
@@ -132,21 +132,6 @@ public partial class ErgoVM
         Trace.WriteLine("[WAM] Fail");
 #endif
         fail = true;
-    }
-
-    public Solution MaterializeSolution()
-    {
-        int i = 0;
-        var bindings = new Binding[_QUERY.Variables.Count];
-        foreach (var (name, index) in _QUERY.Variables.Values.OrderBy(x => x.Index)) {
-            var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
-            var term = ReadHeapTerm(addr);
-#if WAM_TRACE
-            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) ? {term.Expl}");
-#endif
-            bindings[i++] = new(name, term);
-        }
-        return new(bindings);
     }
     #endregion
 

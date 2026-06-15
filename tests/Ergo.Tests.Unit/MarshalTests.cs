@@ -23,23 +23,23 @@ public class MarshalTests : Tests
 
     private Lang.Ast.Term Roundtrip(ErgoVM vm, Lang.Ast.Term term)
     {
-        var word = vm.WriteHeapTerm(term);
+        var word = vm.write_heap_term(term);
         var addr = vm.H;
         vm.Heap[vm.H++] = word;
-        return vm.ReadHeapTerm(addr);
+        return vm.read_heap_term(addr);
     }
 
-    #region WriteHeapTerm
+    #region write_heap_term
     [Theory]
     [InlineData("hello")]
     [InlineData("world")]
     [InlineData("")]
     [InlineData("foo_bar")]
     [InlineData("a")]
-    public void WriteHeapTerm_String(string value)
+    public void write_heap_term_String(string value)
     {
         var vm = SetupVM();
-        var term = (Term)vm.WriteHeapTerm((__string)value);
+        var term = (Term)vm.write_heap_term((__string)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
         Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
@@ -50,10 +50,10 @@ public class MarshalTests : Tests
     [InlineData(-1)]
     [InlineData(42)]
     [InlineData(int.MaxValue)]
-    public void WriteHeapTerm_Int(int value)
+    public void write_heap_term_Int(int value)
     {
         var vm = SetupVM();
-        var term = (Term)vm.WriteHeapTerm((__int)value);
+        var term = (Term)vm.write_heap_term((__int)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
         Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
@@ -61,10 +61,10 @@ public class MarshalTests : Tests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void WriteHeapTerm_Bool(bool value)
+    public void write_heap_term_Bool(bool value)
     {
         var vm = SetupVM();
-        var term = (Term)vm.WriteHeapTerm((__bool)value);
+        var term = (Term)vm.write_heap_term((__bool)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
         Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
@@ -73,10 +73,10 @@ public class MarshalTests : Tests
     [InlineData(3.14)]
     [InlineData(0.0)]
     [InlineData(-1.5)]
-    public void WriteHeapTerm_Double(double value)
+    public void write_heap_term_Double(double value)
     {
         var vm = SetupVM();
-        var term = (Term)vm.WriteHeapTerm((__double)value);
+        var term = (Term)vm.write_heap_term((__double)value);
         Assert.Equal(Term.__TAG.CON, term.Tag);
         Assert.Equal(value, vm._QUERY.Bytecode.Constants[term.Value].Value);
     }
@@ -84,11 +84,11 @@ public class MarshalTests : Tests
     [Theory]
     [InlineData("hello", "hello", true)]
     [InlineData("hello", "world", false)]
-    public void WriteHeapTerm_ConstantDedup(string a, string b, bool same)
+    public void write_heap_term_ConstantDedup(string a, string b, bool same)
     {
         var vm = SetupVM();
-        var wa = (Term)vm.WriteHeapTerm((__string)a);
-        var wb = (Term)vm.WriteHeapTerm((__string)b);
+        var wa = (Term)vm.write_heap_term((__string)a);
+        var wb = (Term)vm.write_heap_term((__string)b);
         Assert.Equal(same, wa.Value == wb.Value);
     }
     #endregion
@@ -172,7 +172,7 @@ public class MarshalTests : Tests
             2 => new Complex((__string)"f", (__string)"a", (__string)"b"),
             _ => throw new Exception()
         };
-        vm.WriteHeapTerm(term);
+        vm.write_heap_term(term);
         Assert.Equal(h0 + expectedCells, vm.H);
     }
     #endregion

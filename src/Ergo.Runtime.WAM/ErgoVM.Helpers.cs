@@ -73,16 +73,29 @@ public partial class ErgoVM
         _queryOpen = false;
     }
 
-    public List<Solution> findall(Query query)
+    public IEnumerable<Solution> findall(Query query)
     {
-        var solutions = new List<Solution>();
         open_query(query);
         while (next_solution()) {
-            solutions.Add(MaterializeSolution());
+            yield return materialize_solution();
             fail = true;
         }
         close_query();
-        return solutions;
+    }
+
+    public Solution materialize_solution()
+    {
+        int i = 0;
+        var bindings = new Binding[_QUERY.Variables.Count];
+        foreach (var (name, index) in _QUERY.Variables.Values.OrderBy(x => x.Index)) {
+            var addr = HEAP_SIZE + STACK_SIZE + index; // A register store address
+            var term = read_heap_term(addr);
+#if WAM_TRACE
+            Trace.WriteLine($"[WAM] VAR {name} (A[{index}]) ? {term.Expl}");
+#endif
+            bindings[i++] = new(name, term);
+        }
+        return new(bindings);
     }
     #endregion
 
@@ -206,11 +219,11 @@ public partial class ErgoVM
 
         while (todo.Count > 0) {
             var (u, v) = todo.Pop();
-            if (!MatchTerms(u, v, todo)) return;
+            if (!match(u, v, todo)) return;
         }
     }
 
-    public bool MatchTerms(__ADDR u, __ADDR v, Stack<(int, int)> todo)
+    public bool match(__ADDR u, __ADDR v, Stack<(int, int)> todo)
     {
         if (u == v) return true;
 
@@ -236,7 +249,7 @@ public partial class ErgoVM
                 break;
 
             case STR:
-                return WalkStructure(x.Value, y.Value, todo);
+                return walk(x.Value, y.Value, todo);
 
             case ABS:
                 if (_QUERY.Source.AbstractTerms.Count > 0) {
@@ -248,9 +261,7 @@ public partial class ErgoVM
                         break;
                     }
                 }
-                // Fallback: unregistered ABS
-                WalkList(x.Value + 1, y.Value + 1, todo);
-                break;
+                throw new NotSupportedException();
 
             default:
                 fail = true;
@@ -260,83 +271,21 @@ public partial class ErgoVM
         return true;
     }
 
-    public bool WalkStructure(__ADDR xAddr, __ADDR yAddr, Stack<(int, int)> todo)
+    public bool walk(__ADDR xAddr, __ADDR yAddr, Stack<(int, int)> todo)
     {
         var f1 = Store[xAddr];
         var f2 = Store[yAddr];
-
         if (!Equals(f1, f2)) {
             fail = true;
             return false;
         }
-
         var arity = ((Signature)f1).N;
         for (int i = 1; i <= arity; ++i)
             todo.Push((xAddr + i, yAddr + i));
-
         return true;
     }
 
-    public void WalkList(__ADDR xAddr, __ADDR yAddr, Stack<(int, int)> todo)
-    {
-        todo.Push((xAddr, yAddr));
-        todo.Push((xAddr + 1, yAddr + 1));
-    }
-
-
-    public Lang.Ast.Term ReadHeapTerm(__ADDR addr)
-    {
-#if WAM_TRACE
-        Trace.WriteLine($"[WAM] ReadHeapTerm addr={addr}");
-#endif
-        addr = deref(addr);
-        var term = (Term)Store[addr];
-        return Read(term);
-
-        Lang.Ast.Term Read(Term term)
-        {
-            // Follow REF chains for bound variables
-            if (term.Tag == REF) {
-                var a = deref(term.Value);
-                var resolved = (Term)Store[a];
-                if (resolved.Tag == REF && resolved.Value == a)
-                    return new Lang.Ast.Variable($"_{a}"); // Unbound
-                return Read(resolved);
-            }
-            return term.Tag switch {
-                CON => Constants[term.Value],
-                STR => ReadStructure(term.Value),
-                ABS => ReadAbstract(term.Value),
-                _ => throw new NotSupportedException($"Tag {term.Tag} not supported")
-            };
-        }
-
-        Lang.Ast.Term ReadStructure(__ADDR addr)
-        {
-            var functor = (Signature)Heap[addr]; // e.g. likes/2
-            var args = new Lang.Ast.Term[functor.N];
-
-            for (int i = 0; i < functor.N; i++)
-                args[i] = Read(Heap[addr + 1 + i]);
-
-            var atom = Constants[functor.F];
-            if (_QUERY.Source.Reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
-                return reconstruct(args);
-
-            return new Lang.Ast.Complex(atom, args);
-        }
-
-        Lang.Ast.Term ReadAbstract(__ADDR addr)
-        {
-            var sig = Heap[addr];
-            if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
-                return ((WellKnown.Delegates.Get)abs.Get)(this, addr);
-            }
-            throw new NotSupportedException($"No abstract term handler registered for signature {sig}");
-        }
-    }
-
-    public string Pretty(Term t, bool quoted = false)
+    public string pretty(Term t, bool quoted = false)
     {
         if (t.Tag == REF) {
             var addr = deref(t.Value);
@@ -346,30 +295,30 @@ public partial class ErgoVM
         return t.Tag switch {
             CON => quoted ? Constants[t.Value].Expl : Constants[t.Value].Value.ToString()!,
             REF => $"_{t.Value}",
-            STR => PrettyStructure(t.Value, quoted),
-            ABS => PrettyAbstract(t.Value, quoted),
+            STR => pretty_structure(t.Value, quoted),
+            ABS => pretty_abstract(t.Value, quoted),
             _ => "<?>"
         };
-    }
 
-    private string PrettyStructure(__ADDR addr, bool quoted = false)
-    {
-        var sig = (Signature)Heap[addr];
-        var functor = quoted ? Constants[sig.F].Expl : Constants[sig.F].Value.ToString()!;
-        if (sig.N == 0) return functor;
-        var args = new string[sig.N];
-        for (int i = 0; i < sig.N; i++)
-            args[i] = Pretty((Term)Heap[addr + 1 + i], quoted);
-        return $"{functor}({string.Join(", ", args)})";
-    }
-
-    private string PrettyAbstract(__ADDR addr, bool quoted = false)
-    {
-        var sig = Heap[addr];
-        if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
-            return ((WellKnown.Delegates.Pretty)abs.Pretty)(this, addr, quoted);
+        string pretty_structure(__ADDR addr, bool quoted = false)
+        {
+            var sig = (Signature)Heap[addr];
+            var functor = quoted ? Constants[sig.F].Expl : Constants[sig.F].Value.ToString()!;
+            if (sig.N == 0) return functor;
+            var args = new string[sig.N];
+            for (int i = 0; i < sig.N; i++)
+                args[i] = pretty((Term)Heap[addr + 1 + i], quoted);
+            return $"{functor}({string.Join(", ", args)})";
         }
-        throw new NotSupportedException($"No abstract term handler registered for signature {sig}");
+
+        string pretty_abstract(__ADDR addr, bool quoted = false)
+        {
+            var sig = Heap[addr];
+            if (_QUERY.Source.AbstractTerms.TryGetValue(sig, out var abs)) {
+                return ((WellKnown.Delegates.Pretty)abs.Pretty)(this, addr, quoted);
+            }
+            throw new NotSupportedException($"No abstract term handler registered for signature {sig}");
+        }
     }
 
     /// <summary>
@@ -378,7 +327,7 @@ public partial class ErgoVM
     /// Falls back to current arity N when the saved CP is out of range
     /// (e.g., top-level query where CP = int.MaxValue).
     /// </summary>
-    public int envsize()
+    public int env_size()
     {
         var savedCP = Store[E + 1];
         if (savedCP > 0 && savedCP <= Code.Length)

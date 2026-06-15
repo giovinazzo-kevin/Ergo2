@@ -88,7 +88,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
         Lang.Ast.Term tail = WellKnown.Collection.EmptyElement;
         var dataAddr = addr + 1;
         while (true) {
-            elements.Add(vm.ReadHeapTerm(dataAddr));
+            elements.Add(vm.read_heap_term(dataAddr));
             var tailTerm = (Term)vm.Heap[dataAddr + 1];
             if (tailTerm.Tag == REF) {
                 var d = vm.deref(tailTerm.Value);
@@ -96,7 +96,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
                 if (resolved.Tag == REF && resolved.Value == d)
                     tail = new Variable($"_{d}");
                 else
-                    tail = vm.ReadHeapTerm(d);
+                    tail = vm.read_heap_term(d);
                 break;
             }
             if (tailTerm.Tag == CON) {
@@ -104,7 +104,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
                 break;
             }
             if (tailTerm.Tag != ABS) {
-                tail = vm.ReadHeapTerm(dataAddr + 1);
+                tail = vm.read_heap_term(dataAddr + 1);
                 break;
             }
             dataAddr = tailTerm.Value + 1;
@@ -121,11 +121,11 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
         }
         var c2 = vm._QUERY.Bytecode.AddConstant(new __string((string)WellKnown.Functor.Value));
         var listSig = (Signature)(c2, 2);
-        var tail = vm.WriteHeapTerm(list.Tail);
+        var tail = vm.write_heap_term(list.Tail);
         for (int i = elems.Length - 1; i >= 0; i--) {
             var pairAddr = vm.H;
             vm.Heap[vm.H++] = listSig;
-            vm.Heap[vm.H++] = vm.WriteHeapTerm(elems[i]);
+            vm.Heap[vm.H++] = vm.write_heap_term(elems[i]);
             vm.Heap[vm.H++] = tail;
             tail = (Term)(ABS, pairAddr);
         }
@@ -139,7 +139,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
         while (true) {
             var head = (Term)vm.Heap[dataAddr];
             var tail = (Term)vm.Heap[dataAddr + 1];
-            elems.Add(vm.Pretty(head, quoted));
+            elems.Add(vm.pretty(head, quoted));
             if (tail.Tag == CON && vm.Constants[tail.Value].Value is string s && s == "[]")
                 break;
             if (tail.Tag == ABS) {
@@ -151,10 +151,10 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
                 var dt = (Term)vm.Store[d];
                 if (dt.Tag == ABS) { dataAddr = dt.Value + 1; continue; }
                 if (dt.Tag == CON && vm.Constants[dt.Value].Value is string s2 && s2 == "[]") break;
-                elems.Add("|" + vm.Pretty(dt, quoted));
+                elems.Add("|" + vm.pretty(dt, quoted));
                 break;
             }
-            elems.Add("|" + vm.Pretty(tail, quoted));
+            elems.Add("|" + vm.pretty(tail, quoted));
             break;
         }
         return $"[{string.Join(",", elems)}]";

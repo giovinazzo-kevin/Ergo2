@@ -418,7 +418,7 @@ public class Emitter
 
     /// <summary>
     /// Compiles a single dynamically asserted clause (fact or rule) into raw bytecode.
-    /// Uses name-based variable tracking since ReadHeapTerm creates distinct Variable objects.
+    /// Uses name-based variable tracking since read_heap_term creates distinct Variable objects.
     /// Returns the raw instruction words ready to be appended to the code buffer.
     /// </summary>
     public __WORD[] EmitDynamicClause(EmitterContext ctx, Lang.Ast.Term term)

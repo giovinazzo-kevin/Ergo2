@@ -86,7 +86,7 @@ public class Tests
         }
     }
 
-    protected void AssertSolutions(List<ErgoVM.Solution> solutions, string[] expected)
+    protected void AssertSolutions(IEnumerable<ErgoVM.Solution> solutions, string[] expected)
     {
         var actual = solutions.Select(s => s.ToString()).ToArray();
         Assert.Equal(expected, actual);

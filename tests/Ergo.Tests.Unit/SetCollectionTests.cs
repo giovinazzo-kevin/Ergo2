@@ -37,9 +37,9 @@ public class SetCollectionTests : CollectionTests<Set>
         var q = CompileQuery(kb, "fact");
         vm.open_query(q);
         vm.next_solution();
-        var w = vm.WriteHeapTerm(new Set([(__string)"c", (__string)"a", (__string)"b"]));
+        var w = vm.write_heap_term(new Set([(__string)"c", (__string)"a", (__string)"b"]));
         var a = vm.H; vm.Heap[vm.H++] = w;
-        var h = ((Set)vm.ReadHeapTerm(a)).Head.ToArray();
+        var h = ((Set)vm.read_heap_term(a)).Head.ToArray();
         Assert.Equal("a", (string)((Atom)h[0]).Value);
         Assert.Equal("b", (string)((Atom)h[1]).Value);
         Assert.Equal("c", (string)((Atom)h[2]).Value);

@@ -136,15 +136,15 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
 
     public override Lang.Ast.Term OnGet(Runtime.WAM.ErgoVM vm, int addr)
     {
-        var functor = vm.ReadHeapTerm(addr + 1);
+        var functor = vm.read_heap_term(addr + 1);
         var nTerm = (Term)vm.Heap[vm.deref(addr + 2)];
         var n = (int)((Lang.Ast.__int)vm.Constants[nTerm.Value]).Value;
 
         var pairs = new BinaryExpression[n];
         for (int i = 0; i < n; i++)
         {
-            var key = vm.ReadHeapTerm(addr + 3 + i * 2);
-            var val = vm.ReadHeapTerm(addr + 3 + i * 2 + 1);
+            var key = vm.read_heap_term(addr + 3 + i * 2);
+            var val = vm.read_heap_term(addr + 3 + i * 2 + 1);
             pairs[i] = new BinaryExpression(Operators.Module, key, val);
         }
         return new Ast.Dict(functor, pairs);
@@ -156,28 +156,28 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
         var dictSig = (Signature)(dictSigConst, 2);
         var baseAddr = vm.H;
         vm.Heap[vm.H++] = dictSig;
-        vm.Heap[vm.H++] = vm.WriteHeapTerm(dict.DictFunctor);
+        vm.Heap[vm.H++] = vm.write_heap_term(dict.DictFunctor);
         var nConst = vm._QUERY.Bytecode.AddConstant((__int)dict.Pairs.Length);
         vm.Heap[vm.H++] = (Term)(CON, nConst);
         foreach (var pair in dict.Pairs)
         {
-            vm.Heap[vm.H++] = vm.WriteHeapTerm(pair.Lhs);
-            vm.Heap[vm.H++] = vm.WriteHeapTerm(pair.Rhs);
+            vm.Heap[vm.H++] = vm.write_heap_term(pair.Lhs);
+            vm.Heap[vm.H++] = vm.write_heap_term(pair.Rhs);
         }
         return (Term)(ABS, baseAddr);
     }
 
     public override string OnPretty(Runtime.WAM.ErgoVM vm, int addr, bool quoted)
     {
-        var functor = vm.Pretty((Term)vm.Heap[addr + 1], quoted);
+        var functor = vm.pretty((Term)vm.Heap[addr + 1], quoted);
         var nTerm = (Term)vm.Heap[vm.deref(addr + 2)];
         var n = (int)((Lang.Ast.__int)vm.Constants[nTerm.Value]).Value;
 
         var pairs = new string[n];
         for (int i = 0; i < n; i++)
         {
-            var key = vm.Pretty((Term)vm.Heap[addr + 3 + i * 2], quoted);
-            var val = vm.Pretty((Term)vm.Heap[addr + 3 + i * 2 + 1], quoted);
+            var key = vm.pretty((Term)vm.Heap[addr + 3 + i * 2], quoted);
+            var val = vm.pretty((Term)vm.Heap[addr + 3 + i * 2 + 1], quoted);
             pairs[i] = $"{key}: {val}";
         }
         return $"{functor}{{{string.Join(", ", pairs)}}}";

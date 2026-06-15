@@ -14,12 +14,12 @@ public class BuiltInTests : Tests
 {
     private const string MODULE = "emitter_tests";
 
-    #region ReadHeapTerm
+    #region read_heap_term
     [Theory]
     [InlineData("parent(john, mary)")]
     [InlineData("parent(mary, susan)")]
     [InlineData("complex_fact(0, 1, 2)")]
-    public void ReadHeapTerm_ReconstructsGroundFact(string query)
+    public void read_heap_term_ReconstructsGroundFact(string query)
     {
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
@@ -29,7 +29,7 @@ public class BuiltInTests : Tests
 
     [Theory]
     [InlineData("assert((grandparent(X, Z) :- parent(X, Y), parent(Y, Z)))", "grandparent(A, B)", new[] { "A/john, B/susan" })]
-    public void ReadHeapTerm_ReconstructsClause(string assertQuery, string query, string[] expected)
+    public void read_heap_term_ReconstructsClause(string assertQuery, string query, string[] expected)
     {
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
@@ -50,8 +50,8 @@ public class BuiltInTests : Tests
         var kb = Consult(MODULE);
         var vm = new ErgoVM();
         var output = new List<string>();
-        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)(vm => output.Add(vm.Pretty(vm.A[0]))));
-        vm.findall(CompileQuery(kb, query));
+        kb.RegisterBuiltInLabel("my_write", 1, (ErgoVM.__op)(vm => output.Add(vm.pretty(vm.A[0]))));
+        foreach (var _ in vm.findall(CompileQuery(kb, query))) { }
         Assert.Equal(expectedOutput, output.ToArray());
     }
 

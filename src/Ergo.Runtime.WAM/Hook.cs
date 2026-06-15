@@ -21,7 +21,7 @@ public readonly struct Hook
         vm.open_query(Query);
 
         for (int i = 0; i < args.Length; i++)
-            vm.A[i] = vm.WriteHeapTerm(args[i]);
+            vm.A[i] = vm.write_heap_term(args[i]);
 
         var outAddr = vm.H;
         vm.Heap[vm.H] = (Term)(Term.__TAG.REF, vm.H);
@@ -33,7 +33,7 @@ public readonly struct Hook
             return null;
         }
 
-        var result = vm.ReadHeapTerm(vm.deref(outAddr));
+        var result = vm.read_heap_term(vm.deref(outAddr));
         vm.close_query();
         return result;
     }
@@ -43,7 +43,7 @@ public readonly struct Hook
         vm.open_query(Query);
 
         for (int i = 0; i < args.Length; i++)
-            vm.A[i] = vm.WriteHeapTerm(args[i]);
+            vm.A[i] = vm.write_heap_term(args[i]);
 
         var result = vm.next_solution();
         vm.close_query();

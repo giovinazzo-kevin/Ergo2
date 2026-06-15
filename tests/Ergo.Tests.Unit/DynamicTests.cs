@@ -45,7 +45,7 @@ public class DynamicTests : Tests
             vm.next_solution();
             vm.close_query();
         }
-        var solutions = vm.findall(CompileQuery(kb, $"{functor}(X)"));
+        var solutions = vm.findall(CompileQuery(kb, $"{functor}(X)")).ToList();
         Assert.Equal(values.Length, solutions.Count);
         for (int i = 0; i < values.Length; i++)
             Assert.Equal(values[i], solutions[i].Bindings[0].Value.Expl);
@@ -69,7 +69,7 @@ public class DynamicTests : Tests
         vm.open_query(rq);
         vm.next_solution();
         vm.close_query();
-        var solutions = vm.findall(CompileQuery(kb, "item(X)"));
+        var solutions = vm.findall(CompileQuery(kb, "item(X)")).ToList();
         Assert.Equal(expected.Length, solutions.Count);
         for (int i = 0; i < expected.Length; i++)
             Assert.Equal(expected[i], solutions[i].Bindings[0].Value.Expl);

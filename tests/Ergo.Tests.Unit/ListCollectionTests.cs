@@ -26,5 +26,5 @@ public class ListCollectionTests : CollectionTests<List>
     [InlineData("member(b, [a, b, c])", 1)]
     [InlineData("member(d, [a, b, c])", 0)]
     public void Ground(string query, int expected)
-        => Assert.Equal(expected, new ErgoVM().findall(CompileQuery(Consult(Module), query)).Count);
+        => Assert.Equal(expected, new ErgoVM().findall(CompileQuery(Consult(Module), query)).Count());
 }

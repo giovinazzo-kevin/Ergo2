@@ -60,7 +60,7 @@ public partial class ErgoVM
         // Create choice point for backtracking through clauses
         var contIdx = _dynConts.Count;
         _dynConts.Add(new DynContinuation(sigRaw, 1, goalGen));
-        var newB = (E >= B) ? E + envsize() + 2 : B + Store[B] + 8;
+        var newB = (E >= B) ? E + env_size() + 2 : B + Store[B] + 8;
         Store[newB] = n;
         for (int i = 0; i < n; i++)
             Store[newB + 1 + i] = A[i];
@@ -107,7 +107,7 @@ public partial class ErgoVM
 
         // Read the heap term from A[ai] back to AST
         var addr = deref(ArgAddr(ai));
-        var term = ReadHeapTerm(addr);
+        var term = read_heap_term(addr);
 
         // Determine the signature
         var clause = term as Clause;
