@@ -31,17 +31,6 @@ public class Dict(Either<Atom, Variable> functor, IEnumerable<BinaryExpression> 
 
     public override bool IsGround => DictFunctor.IsGround && Pairs.All(p => p.IsGround);
 
-    public override IEnumerable<Variable> Variables
-    {
-        get
-        {
-            if (DictFunctor is Variable v)
-                yield return v;
-            foreach (var vv in Pairs.SelectMany(p => p.Lhs.GetVariables().Concat(p.Rhs.GetVariables())))
-                yield return vv;
-        }
-    }
-
     public override Term[] Arguments =>
         [DictFunctor, .. Pairs.SelectMany(p => new[] { p.Lhs, p.Rhs })];
 

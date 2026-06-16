@@ -17,19 +17,6 @@ public static class TermExtensions
         term.IsParenthesized = isParenthesized;
         return term;
     }
-    public static IEnumerable<Variable> GetVariables(this Term term)
-    {
-        if (term is Atom)
-            yield break;
-        if (term is Variable v)
-            yield return v;
-        if (term is Complex c)
-            foreach (var vv in c.Args.SelectMany(GetVariables))
-                yield return vv;
-        else
-            foreach (var vv in term.Variables)
-                yield return vv;
-    }
     public static Term[] GetArguments(this Term term)
     {
         if (term is Complex c)

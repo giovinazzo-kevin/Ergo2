@@ -15,6 +15,7 @@ public class Variable : Term
 
     public bool IsBound => _value != null;
     public override bool IsGround => IsBound && _value.IsGround;
+    public override IEnumerable<Variable> Variables => [this];
 
     public Variable(string name, bool runtime = false)
     {

@@ -61,7 +61,7 @@ public class Emitter
         var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame, queryVars);
         var variableMap = new VariableMap();
         var queryArgs = query.GetArguments();
-        var vars = query.GetVariables().Distinct().ToArray();
+        var vars = query.Variables.Distinct().ToArray();
         for (int i = 0; i < vars.Length; i++) {
             vars[i].Value = (__int)i;
             // Find the actual A register index for this variable
@@ -110,7 +110,7 @@ public class Emitter
             // Unwrap module qualification: io:write(X) ? write(X)
             var goal = term is BinaryExpression { Operator: var op } bin && op == Operators.Module
                 ? bin.Rhs : term;
-            needsStackFrame = goal.GetVariables().Any();
+            needsStackFrame = goal.Variables.Any();
             var args = goal.GetArguments();
 
             // Pre-allocate query variables that appear ONLY inside nested compounds.
@@ -121,7 +121,7 @@ public class Emitter
             for (int i = 0; i < args.Length; i++)
                 if (args[i] is Variable dv) directArgVarNames.Add(dv.Name);
             var scratchA = args.Length;
-            foreach (var qv in goal.GetVariables().Distinct()) {
+            foreach (var qv in goal.Variables.Distinct()) {
                 if (!directArgVarNames.Contains(qv.Name) && !queryVars.ContainsKey(qv.Name)) {
                     var newIdx = ctx.NumVars;
                     queryVars[qv.Name] = newIdx;

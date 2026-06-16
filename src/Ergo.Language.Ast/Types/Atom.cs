@@ -13,6 +13,7 @@ public abstract class Atom : Term
         Value = value;
     }
     public override string Expl => Value.ToString()!.Parenthesized(IsParenthesized).AddQuotesIfNecessary();
+    public override IEnumerable<Variable> Variables { get; } = [];
     public override bool Equals(object? obj)
         => obj is Atom { Type: var type, Value: var value } && Equals(type, Type) && Equals(value, Value)
         || obj is Variable { Value: Atom other } && Equals(other);

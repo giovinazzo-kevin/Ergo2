@@ -327,7 +327,7 @@ clause(Y) :-
     {
         var result = Expect(input, p => p.DirectiveDefinitions);
         foreach (var directive in result) {
-            var variables = directive.GetVariables().ToHashSet();
+            var variables = directive.Variables.ToHashSet();
             Assert.All(variables.GroupBy(x => x.Name), g => Assert.Single(g));
         }
     }
@@ -339,7 +339,7 @@ clause(Y) :-
     {
         var result = Expect(input, p => p.ClauseOrFactDefinitions);
         foreach (var clause in result) {
-            var variables = clause.GetVariables();
+            var variables = clause.Variables;
             var groups = variables.GroupBy(x => x.Name);
             foreach (var group in groups) {
                 var exemplar = group.First();
@@ -356,8 +356,8 @@ clause(Y) :-
         var result1 = Expect(input1, p => p.ClauseOrFactDefinitions);
         var result2 = Expect(input2, p => p.ClauseOrFactDefinitions);
         foreach (var (clause1, clause2) in result1.Zip(result2)) {
-            var variables1 = clause1.GetVariables();
-            var variables2 = clause2.GetVariables();
+            var variables1 = clause1.Variables;
+            var variables2 = clause2.Variables;
             var names = variables1.Select(x => x.Name)
                 .Concat(variables2.Select(x => x.Name))
                 .Distinct();
