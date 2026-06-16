@@ -8,7 +8,7 @@ public class Clause(Term head, Term body) : BinaryExpression(Operators.HornBinar
 {
 
     public new readonly Term Functor = head;
-    public new readonly Term[] Args = head.GetArguments();
+    public new readonly Term[] Args = head.Args;
 
     public readonly IEnumerable<Term> Goals =
         (body is BinaryExpression { IsCons: true } cons

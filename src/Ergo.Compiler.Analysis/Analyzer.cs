@@ -103,7 +103,7 @@ public class Analyzer
             resolvedDirectives.AddRange(resolved.Select(r => (dir, r)));
         }
         foreach (var x in resolvedDirectives.OrderBy(x => x.Node.Precedence)) {
-            var args = x.Ast.Arg.GetArguments();
+            var args = x.Ast.Arg.Args;
             for (int i = 0; i < args.Length; i++)
                 args[i] = args[i].Deref();
             x.Node.Execute(module, args.AsSpan());
@@ -151,7 +151,7 @@ public class Analyzer
 
     protected static IEnumerable<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
-        var args = goalDef.GetArguments();
+        var args = goalDef.Args;
         var sig = goalDef.GetSignature();
         if (!sig.TryGetValue(out var signature)) {
             if (goalDef is Variable lateBound)

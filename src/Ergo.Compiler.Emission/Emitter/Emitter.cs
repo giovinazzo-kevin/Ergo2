@@ -60,7 +60,7 @@ public class Emitter
         var queryVars = new Dictionary<string, int>();
         var scope = JITGoal(ctx.Scope(), query, out var needsStackFrame, queryVars);
         var variableMap = new VariableMap();
-        var queryArgs = query.GetArguments();
+        var queryArgs = query.Args;
         var vars = query.Variables.Distinct().ToArray();
         for (int i = 0; i < vars.Length; i++) {
             vars[i].Value = (__int)i;
@@ -111,7 +111,7 @@ public class Emitter
             var goal = term is BinaryExpression { Operator: var op } bin && op == Operators.Module
                 ? bin.Rhs : term;
             needsStackFrame = goal.Variables.Any();
-            var args = goal.GetArguments();
+            var args = goal.Args;
 
             // Pre-allocate query variables that appear ONLY inside nested compounds.
             // Direct arg variables get put_variable naturally (writes to stack frame).
@@ -428,7 +428,7 @@ public class Emitter
         var goals = clause?.Goals
             .Where(g => g is not __bool { Value: true })
             .ToArray() ?? Array.Empty<Lang.Ast.Term>();
-        var headArgs = head.GetArguments();
+        var headArgs = head.Args;
 
         var scope = ctx.Scope();
         var varsByName = new Dictionary<string, int>();
@@ -470,7 +470,7 @@ public class Emitter
                     sc.Emit(Ops.fail);
                     continue;
                 }
-                var goalArgs = goal.GetArguments();
+                var goalArgs = goal.Args;
                 for (int k = 0; k < goalArgs.Length; k++)
                     Write(sc, goalArgs, k, vars, deep: true);
                 var sig = goal.GetSignature().GetOrThrow();

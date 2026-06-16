@@ -17,12 +17,6 @@ public static class TermExtensions
         term.IsParenthesized = isParenthesized;
         return term;
     }
-    public static Term[] GetArguments(this Term term)
-    {
-        if (term is Complex c)
-            return c.Args;
-        return term.Args;
-    }
     public static Maybe<Signature> GetSignature(this Term term) => term switch {
         Atom a
             => new Signature(default, a, 0),
