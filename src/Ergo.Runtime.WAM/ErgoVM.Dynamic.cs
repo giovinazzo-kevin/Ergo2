@@ -112,7 +112,7 @@ public partial class ErgoVM
         // Determine the signature
         var clause = term as Clause;
         var head = clause?.Functor ?? term;
-        var sig = head.GetSignature().GetOrThrow();
+        var sig = head.Signature.GetOrThrow();
 
         // Compile the clause using KB's constant table
         var ctx = EmitterContext.From(_QUERY.Source.Bytecode);

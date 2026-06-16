@@ -16,7 +16,6 @@ public abstract class Term : IExplainable, IComparable<Term>
     public static implicit operator Term(double d) => new __double(d);
     public virtual IEnumerable<Variable> Variables => [];
     public virtual Term[] Args => [];
-
     public virtual Maybe<Signature> Signature => default;
 
     /// <summary>

@@ -9,7 +9,7 @@ public sealed class DeclareDynamic(Library parent) : Compiler.Analysis.Directive
 {
     public override void Execute(Compiler.Analysis.Module module, ReadOnlySpan<Term> args)
     {
-        var sig = args[0].GetSignature()
+        var sig = args[0].Signature
             .GetOrThrow(new AnalyzerException(AnalyzerError.ExpectedTermOfType0At1Found2, typeof(Signature), Signature, args[0]));
         module.Dynamic.Add(sig.Unqualified);
     }

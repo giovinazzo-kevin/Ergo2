@@ -1,4 +1,5 @@
 ﻿using Ergo.Shared.Extensions;
+using Ergo.Shared.Types;
 
 namespace Ergo.Lang.Ast;
 
@@ -14,6 +15,7 @@ public abstract class Atom : Term
     }
     public override string Expl => Value.ToString()!.Parenthesized(IsParenthesized).AddQuotesIfNecessary();
     public override IEnumerable<Variable> Variables { get; } = [];
+    public override Maybe<Signature> Signature => new Signature(default, this, 0);
     public override bool Equals(object? obj)
         => obj is Atom { Type: var type, Value: var value } && Equals(type, Type) && Equals(value, Value)
         || obj is Variable { Value: Atom other } && Equals(other);

@@ -96,7 +96,7 @@ public class Analyzer
             throw new AnalyzerException(AnalyzerError.Module0MustStartWithModuleDirective, module._parser.Lexer.File.Name);
         var resolvedDirectives = new List<(Lang.Ast.Directive Ast, Directive Node)>();
         foreach (var dir in directives) {
-            var signature = dir.Arg.GetSignature().GetOrThrow().Unqualified;
+            var signature = dir.Arg.Signature.GetOrThrow().Unqualified;
             var resolved = graph.ResolveDirectives(signature, module).ToArray();
             if (resolved.Length == 0)
                 throw new AnalyzerException(AnalyzerError.UnresolvedDirective0, signature);
@@ -118,7 +118,7 @@ public class Analyzer
             .GetOr([]);
         module._parser.Context.ParseRoot.Print();
         var clauseDefsBySig = clauseDefs
-            .ToLookup(c => c.Functor.GetSignature()
+            .ToLookup(c => c.Functor.Signature
                 .GetOrThrow(new AnalyzerException(AnalyzerError.Clause0HeadCanNotBeAVariable, c.Expl)));
         foreach (var group in clauseDefsBySig) {
             if (!module.Predicates.TryGetValue(group.Key, out var pred))
@@ -152,7 +152,7 @@ public class Analyzer
     protected static IEnumerable<Goal> ResolveGoals(CallGraph graph, Module module, Clause clause, Term goalDef)
     {
         var args = goalDef.Args;
-        var sig = goalDef.GetSignature();
+        var sig = goalDef.Signature;
         if (!sig.TryGetValue(out var signature)) {
             if (goalDef is Variable lateBound)
                 return [new LateBoundGoal(clause, lateBound)];

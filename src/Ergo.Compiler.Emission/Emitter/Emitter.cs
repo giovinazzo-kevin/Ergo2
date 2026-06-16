@@ -106,7 +106,7 @@ public class Emitter
                 needsStackFrame = lhsNeedsStackFrame || rhsNeedsStackFrame;
                 return ctx;
             }
-            var sign = term.GetSignature().GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
+            var sign = term.Signature.GetOrThrow(); // TODO: THERE IS AS YET INSUFFICIENT DATA FOR A MEANINGFUL ANSWER
             // Unwrap module qualification: io:write(X) ? write(X)
             var goal = term is BinaryExpression { Operator: var op } bin && op == Operators.Module
                 ? bin.Rhs : term;
@@ -265,7 +265,7 @@ public class Emitter
     protected virtual void Read(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName)
     {
         switch (args[Ai]) {
-            case var _ when args[Ai].GetSignature().TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
+            case var _ when args[Ai].Signature.TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
                 ((WellKnown.Delegates.EmitGet)match.EmitGet)(this, ctx, match.PackedSig, args, Ai, varsByName);
                 break;
             case Complex @struct:
@@ -306,7 +306,7 @@ public class Emitter
     protected virtual void Write(EmitterContext ctx, Lang.Ast.Term[] args, int Ai, Dictionary<string, int>? varsByName, bool deep = false)
     {
         switch (args[Ai]) {
-            case var _ when args[Ai].GetSignature().TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
+            case var _ when args[Ai].Signature.TryGetValue(out var sig) && _abstractTerms.TryGetValue(sig, out var match):
                 ((WellKnown.Delegates.EmitPut)match.EmitPut)(this, ctx, match.PackedSig, args, Ai, varsByName, deep);
                 break;
             case Complex @struct:
@@ -473,7 +473,7 @@ public class Emitter
                 var goalArgs = goal.Args;
                 for (int k = 0; k < goalArgs.Length; k++)
                     Write(sc, goalArgs, k, vars, deep: true);
-                var sig = goal.GetSignature().GetOrThrow();
+                var sig = goal.Signature.GetOrThrow();
                 var p = sc.Constant(sig.Functor.Value);
                 sc.Emit(Ops.call((Signature)(p, sig.Arity.TryGetValue(out var gA) ? gA : Signature.VARIADIC)));
             }
