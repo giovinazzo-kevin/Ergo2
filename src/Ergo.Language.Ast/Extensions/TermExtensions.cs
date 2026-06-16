@@ -21,7 +21,7 @@ public static class TermExtensions
     {
         if (term is Complex c)
             return c.Args;
-        return term.Arguments;
+        return term.Args;
     }
     public static Maybe<Signature> GetSignature(this Term term) => term switch {
         Atom a

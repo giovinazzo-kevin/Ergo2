@@ -6,9 +6,9 @@ namespace Ergo.Lang.Ast;
 public class Complex(Atom functor, params Term[] args) : Term
 {
     public readonly Atom Functor = functor;
-    public readonly Term[] Args = args;
     public int Arity => Args.Length;
     public override bool IsGround => Args.All(x => x.IsGround);
+    public override Term[] Args { get; } = args;
     public override IEnumerable<Variable> Variables => Args.SelectMany(a => a.Variables);
     public override string Expl => ExplCanonical;
     public string ExplCanonical => $"{Functor.Expl}({string.Join((string)Functors.Comma.Value, Args.Select(x => x is Complex c ? c.ExplCanonical : x.Expl))})"

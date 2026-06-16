@@ -14,9 +14,8 @@ public abstract class Term : IExplainable, IComparable<Term>
     public static implicit operator Term(string s) => Variable.IsVariableIdentifier(s) ? new Variable(s) : new __string(s);
     public static implicit operator Term(bool b) => new __bool(b);
     public static implicit operator Term(double d) => new __double(d);
-
     public virtual IEnumerable<Variable> Variables => [];
-    public virtual Term[] Arguments => [];
+    public virtual Term[] Args => [];
 
     public virtual Maybe<Signature> Signature => default;
 

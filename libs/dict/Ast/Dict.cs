@@ -25,13 +25,13 @@ public class Dict(Either<Atom, Variable> functor, IEnumerable<BinaryExpression> 
         return new List.Ast.List(unique);
     }
 
-    public Term DictFunctor => Args[0];
-    public IEnumerable<BinaryExpression> Pairs => Args[1] is not List.Ast.List ? [] : ((List.Ast.List)Args[1]).Head.Cast<BinaryExpression>();
-    public int Length => Args[1] is not List.Ast.List ? 0 : ((List.Ast.List)Args[1]).Count;
+    public Term DictFunctor => base.Args[0];
+    public IEnumerable<BinaryExpression> Pairs => base.Args[1] is not List.Ast.List ? [] : ((List.Ast.List)base.Args[1]).Head.Cast<BinaryExpression>();
+    public int Length => base.Args[1] is not List.Ast.List ? 0 : ((List.Ast.List)base.Args[1]).Count;
 
     public override bool IsGround => DictFunctor.IsGround && Pairs.All(p => p.IsGround);
 
-    public override Term[] Arguments =>
+    public override Term[] Args =>
         [DictFunctor, .. Pairs.SelectMany(p => new[] { p.Lhs, p.Rhs })];
 
     public override Maybe<Signature> Signature =>
