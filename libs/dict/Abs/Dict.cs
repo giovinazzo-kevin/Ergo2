@@ -41,7 +41,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
                 parser.ConsExpression(Operators.Conjunction));
             if (kvps.TryGetValue(out var cons))
             {
-                var pairs = new System.Collections.Generic.List<BinaryExpression>();
+                var pairs = new List<BinaryExpression>();
                 foreach (var item in cons.Contents)
                 {
                     if (item is BinaryExpression { Operator: var op } bin && op == Operators.Module)
@@ -105,8 +105,8 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
         var n1Term = (Term)vm.Heap[vm.deref(addr1 + 2)];
         var n2Term = (Term)vm.Heap[vm.deref(addr2 + 2)];
         if (n1Term.Tag != CON || n2Term.Tag != CON) { vm.fail = true; return; }
-        var n1 = (int)((Lang.Ast.__int)vm.Constants[n1Term.Value]).Value;
-        var n2 = (int)((Lang.Ast.__int)vm.Constants[n2Term.Value]).Value;
+        var n1 = (int)((__int)vm.Constants[n1Term.Value]).Value;
+        var n2 = (int)((__int)vm.Constants[n2Term.Value]).Value;
 
         int smallAddr, largeAddr, smallN, largeN;
         if (n1 <= n2) { smallAddr = addr1; largeAddr = addr2; smallN = n1; largeN = n2; }
@@ -138,7 +138,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
     {
         var functor = vm.read_heap_term(addr + 1);
         var nTerm = (Term)vm.Heap[vm.deref(addr + 2)];
-        var n = (int)((Lang.Ast.__int)vm.Constants[nTerm.Value]).Value;
+        var n = (int)((__int)vm.Constants[nTerm.Value]).Value;
 
         var pairs = new BinaryExpression[n];
         for (int i = 0; i < n; i++)
@@ -156,7 +156,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
 
     public override int OnPut(Runtime.WAM.ErgoVM vm, Ast.Dict dict)
     {
-        var dictSigConst = vm._QUERY.Bytecode.AddConstant(new Lang.Ast.__string((string)WellKnown.Functor.Value));
+        var dictSigConst = vm._QUERY.Bytecode.AddConstant(new __string((string)WellKnown.Functor.Value));
         var dictSig = (Signature)(dictSigConst, 2);
         var baseAddr = vm.H;
         vm.Heap[vm.H++] = dictSig;
@@ -175,7 +175,7 @@ public sealed class Dict(Library parent) : AbstractTerm<Ast.Dict>(parent)
     {
         var functor = vm.pretty((Term)vm.Heap[addr + 1], quoted);
         var nTerm = (Term)vm.Heap[vm.deref(addr + 2)];
-        var n = (int)((Lang.Ast.__int)vm.Constants[nTerm.Value]).Value;
+        var n = (int)((__int)vm.Constants[nTerm.Value]).Value;
 
         var pairs = new string[n];
         for (int i = 0; i < n; i++)

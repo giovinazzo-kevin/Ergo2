@@ -19,13 +19,13 @@ public class DictTests : Tests
         return vm;
     }
 
-    private Lang.Ast.Term Roundtrip(ErgoVM vm, Lang.Ast.Term term)
+    private Term Roundtrip(ErgoVM vm, Term term)
     {
         var w = vm.write_heap_term(term); var a = vm.H; vm.Heap[vm.H++] = w;
         return vm.read_heap_term(a);
     }
 
-    private void UnifyDicts(ErgoVM vm, Lang.Ast.Term d1, Lang.Ast.Term d2)
+    private void UnifyDicts(ErgoVM vm, Term d1, Term d2)
     {
         var w1 = vm.write_heap_term(d1); var a1 = vm.H; vm.Heap[vm.H++] = w1;
         var w2 = vm.write_heap_term(d2); var a2 = vm.H; vm.Heap[vm.H++] = w2;

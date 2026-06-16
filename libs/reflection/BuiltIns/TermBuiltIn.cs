@@ -65,7 +65,7 @@ public sealed class TermBuiltIn(Library parent) : BuiltIn(parent)
             if (functorCell.Tag != Term.__TAG.CON) { vm.fail = true; return; }
 
             // Walk the args list to collect addresses
-            var argAddrs = new System.Collections.Generic.List<int>();
+            var argAddrs = new List<int>();
             var listAddr = vm.deref(ErgoVM.arg_addr(1));
             var listCell = (Term)vm.Store[listAddr];
 

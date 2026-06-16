@@ -134,7 +134,7 @@ public sealed class List(Library parent) : AbstractTerm<Ast.List>(parent)
 
     public override string OnPretty(Runtime.WAM.ErgoVM vm, int addr, bool quoted)
     {
-        var elems = new System.Collections.Generic.List<string>();
+        var elems = new List<string>();
         var dataAddr = addr + 1;
         while (true) {
             var head = (Term)vm.Heap[dataAddr];

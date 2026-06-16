@@ -1,5 +1,6 @@
 using Ergo.Lang.Ast;
 using Ergo.Lang.Ast.Extensions;
+using Ergo.Libs.Dict;
 using Ergo.Shared.Types;
 
 namespace Ergo.Libs.Dict.Ast;
@@ -44,8 +45,8 @@ public class Dict(Either<Atom, Variable> functor, IEnumerable<BinaryExpression> 
     public override Term[] Arguments =>
         [DictFunctor, .. Pairs.SelectMany(p => new[] { p.Lhs, p.Rhs })];
 
-    public override Maybe<Lang.Ast.Signature> Signature =>
-        new Lang.Ast.Signature(Libs.Dict.WellKnown.Functor, 2);
+    public override Maybe<Signature> Signature =>
+        new Signature(WellKnown.Functor, 2);
 
     public override string Expl
     {

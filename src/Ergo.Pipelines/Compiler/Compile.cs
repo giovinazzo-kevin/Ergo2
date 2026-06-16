@@ -49,7 +49,7 @@ public class Compile : IPipeline<CallGraph, KnowledgeBase, Compile.Env>
                 var hash = Convert.ToHexString(SHA256.HashData(combined));
                 using var hashStream = new FileStream(
                     Path.Combine(binDir, input.Root + ".kb.hash"),
-                    FileMode.Create, FileAccess.Write, FileShare.Read);
+                    FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
                 using var hashWriter = new StreamWriter(hashStream);
                 hashWriter.Write(hash);
             }

@@ -261,7 +261,7 @@ public class ParserTests
     [InlineData("[a, b|[c, d|[e, f|[]]]]", 6, "[a, b, c, d, e, f]")]
     public void List(string input, int len, string? expected = null)
     {
-        var result = (Libs.List.Ast.List)Expect(input, p => p.Term);
+        var result = (List)Expect(input, p => p.Term);
         Assert.Equal(expected ?? input, result.Expl);
         Assert.Equal(len, result.Count);
     }

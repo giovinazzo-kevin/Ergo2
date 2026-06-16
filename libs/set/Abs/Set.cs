@@ -97,7 +97,7 @@ public sealed class Set(Library parent) : AbstractTerm<Ast.Set>(parent)
 
     public override Lang.Ast.Term OnGet(Runtime.WAM.ErgoVM vm, int addr)
     {
-        var elements = new System.Collections.Generic.List<Lang.Ast.Term>();
+        var elements = new List<Lang.Ast.Term>();
         Lang.Ast.Term tail = WellKnown.EmptySet;
         var dataAddr = addr + 1;
         while (true) {
@@ -147,7 +147,7 @@ public sealed class Set(Library parent) : AbstractTerm<Ast.Set>(parent)
 
     public override string OnPretty(Runtime.WAM.ErgoVM vm, int addr, bool quoted)
     {
-        var elems = new System.Collections.Generic.List<string>();
+        var elems = new List<string>();
         var dataAddr = addr + 1;
         while (true) {
             var head = (Term)vm.Heap[dataAddr];

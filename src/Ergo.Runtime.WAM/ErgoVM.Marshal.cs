@@ -62,7 +62,7 @@ public partial class ErgoVM
                 var a = deref(term.Value);
                 var resolved = (Term)Store[a];
                 if (resolved.Tag == REF && resolved.Value == a)
-                    return new Lang.Ast.Variable($"_{a}"); // Unbound
+                    return new Variable($"_{a}"); // Unbound
                 return Read(resolved);
             }
             return term.Tag switch {
@@ -85,7 +85,7 @@ public partial class ErgoVM
             if (_QUERY.Source.Reconstructors.TryGetValue((atom.Value, functor.N), out var reconstruct))
                 return reconstruct(args);
 
-            return new Lang.Ast.Complex(atom, args);
+            return new Complex(atom, args);
         }
 
         Lang.Ast.Term ReadAbstract(__ADDR addr)
